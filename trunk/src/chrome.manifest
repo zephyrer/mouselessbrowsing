@@ -1,2 +1,2 @@
-content mouselessbrowsing jar:chrome/mouselessbrowsing.jar!/content/mouselessbrowsing/
+content mouselessbrowsing chrome/content/mouselessbrowsing/
 overlay	chrome://browser/content/browser.xul	chrome://mouselessbrowsing/content/mouselessbrowsingOverlay.xul
