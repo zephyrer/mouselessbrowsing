@@ -7,10 +7,13 @@
   01.07.2005
     
 */
+(function(){
+
+var MlbCommon = mouselessbrowsing.MlbCommon
+var Utils = rno_common.Utils
 
 //Add event for each window
 window.addEventListener('load',  MLB_initOnStartup, false);
-
 
 /*
     Initilization for window
@@ -28,33 +31,17 @@ function MLB_initOnStartup() {
   //Add onload listener to each page
   var appcontent = document.getElementById("appcontent");   // browser
   if(appcontent){
-  	//TODO
-	//appcontent.addEventListener("pageshow", MLB_doOnload, true);
+	appcontent.addEventListener("pageshow", MLB_doOnload, true);
   }
   
   //Add preferences-observer
-  var observerService = Components.classes["@mozilla.org/observer-service;1"].
-    getService(Components.interfaces.nsIObserverService);
-  observerService.addObserver(MLB_prefObserver, "MBL-PrefChange", true);
-  
-  window.getBrowser().addProgressListener(MLB_webProgressListener);
+  MLB_prefObserver = Utils.createObserver(mouselessbrowsing.InitManager.init)
+  Utils.registerObserver(MlbCommon.MLB_PREF_OBSERVER, MLB_prefObserver)
+
+  //window.getBrowser().addProgressListener(MLB_webProgressListener);
 
   //Init shortcuts and preferences
-  MLB_InitManager.init();
+  mouselessbrowsing.InitManager.init();
 } 
 
-MLB_prefObserver = {
-    observe: function ( subject , topic , data ){
-        MLB_InitManager.init();
-    },
-	QueryInterface: function(iid) {
-		if (!iid.equals(Components.interfaces.nsISupports)
-				&& !iid.equals(Components.interfaces.nsISupportsWeakReference)
-				&& !iid.equals(Components.interfaces.nsIObserver)) {
-			dump("MBL Window Pref-Observer factory object: QI unknown interface: " + iid + "\n");
-			throw Components.results.NS_ERROR_NO_INTERFACE; }
-		return this;
-	}
-    
-}
-
+})()

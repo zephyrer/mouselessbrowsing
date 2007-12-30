@@ -93,6 +93,9 @@ MLB_FIRST_CALL = 1;
 MLB_INTERMEDIATE_CALL = 2;
 MLB_FINAL_CALL = 4;
 function MLB_initAll(callType){
+	if(callType==null){
+		callType=MLB_FINAL_CALL
+	}
 	MLB_Utils.logMessage("MBL_initAll: callType " + callType);
 	var topWin = MLB_topWin;
     MLB_currentWin = topWin;
@@ -111,9 +114,9 @@ function MLB_initAll(callType){
     //Init-Frames
     MLB_initFrame(topWin);
 
-	if(!(callType&MLB_FINAL_CALL) || callType&MLB_INTERMEDIATE_CALL){
-		MLB_Timer = setTimeout("MLB_initAll("+ MLB_INTERMEDIATE_CALL + ")", 200);	
-	}
+//	if(!(callType&MLB_FINAL_CALL) || callType&MLB_INTERMEDIATE_CALL){
+//		MLB_Timer = setTimeout("MLB_initAll("+ MLB_INTERMEDIATE_CALL + ")", 200);	
+//	}
 	
     //Set init-Flag
     if(callType & MLB_FINAL_CALL)
@@ -183,8 +186,9 @@ function MLB_initFramesIds(){
 	        idSpan.style.cssText = MLB_styleForFrameIdSpan;
 	        
 	        //Insert Span
-	        var body = frame.document.body;
-	        body.insertBefore(idSpan, body.firstChild);
+	        var doc = frame.document
+	        idSpan = doc.importNode(idSpan, true)
+	        doc.body.insertBefore(idSpan, body.firstChild);
 	        
 	        //Set reference to idSpan
 	        frame.idSpan = idSpan;
@@ -398,7 +402,7 @@ function MLB_createSpan(){
     if(MLB_spanPrototype.style.cssText!=MLB_styleForIdSpan){
         MLB_spanPrototype.style.cssText=MLB_styleForIdSpan;
     }
-    return MLB_spanPrototype.cloneNode(true);
+    return MLB_doc.importNode(MLB_spanPrototype, true);
 }
 
 /*

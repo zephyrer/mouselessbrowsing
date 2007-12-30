@@ -6,7 +6,7 @@
  *
  * Mouseless Browsing 
  * Version 0.4.1
- * Created by Rudolf Noé
+ * Created by Rudolf Noï¿½
  * 01.07.2005
  *
  * The "keyinputbox" is borrowed from Hit-a-Hint created by 
@@ -39,6 +39,7 @@
         buttons="help,accept,cancel"
         >
 
+    <script type="application/x-javascript" src="../mlb_common.js"/>
     <script type="application/x-javascript" src="prefs.js"/>
     <script type="application/x-javascript" src="mlb_prefs.js"/>
     <script type="application/x-javascript" src="../common/utils.js"/>
