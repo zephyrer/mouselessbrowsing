@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<overlay id="mouselessbrowsing" 
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    // This imports our javascript.
+    <script type="application/x-javascript" 
+        src="mouselessbrowsingOverlay.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="core/constants.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="core/mlb_initialization.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="core/page_initialization.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="core/eventhandling.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="core/configuration.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="common/shortcutmanager_firefox.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="common/utils.js">
+    </script>
+
+    <statusbar id="status-bar">
+		<statusbarpanel id="mlb-status" label="MLB" style="width:100px"/>
+	</statusbar> 
+</overlay>
