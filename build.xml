@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+<project name="mouselessbrowsing" default="createDistributionXPI">
+<!-- Tool directories : *** Make sure you fix these to match your own environment *** -->
+<property name="gecko_sdk_path" location="D:\Programme\FireFox\development\tools\gecko-sdk" />
+<property name="buildtools_path" location="D:\Programme\FireFox\development\tools\buildtools" />
+
+<!-- Derived tool directories -->
+<property name="xpidl_exe" location="${gecko_sdk_path}/bin/xpidl.exe" />
+<property name="IDLs_path" location="${gecko_sdk_path}/idl" />
+<property name="libIDL_path" location="${buildtools_path}/windows/bin/x86" />
+
+<!-- Project directories -->
+<property name="src_dir" location="./src" />
+<property name="build_dir" location="./build" />
+<property name="dist_dir" location="./dist" />
+<property name="backup_dir" location="./backup" />
+
+<!-- Custom tasks -->
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+
+<!-- Targets -->
+<target name="createChromeJAR">
+<delete>
+  <fileset dir="${build_dir}" includes="*"/>
+</delete>
+<zip destfile="${build_dir}/${ant.project.name}.jar" 
+basedir="${src_dir}/chrome"
+includes="content/**, locale/**, skin/**"
+/>
+</target>
+
+<target name="createDistributionXPI" depends="createChromeJAR">
+    <delete>
+        <fileset dir="./dist" includes="*"/>
+    </delete>
+    <copy file="${src_dir}/chrome.manifest.jar" tofile="${dist_dir}/chrome.manifest" />
+    <zip destfile="./dist/${ant.project.name}.xpi" update="true">
+        <zipfileset dir="${build_dir}" includes="${ant.project.name}.jar" prefix="chrome" />
+        <zipfileset dir="${src_dir}/defaults" includes="**" prefix="defaults" />
+        <zipfileset dir="${src_dir}" includes="install.rdf" />
+        <zipfileset dir="${dist_dir}" includes="chrome.manifest" />
+    </zip>
+    <copy file="${dist_dir}/${ant.project.name}.xpi" tofile="${dist_dir}/${ant.project.name}.xpi.zip" />
+    <delete>
+        <fileset dir="${dist_dir}" includes="chrome.manifest"/>
+    </delete>
+    <!-- Make backup-copy -->
+    <copy todir="${backup_dir}/src">
+		<fileset dir="${src_dir}"/>
+    </copy>
+</target>
+
+<target name="installPluginFF1_5" depends="createChromeJAR">
+  <copy todir="C:\Dokumente und Einstellungen\administrator\Anwendungsdaten\Mozilla\Firefox\Profiles\zcufq61w.Standard-Benutzer\extensions\{c0bcf963-624b-47fe-aa78-8cc02434cf32}\chrome"
+    file="${build_dir}/${ant.project.name}.jar"/>
+</target>
+</project>
