@@ -1,9 +1,9 @@
 /* 
 
   Mouseless Browsing 
-  Version 0.4.2
+  Version 0.4.3
   Created by Rudolf Noé
-  01.07.2005
+  30.12.2007
   
   Borrowed from pref-tabprefs.js (c) Bradley Chapman (THANKS!)
 */
@@ -104,7 +104,12 @@ function saveUserPrefs(){
 }
 
 function dialogHelp(){
-    window.open ( "http://www.rudolf-noe.de/Documentation.htm", "Mouseless Browsing Documentation" );
+	var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                   .getService(Components.interfaces.nsIWindowMediator);
+	var win = wm.getMostRecentWindow("navigator:browser");
+	var browser = win.getBrowser()
+	browser.selectedTab = browser.addTab("http://mlb.rudolf-noe.de")
+	window.opener.focus()		
 }
 
 function onClickSmartPos(event){

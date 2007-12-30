@@ -2,7 +2,6 @@
 <?xml-stylesheet href="mouselessbrowsing.css" type="text/css"?>
 <overlay id="mouselessbrowsing" 
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-    // This imports our javascript.
     <script type="application/x-javascript" 
         src="chrome://mouselessbrowsing/content/mouselessbrowsingOverlay.js">
     </script>

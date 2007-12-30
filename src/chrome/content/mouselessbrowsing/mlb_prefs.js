@@ -1,3 +1,10 @@
+/*
+ * Version 0.4.3
+ * Created by Rudolf Noé
+ * 30.12.2007
+ *
+ */
+
 function MLB_doOnload(){
 	//MLB_updateInterval();
 	MLB_onTogglingVisibilityAllIds();

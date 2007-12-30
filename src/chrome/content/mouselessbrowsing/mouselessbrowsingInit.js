@@ -1,21 +1,8 @@
 /*
  * Mouseless Browsing 
- * Version 0.4.2
+ * Version 0.4.3
  * Created by Rudolf Noé
- * 01.07.2005
- *
- * Licence Statement
- * Version:  MPL 1.1
- *
- * The contents of this file are subject to the Mozilla Public License
- * Version 1.1  (the "License"); you may  not use this  file except in
- * compliance with the License.  You  may obtain a copy of the License
- * at http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
- * the  License  for  the   specific  language  governing  rights  and
- * limitations under the License.
+ * 30.12.2007
  */
 
 
@@ -318,6 +305,7 @@ function MLB_initRemaining(){
     Registered in mouselessbrowsingOverlay.js
 */
 function MLB_doOnload(event){
+
     //var start = (new Date()).getTime();
     
     //Setting actual window, document object and top-Window
@@ -367,6 +355,7 @@ function MLB_initAll(topWin){
 }
 
 function MLB_initFrame(win){
+
     MLB_currentWin = win;
     MLB_doc = win.document;
     var topWin = null;
@@ -377,12 +366,12 @@ function MLB_initFrame(win){
     }
     //Saving start Id
     var startId = topWin.MLB_counter;   
-    
+
     //First the frame ids
     if(MLB_mouselessBrowsingForFramesEnabled && MLB_doc){
         MLB_initFramesIds();
     }
-    
+
     if(MLB_mouselessBrowsingForFormElementsEnabled && MLB_doc){
         MLB_initFormElements()
     }    
@@ -391,7 +380,7 @@ function MLB_initFrame(win){
         && MLB_doc){
         MLB_initLinks()
     }
-    
+
     //Fuer alle Frames
     for(var i = 0; i<win.frames.length; i++){
         MLB_initFrame(win.frames[i]);
@@ -431,7 +420,10 @@ function MLB_initFramesIds(){
 	        var idSpan = MLB_getNewSpan(MLB_idSpanForFrame);
 	        //Setting different style
 	        idSpan.style.cssText = MLB_styleForFrameIdSpan;
-	        var body = MLB_currentWin.frames[i].document.body;
+	        var doc = MLB_currentWin.frames[i].document
+	        var body = doc.body;
+	        //FF 3.0 idSpan must be imported
+	        idSpan = doc.importNode(idSpan, true)
 	        body.insertBefore(idSpan, body.firstChild);
 	        MLB_currentWin.frames[i].idSpan = idSpan;
 	    }
@@ -629,7 +621,7 @@ function MLB_createSpan(){
     if(MLB_spanPrototype.style.cssText!=MLB_styleForIdSpan){
         MLB_spanPrototype.style.cssText=MLB_styleForIdSpan;
     }
-    return MLB_spanPrototype.cloneNode(true);
+    return MLB_doc.importNode(MLB_spanPrototype, true);
 }
 
 function MLB_getNoBr(){
