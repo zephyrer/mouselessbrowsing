@@ -4,14 +4,14 @@
 
 		<em:id>{c0bcf963-624b-47fe-aa78-8cc02434cf32}</em:id>
 		<em:name>Mouseless Browsing</em:name>
-		<em:version>0.4.9</em:version>
+		<em:version>0.5</em:version>
 		<em:description>Mouseless Browsing</em:description>
 		<em:creator>Rudolf Noe</em:creator>
 		<em:homepageURL/>
 		<em:iconURL/>
 		<em:aboutURL/>
 		<em:updateURL/>
-        <em:optionsURL>chrome://mouselessbrowsing/content/preferences/prefs.xul</em:optionsURL>		
+        <em:optionsURL>chrome://mouselessbrowsing/content/mouselessbrowsing/preferences/prefs.xul</em:optionsURL>		
 		<em:file>
 			<Description about="urn:mozilla:extension:file:mouselessbrowsing.jar">
 				<em:package>content/mouselessbrowsing/</em:package>

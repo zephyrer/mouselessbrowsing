@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
 <overlay id="mouselessbrowsing" 
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-    // This imports our javascript.
+    <script type="application/x-javascript" 
+        src="mlb_common.js">
+    </script>
     <script type="application/x-javascript" 
         src="mouselessbrowsingOverlay.js">
     </script>
@@ -21,7 +23,7 @@
         src="core/configuration.js">
     </script>
     <script type="application/x-javascript" 
-        src="common/shortcutmanager_firefox.js">
+        src="../common/shortcutmanager.js">
     </script>
     <script type="application/x-javascript" 
         src="common/utils.js">

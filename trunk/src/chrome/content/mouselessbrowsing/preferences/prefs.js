@@ -90,9 +90,10 @@ function saveUserPrefs(){
     }
  
     //Notify Pref-observer
-    var observerService = Components.classes["@mozilla.org/observer-service;1"].
-        getService(Components.interfaces.nsIObserverService);
-    observerService.notifyObservers ( null , "MBL-PrefChange" , null);
+    rno_common.Utils.notifyObservers(mouselessbrowsing.MlbCommon.MLB_PREF_OBSERVER)
+//    var observerService = Components.classes["@mozilla.org/observer-service;1"].
+//        getService(Components.interfaces.nsIObserverService);
+//    observerService.notifyObservers ( null , "MBL-PrefChange" , null);
 
 }
 
