@@ -1,22 +1,9 @@
 /*
  * Mouseless Browsing 
  * This files contains all the event-handling and actions
- * Version 0.4.2
+ * Version 0.4.3
  * Created by Rudolf Noé
- * 01.07.2005
- *
- * Licence Statement
- * Version:  MPL 1.1
- *
- * The contents of this file are subject to the Mozilla Public License
- * Version 1.1  (the "License"); you may  not use this  file except in
- * compliance with the License.  You  may obtain a copy of the License
- * at http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
- * the  License  for  the   specific  language  governing  rights  and
- * limitations under the License.
+ * 30.12.2007
  */
 
 /*
@@ -142,12 +129,12 @@ function MLB_shouldExecute(){
 function MLB_execute(){
     //First check for focusing URL-Field
     if(MLB_keybuffer=="0"){
-        document.getElementById('urlbar').focus();
+        document.getElementById('urlbar').select();
         return;
     }
     
     if(MLB_keybuffer=="00"){
-        document.getElementById('searchbar').mTextbox.mInputField.select();
+        document.getElementById('searchbar').select();
         return;
     }
     
@@ -411,7 +398,6 @@ function MLB_changeTabByNumber(){
 	var oldTab = browser.selectedTab;
   	var newTab = browser.tabContainer.childNodes[index];
   	if (newTab != oldTab) {
-    	oldTab.selected = false;
     	browser.selectedTab = newTab;
   	}
 }

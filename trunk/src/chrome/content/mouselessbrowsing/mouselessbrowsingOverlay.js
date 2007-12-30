@@ -1,11 +1,8 @@
 /* 
-
-
   Mouseless Browsing 
-  Version 0.4.2
+  Version 0.4.3
   Created by Rudolf Noé
-  01.07.2005
-    
+  30.12.2007
 */
 
 //Add event for each window

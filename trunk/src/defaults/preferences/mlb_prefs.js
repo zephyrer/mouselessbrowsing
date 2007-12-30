@@ -1,7 +1,8 @@
 /**
  * Default-Prefs for MLB
  * Rudolf Noe
- * 27.12.05
+ * version 0.4.3
+ * 30.12.2007
  */
 pref("mouselessbrowsing.autoExecuteDelay", "500");
 pref("mouselessbrowsing.disableAllIds", false);
