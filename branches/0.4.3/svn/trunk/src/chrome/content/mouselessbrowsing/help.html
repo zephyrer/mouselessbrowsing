@@ -1,0 +1,254 @@
+<html>
+<head>
+<script>
+    function doOnload(){}
+</script>
+<style>
+body{
+    font-family:arial;
+    font-size:10pt;
+    background-color:#FFF9EC
+}
+h3{
+    color:#A73639;
+}
+h4{
+    color:#A73639;
+}
+li{
+    margin-top:10
+}
+.configheader{
+    color:#A73639;
+}
+</style>
+</head>
+<body onload="doOnload()">
+<div style="width:700;">
+    <h3>What's new in Version 0.4 ...</h3>
+        <ul>
+            <li>
+                Update to version 1.5 FF. <br>
+                <b>Attention:</b> In FF 1.5 you can switch to a specific tab by pressing
+                the ctrl-key and a number (0-9). In order to preserve the MLB functionality 
+                to execute actions by pressing Ctrl + Id the tab-switch functionality of FF was
+                overriden. As a substitution you can switch to a specific tab by pressing 
+                "0" + tabnumber (1-9).
+            </li>
+            <li>
+                You can now select a link by pressing a configurable postfix key (default: shift) 
+                after you've entered the id. 
+            </li>
+            <li>
+                Toogling the visibility of the ids were changed. Instead of double-press the
+                configured key for showing the ids of <u>all</u> elements, you can now configure
+                a seperate shortcut for doing this. Default is Ctrl + &lt;configured shortcut for toggling MLB on/off&gt;.
+            </li>
+            <li>
+                The exclusive use of the numpad is now shown in the status bar.
+            </li>
+            <li>
+                "00" has been inserted as the id for the web search field.
+            </li>
+            <li>
+                Shortcuts for changing tabs were deleted. You can change tabs by pressing
+                Ctrl+Page up/down and Ctrl+(Shift)+Tab.
+            </li>
+            <li>
+                By automatically changing the the style of the links ("float:none" was added) misplacements 
+                of the ids were further reduced (many thanks to Takayama Fumihiko)<br> The actual style for links is:<br>
+                float:none;margin-left:2;z-index:500;font-size:xx-small;font-family:sans-serif;border-color:grey; border-width:1px;border-style:solid;padding:0px 3px 0px 3px;
+            </li>
+            <li>
+                Interaction with the FF-Feature "Find by start typing" is fixed. If you have switched
+                on this feature you also have to switch on the MLB-Feature "Use numpad exclusivly...".
+                Then the popup of the searchbar will be suppressed for numpad-keys.
+            </li>
+            <li>
+                Some minor Bugfixes were made.
+            </li>
+        </ul>
+
+            
+    <h3>How does it work...</h3>
+        <ul>
+            <li>
+                Mouseless browsing bases on marking all links, form elements and frames with ids. 
+                If you do not like to see all of them, you can configure this in preferences dialog of MLB.
+                You can trigger an action (e.g. following the link) by simply entering the id and 
+                depending on the configuration confirming it by pressing Enter. 
+                When the checkbox <nobr>"Execute automatically..."</nobr> is checked the action is automatically
+                triggered after the specified delay for auto-execution.            
+            </li>
+            <li>
+                You can configure to use the numpad exclusively for Mouseless Browsing.
+                In that mode you can trigger actions even the focus is on a textfield or selectbox.
+                The output is suppressed.
+                If you not use the exclusive mode then triggering actions by typing ids 
+                don't work if the focus is on a textfield or a selectbox.
+                Entering the id while holding the <span class="configheader">CTRL-Key</span> triggers the action in any case.
+                You can toggle between the two modes by pressing the num-key twice within 1 sec.
+            </li>
+            <li>
+                Entering an id for a link results in navigate the browser to that link, entering
+                an id for a form element results in clicking resp. selecting that form element. 
+                Entering an id for a frame results in focusing the frame so you can scroll the content.
+                The ids for frames are always place in the top left corner of the frame and they have a
+                different background color.
+            </li>
+            <li>
+                By default links are opened in the same tab. If you press the 
+                <span class="configheader">ALT-key</span> while entering
+                the id the link is opened in a new tab. The same happens when you press the 
+                configurable postfix key (default: +) after you have typed in the id of the link.
+            </li>
+            <li>
+                If you would like to select a link you have to press the configured postfix-key 
+                (default: shift) after you've typed in the id of the link.
+            </li>
+            <li>
+                There are also the following non-visible ids which you can enter: "0" focuses the address field,
+                "00" the web search field and "0" + [1-9] activates the appropriate tab.
+            </li>
+            <li>
+                Finally there are shortcuts for navigating back an forth in the history (default: divide/multiply-keys)
+                and for scrolling up/down (default: minus/plus)
+            </li>
+        </ul>
+    
+    <h3>Configuration...</h3>
+    
+    <!-- General Config -->
+    <h4>General</h4>
+    <ul>
+    <li>
+        <span class="configheader">Enable ids for text-links</span>
+        <br/>
+        Shows ids for all text-links. If a link have an image <u>and</u> text it is also shown
+        according this configuration.
+    </li>
+    <li>
+        <span class="configheader">Enable Ids for image-links </span>
+        <br/>
+        Shows ids for all pure image-links (an image link which contains only an image and 
+        nothing more) on the page.
+    </li>
+    <li>
+        <span class="configheader">Enable Ids for form elements</span>
+        <br/>
+        Shows ids for form elements on the page.
+    </li>
+    <li>
+        <span class="configheader">Enable Ids for frames</span>
+        <br/>
+        Shows ids for all frames.
+    </li>
+    <li>
+        <span class="configheader">Use numpad exclusively for Mouseless Browsing</span>
+        <br/>
+        When checked pressing keys on the numpad are exclusively interpreted as input 
+        for Mouseless Browsing and the output is suppressed
+        (the minus key on the numpad is one exception; see <a href="#KnownBugs">Known Bugs</a>). 
+        So you can trigger actions even the focus is in a textfield or selectbox.
+    </li>
+    <li>
+        <span class="configheader">Execute automatically without pressing Enter </span>
+        <br/>
+        When checked the appropriate action is triggered automatically after the 
+        specified delay for auto-execution (see <a href="#DelayAutoExec">Delay for automatic execution</a>). Otherwise you have to confirm the input
+        by pressing enter.
+    </li>
+    <li>
+        <a name="DelayAutoExec"><span class="configheader">Delay for automatic execution</span></a>
+        <br/>
+        Delay after an action is triggered automatically provided that
+        an correct id was entered.
+    </li>    
+    <li>
+        <span class="configheader">Time for clearing keybuffer</span>
+        <br/>
+        Duration after the keybuffer is automatically cleared.
+    </li>    
+    </ul>
+    
+    <!-- Styles -->
+    <h4>Styles</h4>
+    <ul>
+        <li>
+            <span class="configheader">Style for id span</span>
+            <br/>
+            Defines the style for id spans for links and form elements. <br>
+            The actual style is: <br>float:none;margin-left:2;z-index:500;font-size:xx-small;font-family:sans-serif;border-color:grey; border-width:1px;border-style:solid;padding:0px 3px 0px 3px;
+        </li>    
+        <li>
+            <span class="configheader">Style for frame id span</span>
+            <br/>
+            Defines the style for all frame id spans. <br>
+            The actual style is: <br>
+            z-index:500;font-size:xx-small;font-family:sans-serif;background-color:D6E3FE;border-color:black; border-width:1px;border-style:solid;padding:0px 3px 0px 3px; position:absolute; top:0; left:0;
+        </li>    
+    </ul>
+    
+    <!-- key configuration -->
+    <h4>Keys</h4>
+    <ul>
+    <li>
+        <span class="configheader">Shortcut for toggling visibility of ids on/off</span>
+        <br/>
+        Shortcut for toggling the visibility of the ids. 
+    </li>    
+    <li>
+        <span class="configheader">Shortcut for toggling visibility of ids for all/only configured elements</span>
+        <br/>
+        Shortcut for toggling the visibility of the ids between showing all or only the configured ones.
+    </li>    
+    <li>
+        <span class="configheader">Shortcut for clearing the keybuffer</span>
+    </li>    
+    <li>
+        <span class="configheader">Postfix-key to open link in new tab</span>
+        Configures the key which you have to press after entering the id to open a link in a new tab.
+    </li>
+    <li>
+        <span class="configheader">Postfix-key to select a link</span>
+        Configures the key which you have to press after entering the id to select a link.
+    </li>
+    <li>
+        <span class="configheader">Shortcuts for history back/forward</span>
+        <br/>
+        Shortcut for going to the previous/next page in the history.
+    </li>    
+    <li>
+        <span class="configheader">Shortcuts for scrolling up/down</span>
+        <br/>
+        Shortcut for scrolling up and down in the document. These shortcuts are working
+        even the focus is on textfield or selectbox 
+        (where page up/down have different meaning in this case).
+    </li>    
+
+    </ul>
+    <p>
+    <h4 style="margin-bottom:0px">Attention!</h4> Shortcuts without a modifier key (Ctrl or Alt) will not work
+    when focus is on a writable field or selectbox. Therefore a second shortcut 
+    "Ctrl + shortcutKey" will be established automatically.
+    </p>
+    
+    <a name="KnownBugs"><h3>Known Bugs</h3></a>
+        <ul>
+            <li>
+                <span class="configheader">Minus-Key on numpad is not suppressed 
+                when using the numpad exclusively for Mouseless Browsing</span>
+                <br/>
+                Due to a bug in Firefox the numpad minus-key has the same key code as the 
+                hyphen character, so I decided not to suppress it.
+            </li>
+            <li>
+                <span class="configheader">Positioning problems</span>
+                <br/>
+                Positioning of ids dosn't work poperly when
+                form elements are absolut positioned.
+            </li>
+        </ul>
+</div>
+</body>
+</html>
