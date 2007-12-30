@@ -1,2 +1,0 @@
-content mouselessbrowsing chrome/content/mouselessbrowsing/
-overlay	chrome://browser/content/browser.xul	chrome://mouselessbrowsing/content/mouselessbrowsingOverlay.xul
