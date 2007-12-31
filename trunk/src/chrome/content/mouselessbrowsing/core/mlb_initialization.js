@@ -9,10 +9,13 @@
 	
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	var Prefs = rno_common.Prefs
+	var MlbPrefs = mouselessbrowsing.MlbPrefs
 
 	InitManager = {
 		init: function (){
-		    MLB_ConfigManager.initPrefs();
+		    MlbPrefs.initPrefs();
+		    //Todo Remove
+		    //MLB_ConfigManager.initPrefs();
 		    this.initShortCuts();
 		    this.initRemaining();
 		},
@@ -23,49 +26,53 @@
 		    this.allCombinedShortCutKeys = null;
 		
 		    var combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.toggleMLB");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "MLB_toggleIds()", MlbCommon.SCM_CLIENT_ID);
+		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.toggleIds()", MlbCommon.SCM_CLIENT_ID);
 		    
 			 combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.toggleAllIds");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "MLB_toggleAllIds()", MlbCommon.SCM_CLIENT_ID);
+		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.toggleAllIds()", MlbCommon.SCM_CLIENT_ID);
 		    
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.historyBack");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "MLB_moveHistory('back')", MlbCommon.SCM_CLIENT_ID);
+		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.moveHistory('back')", MlbCommon.SCM_CLIENT_ID);
 		
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.historyForward");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "MLB_moveHistory('forward')", MlbCommon.SCM_CLIENT_ID);
+		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.moveHistory('forward')", MlbCommon.SCM_CLIENT_ID);
 		    
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.clearKeybuffer");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "MLB_resetVars()", MlbCommon.SCM_CLIENT_ID);
+		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.resetVars()", MlbCommon.SCM_CLIENT_ID);
 		    
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.scrollDown");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "MLB_scrollUpDown('down')", MlbCommon.SCM_CLIENT_ID);
+		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.scrollUpDown('down')", MlbCommon.SCM_CLIENT_ID);
 		    
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.scrollUp");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "MLB_scrollUpDown('up')", MlbCommon.SCM_CLIENT_ID);
+		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.scrollUpDown('up')", MlbCommon.SCM_CLIENT_ID);
 		    
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.openInNewTabPostfixKey");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "MLB_openLinkInNewTabViaPostfixKey()", MlbCommon.SCM_CLIENT_ID);
+		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.openLinkInNewTabViaPostfixKey()", MlbCommon.SCM_CLIENT_ID);
 		    
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.selectLink");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "MLB_selectLink()", MlbCommon.SCM_CLIENT_ID);
+		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.selectLink()", MlbCommon.SCM_CLIENT_ID);
 		
 		    //Toggling exclusive use with dobble stroke of numpad-key
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(2304, "MLB_toggleExclusiveUseOfNumpad()", MlbCommon.SCM_CLIENT_ID);
+		    ShortCutManager.addJsShortCutWithCombinedKeyCode(2304, "mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpad()", MlbCommon.SCM_CLIENT_ID);
 		
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.toggleExlusiveUseOfNumpad");
 		    if(combinedKeyCode!=2304)
-			    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "MLB_exclusiveUseOfNumpad = !MLB_exclusiveUseOfNumpad;", MlbCommon.SCM_CLIENT_ID);
+			    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.exclusiveUseOfNumpad = !MLB_exclusiveUseOfNumpad;", MlbCommon.SCM_CLIENT_ID);
 		
 		},
 		
 		initRemaining: function(){
 		    //Display keybuffer in statusbar?
 		    var statusbarpanel = document.getElementById("mlb-status");
-		    if(MLB_showKeybufferInStatusbar){
+		    if(MlbPrefs.showKeybufferInStatusbar){
 		        statusbarpanel.style.display="block";
 		    }else{
 		        statusbarpanel.style.display="none";
 		    }
+		},
+		
+		observe: function(){
+			this.init();
 		}
 	
 	}

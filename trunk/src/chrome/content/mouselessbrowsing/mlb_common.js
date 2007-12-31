@@ -9,25 +9,33 @@
 		MLB_PREF_OBSERVER: "MLB_PREF_OBSERVER",
 		
 		//Attribute of the id-span that flags the span as an id-span
-		MLB_idSpanFlag: "MLB_idSpanFlag",
+		ATTR_ID_SPAN_FLAG: "MLB_idSpanFlag",
 		
 		//Attribute of the id-span identifying the type element the id is for
 		//see Tyes for id-Spans
 		//Used for toggling the visibility of the id-spans
-		MLB_idSpanFor: "idSpanFor",
+		ATTR_ID_SPAN_FOR: "idSpanFor",
 		 
 		//Types of id-Spans, the value of the Attribute MLB_idSpanFor
-		MLB_idSpanForFrame: "frame",
-		MLB_idSpanForImg: "img",
-		MLB_idSpanForFormElem: "formelement",
-		MLB_idSpanForLink: "link",
+		IdSpanTypes: {
+			FRAME: "FRAME",
+			IMG: "IMG",
+			FORMELEMENT: "FORMELEMENT",
+			LINK: "LINK",
+		},
+		
+		VisibilityModes: {
+			ALL: "ALL",
+			CONFIG: "CONFIG",
+			NONE: "NONE",
+		},
 		
 		//ShortcutManager-ClientId
 		SCM_CLIENT_ID: "MLB",
 		
 		//WebProgress State-Flags
-		MLB_WEBPROGRESS_STATE_START: 1,
-		MLB_WEBPROGRESS_STATE_STOP: 16,
+		WEBPROGRESS_STATE_START: 1,
+		WEBPROGRESS_STATE_STOP: 16,
 		
 		/*
 		 * Loads Script from url

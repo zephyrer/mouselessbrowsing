@@ -1,28 +1,35 @@
-MLB_PageDataClass = {
-	//Constructor
-	PageData: function(){
+(function(){
+   //Imports
+   var MlbCommon = mouselessbrowsing.MlbCommon
+   	
+   //Constructor
+	function PageData(){	
+	}
+	
+	PageData.prototype =  {
 		//Element Counter
-		this.counter=0;
+		counter: 0,
 		//Array with id-marked elements
-		this.elementsWithId = new Array(1000);
+		elementsWithId: new Array(1000),
 		
 		//Object used as map to store the number of Ids
 		//used in this window/frame and all its subframes
 		//Key: window.name; Value: number of ids (including the ids of all subframes)
-		this.numberOfIdsMap = new Object();
+		numberOfIdsMap: new Object(),
 		
 		//Object used as map to store the start-id of windows/frames
 		//Key: window.name; Value: start-id
-		this.startIdMap = new Object();
+		startIdMap: new Object(),
 
-		
 		//Flag which indicates that document is already initialised
 		//i.e. the ids were inserted
 		//Used for frames
-		this.initialized = false;
+		initialized: false,
 
-		//
 		//previousVisisbility Mode
-		previousVisibilityMode = "config";
+		previousVisibilityMode: MlbCommon.VisibilityModes.CONFIG,
 	}
-}
+	
+	var NS = rno_common.Namespace;
+	NS.bindToNamespace("mouselessbrowsing", "PageData", PageData)
+})()
