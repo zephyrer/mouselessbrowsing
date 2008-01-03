@@ -4,30 +4,43 @@
    	
    //Constructor
 	function PageData(){	
-	}
-	
-	PageData.prototype =  {
 		//Element Counter
-		counter: 0,
+		this.counter = 0
+		
 		//Array with id-marked elements
-		elementsWithId: new Array(1000),
+		this.elementsWithId = new Array(1000)
 		
 		//Object used as map to store the number of Ids
 		//used in this window/frame and all its subframes
 		//Key: window.name; Value: number of ids (including the ids of all subframes)
-		numberOfIdsMap: new Object(),
+		this.numberOfIdsMap = new Object()
 		
 		//Object used as map to store the start-id of windows/frames
 		//Key: window.name; Value: start-id
-		startIdMap: new Object(),
+		this.startIdMap = new Object()
 
 		//Flag which indicates that document is already initialised
 		//i.e. the ids were inserted
 		//Used for frames
-		initialized: false,
+		this.initialized = false
 
 		//previousVisisbility Mode
-		previousVisibilityMode: MlbCommon.VisibilityModes.CONFIG,
+		this.previousVisibilityMode = MlbCommon.VisibilityModes.CONFIG
+	}
+	
+	PageData.prototype =  {
+		addElementWithId: function(element){
+			this.elementsWithId[this.counter] = element;
+		},
+		
+		getNextId:function(){
+			this.counter = this.counter+1
+			return this.counter
+		},
+		
+		getElementForId:function(id){
+			return this.elementsWithId[id]
+		}
 	}
 	
 	var NS = rno_common.Namespace;
