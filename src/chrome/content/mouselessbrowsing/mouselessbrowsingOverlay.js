@@ -15,6 +15,7 @@
 	//Add event for each window
 	window.addEventListener('load',  MLB_initOnStartup, false);
 	
+	var MLB_prefObserver = null;
 	/*
 	Initilization for main window
 	*/
@@ -30,7 +31,7 @@
 		//Add pageshow listener to each page
 		var appcontent = document.getElementById("appcontent");   // browser
 		if(appcontent){
-			appcontent.addEventListener("pageshow", PageInitializer, true);
+			appcontent.addEventListener("pageshow", {handleEvent: function(event){PageInitializer.doOnload(event)}}, true);
 		}
 		
 		//Add preferences-observer

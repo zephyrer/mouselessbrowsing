@@ -51,6 +51,9 @@
 		    
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.selectLink");
 		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.selectLink()", MlbCommon.SCM_CLIENT_ID);
+
+		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.openConfig");
+		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.openConfiguration()", MlbCommon.SCM_CLIENT_ID);
 		
 		    //Toggling exclusive use with dobble stroke of numpad-key
 		    ShortCutManager.addJsShortCutWithCombinedKeyCode(2304, "mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpad()", MlbCommon.SCM_CLIENT_ID);
@@ -68,6 +71,10 @@
 		        statusbarpanel.style.display="block";
 		    }else{
 		        statusbarpanel.style.display="none";
+		    }
+		    //Delete prototype span for updating css
+		    if(mouselessbrowsing.PageInitializer){
+	    	   mouselessbrowsing.PageInitializer.init()
 		    }
 		},
 		
