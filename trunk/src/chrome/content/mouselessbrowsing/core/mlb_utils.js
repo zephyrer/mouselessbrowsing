@@ -19,6 +19,14 @@
          return element.getAttribute && element.getAttribute(MlbCommon.ATTR_ID_SPAN_FLAG)!=null;
       },
       
+      getElementForIdSpan: function(idSpan){
+         return idSpan[MlbCommon.ATTR_ELEMENT_FOR_ID_SPAN]	
+      },
+      
+      setElementForIdSpan: function(idSpan, element){
+      	idSpan[MlbCommon.ATTR_ELEMENT_FOR_ID_SPAN]=element
+      },
+      
 		/*
 		* Returns true when the srcElement of the keyevent is an textfield, password-field
 		* selectbox or textarea
@@ -58,6 +66,7 @@
                      (XMLUtils.isTagName(element, "INPUT") && "button"==element.type) ||
                      (XMLUtils.isTagName(element, "INPUT") && "submit"==element.type) ||
                      (XMLUtils.isTagName(element, "INPUT") && "reset"==element.type)  ||
+                     (XMLUtils.isTagName(element, "INPUT") && "image"==element.type)  ||
                      (XMLUtils.isTagName(element, "INPUT") && "file"==element.type)
          }else if(this.ElementTypes.CHECKBOX==type){
             return XMLUtils.isTagName(element, "INPUT") && "checkbox"==element.type

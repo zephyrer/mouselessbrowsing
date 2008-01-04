@@ -63,11 +63,15 @@
                             <rows>
                                 <row align="center">
                                     <label value="Delay for automatic execution/clearing keybuffer (msec)"/>
-                                    <textbox id="autoExecuteDelay" prefid="mouselessbrowsing.autoExecuteDelay" defaultValue="500" maxlength="6" width="70"/>
+                                    <textbox prefid="mouselessbrowsing.autoExecuteDelay" maxlength="6" width="70"/>
                                 </row>
                                 <row align="center">
                                      <label value="Pixels to scroll when pressing shortcuts"/>
-                                     <textbox id="pixelsToScroll" prefid="mouselessbrowsing.pixelsToScroll" defaultValue="150" maxlength="6" width="70"/>
+                                     <textbox prefid="mouselessbrowsing.pixelsToScroll" maxlength="6" width="70"/>
+                                </row>
+                                <row align="center">
+                                     <label value="Maximum number of ids"/>
+                                     <textbox prefid="mouselessbrowsing.maxIdNumber" maxlength="6" width="70"/>
                                 </row>
                             </rows>
                         </grid>

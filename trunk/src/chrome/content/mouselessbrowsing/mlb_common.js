@@ -15,6 +15,10 @@
 		//see Tyes for id-Spans
 		//Used for toggling the visibility of the id-spans
 		ATTR_ID_SPAN_FOR: "idSpanFor",
+		
+		//Attribute of id span containing the element it belongs to
+		//Not fill in every case
+		ATTR_ELEMENT_FOR_ID_SPAN: "idSpanElement",
 		 
 		//Types of id-Spans, the value of the Attribute MLB_idSpanFor
 		IdSpanTypes: {
@@ -57,6 +61,7 @@
 			this.loadScript(this.COMMON_CHROME_ULR+"listbox.js")
 			this.loadScript(this.COMMON_CHROME_ULR+"keyCodeMapper.js")
 			this.loadScript(this.COMMON_CHROME_ULR+"shortcutmanager.js")
+			this.loadScript(this.COMMON_CHROME_ULR+"perf_timer.js")
 			
 			//Init version
 			this.MLB_VERSION = rno_common.Utils.getExtension(this.MLB_GUI_ID).version

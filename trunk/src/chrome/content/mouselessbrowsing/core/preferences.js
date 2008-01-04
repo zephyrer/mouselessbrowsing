@@ -21,12 +21,12 @@
 		showIdsOnDemand: null,
 		executeAutomaticEnabled: null,
 		delayForAutoExecute: null,
-		timeToClearKeybuffer: null,
+		maxIdNumber: null,
 		styleForIdSpan: null,
 		styleForFrameIdSpan: null,
 		pixelsToScroll: null,
-		//
 		visibilityMode: null,
+		debugPerf: null,
 
 		initPrefs: function (){
 		    try{
@@ -37,13 +37,18 @@
 		      this.exclusiveUseOfNumpad = Prefs.getBoolPref("mouselessbrowsing.exclusiveNumpad");
 		      this.executeAutomaticEnabled = Prefs.getBoolPref("mouselessbrowsing.executeAutomatic");
 		      this.delayForAutoExecute = Prefs.getCharPref("mouselessbrowsing.autoExecuteDelay");
-		      this.timeToClearKeybuffer = Prefs.getCharPref("mouselessbrowsing.autoExecuteDelay");
+		      this.maxIdNumber = Prefs.getCharPref("mouselessbrowsing.maxIdNumber");
 		      this.pixelsToScroll = Prefs.getCharPref("mouselessbrowsing.pixelsToScroll");
 		      this.styleForIdSpan = Prefs.getCharPref("mouselessbrowsing.styleForIdSpan");
 		      this.styleForFrameIdSpan = Prefs.getCharPref("mouselessbrowsing.styleForFrameIdSpan");
 		      this.disableAllIds = Prefs.getBoolPref("mouselessbrowsing.disableAllIds");
 				this.visibilityMode = this.disableAllIds==false?
 				  MlbCommon.VisibilityModes.CONFIG:MlbCommon.VisibilityModes.NONE;
+		      
+		      //Init optional Prefs
+		      if(Prefs.hasUserPref("mouselessbrowsing.debugPerf")){
+		      	this.debugPerf = Prefs.getBoolPref("mouselessbrowsing.debugPerf") 
+		      }
 		      try{
 		        	MLB_updateIdsAfterToggling();
 		      }catch(e){}
