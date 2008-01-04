@@ -3,7 +3,6 @@
  * Rudolf Noe
  * 27.12.05
  */
-pref("mouselessbrowsing.autoExecuteDelay", "500");
 pref("mouselessbrowsing.disableAllIds", false);
 pref("mouselessbrowsing.enableFrameIds", true);
 pref("mouselessbrowsing.enableImgLinkIds", true);
@@ -11,6 +10,8 @@ pref("mouselessbrowsing.enableLinkIds", true);
 pref("mouselessbrowsing.enableFormElementIds", true);
 pref("mouselessbrowsing.exclusiveNumpad", false);
 pref("mouselessbrowsing.executeAutomatic", false);
+pref("mouselessbrowsing.autoExecuteDelay", "500");
+pref("mouselessbrowsing.maxIdNumber", "1000");
 pref("mouselessbrowsing.keys.clearKeybuffer", "432");
 pref("mouselessbrowsing.keys.historyBack", "1776");
 pref("mouselessbrowsing.keys.historyForward", "1696");

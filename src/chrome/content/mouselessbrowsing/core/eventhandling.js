@@ -135,7 +135,7 @@
 		    }else if(MlbPrefs.executeAutomaticEnabled==false){
 		       return false
 		    }else if(this.isCaseOfExclusivlyUseOfNumpad(event) ||
-		             !MlbUtils.isWritableElement(event.orginalTarget.srcElement)){
+		             !MlbUtils.isWritableElement(event.originalTarget.srcElement)){
 		       return true
 		    }else{
 		       return false
@@ -203,7 +203,8 @@
 		    //If it is text- or password-field
 		    if((tagName=="input" && (type=="text" || type=="password")) ||
 		        tagName=="textarea"){
-		            element.select();
+		    	      element.focus()
+		            element.select()
 		    } 
 		    //If its an anchor and it should be openend in a new Tab
 		    else if(tagName=="a" && this.openInNewTabFlag){
@@ -285,13 +286,13 @@
 		    }else if(MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.CONFIG){
 		       //Setting prefs back to configured values
 		       MlbPrefs.initShowIdPrefs()
-		       this.getPageInitializer().initAll();
+		       this.getPageInitializer().initAll(null, true);
 		    }else{
 		        MlbPrefs.idsForFormElementsEnabled = true;
 		        MlbPrefs.idsForImgLinksEnabled = true;
 		        MlbPrefs.idsForLinksEnabled = true;
 		        MlbPrefs.idsForFramesEnabled = true;
-		        this.getPageInitializer().initAll();
+		        this.getPageInitializer().initAll(null, true);
 		    }
 		},
 		
@@ -306,7 +307,11 @@
 		        if(!MlbUtils.isIdSpan(span)){
 		            continue;
 		        }
-               span.style.display = "none";
+              span.style.display = "none";
+              var elementForSpan = MlbUtils.getElementForIdSpan(span)
+              if(elementForSpan!=null){
+                 this.getPageInitializer().setElementStyle(elementForSpan, false)
+              }
 		    }
 		    var frames = winObj.frames;
 		    for(var i=0; i<frames.length; i++){
@@ -410,7 +415,7 @@
 		toggleExclusiveUseOfNumpad: function(){
 		    if(this.toggleExclusiveUseOfNumpadSecondCall==false){
 		         this.toggleExclusiveUseOfNumpadSecondCall=true;
-		        setTimeout("this.toggleExclusiveUseOfNumpadSecondCall=false", 1000);
+		        setTimeout("mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpadSecondCall=false", 1000);
 		    }else{
 		        MlbPrefs.exclusiveUseOfNumpad = !MlbPrefs.exclusiveUseOfNumpad;
 		    }
@@ -492,6 +497,33 @@
 		openConfiguration: function(){
 			openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "prefs", "chrome, modal, centerscreen")
 		},
+		
+		elementFocused: function(event){
+			focusedElement = document.commandDispatcher.focusedElement
+			if(!this.isElementWithOverlayPositioning(focusedElement) || 
+			     focusedElement.idSpan==null){
+				return
+			}
+			focusedElement.idSpan.style.visibility="hidden"
+		},
+		
+		elementFocusLost: function(event){
+			var focusedElement = event.originalTarget
+			if(!this.isElementWithOverlayPositioning(focusedElement) || 
+              focusedElement.idSpan==null){
+            return
+         }
+			if(MlbPrefs.idsForFormElementsEnabled){
+            focusedElement.idSpan.style.visibility="visible"   				
+			}
+		},
+		
+		isElementWithOverlayPositioning: function(element){
+			return MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXT) || 
+            MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.PASSWORD) ||
+            MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXTAREA) ||
+            MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT)
+      },
 		
 		getPageInitializer: function(){
 			return mouselessbrowsing.PageInitializer

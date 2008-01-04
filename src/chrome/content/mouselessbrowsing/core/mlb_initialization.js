@@ -60,7 +60,7 @@
 		
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.toggleExlusiveUseOfNumpad");
 		    if(combinedKeyCode!=2304)
-			    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.exclusiveUseOfNumpad = !MLB_exclusiveUseOfNumpad;", MlbCommon.SCM_CLIENT_ID);
+			    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.exclusiveUseOfNumpad = !mouselessbrowsing.EventHandler.exclusiveUseOfNumpad;", MlbCommon.SCM_CLIENT_ID);
 		
 		},
 		

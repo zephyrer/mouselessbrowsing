@@ -8,6 +8,7 @@
 	//Imports
 	var Utils = rno_common.Utils
 	var XMLUtils = rno_common.XMLUtils
+	var PerfTimer = rno_common.PerfTimer
 	var MlbPrefs = mouselessbrowsing.MlbPrefs
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	var MlbUtils = mouselessbrowsing.MlbUtils
@@ -29,31 +30,38 @@
 		regexWhitespace: /\s/g,
 		
 		//Timer for intermediate Initialization
-		Timer: null,
+		initTimer: null,
 		
 		//Called after update of Prefs
 		init: function(){
          this.spanPrototype = null;
 		},
 		
-		doOnload: function(event, callType){
+		onPageShow: function(event){
+			//Utils.logMessage("Pageshow: " + event.originalTarget.defaultView.document.title)
 		   //var start = (new Date()).getTime();
 		
 		   //Seting actual window, document object and top-Window
 		   //Must be set for the eventuality that Ids are switched on
 		   if(event!=null){
-				this.currentWin = event.originalTarget.defaultView;
+				this.startInitilizing(event.originalTarget.defaultView, this.CallTypes.FINAL_CALL);
 		   }
 			else{
 				return; 
 			}
-		   this.currentDoc = this.currentWin.document;
-		   this.currentTopWin = this.currentWin.top;
+		},
+		
+		startInitilizing: function(win, callType){
+			this.currentWin = win		
+		   this.currentDoc = win.document;
+		   this.currentTopWin = win.top;
 		
 		   //Is MLB activated?
 		   if(MlbPrefs.disableAllIds==true || MlbPrefs.showIdsOnDemand==true ){
 		   	MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.NONE;
 		   	GlobalData.previousVisibilityMode=MlbCommon.VisibilityModes.CONFIG
+		   	//If history back was pressed after toggling of the ids 
+		   	//the alreay generated ids must be hidden
 		   	if(this.hasIdSpans(this.currentWin)){
 					EventHandler.updateIdsAfterToggling();
 		   	}
@@ -63,7 +71,8 @@
 		   if(this.currentTopWin==this.currentWin){
 		   	//Topwin is loaded
 		      this.initAll(callType);
-		   }else if(this.currentTopWin.initialized){
+		   }else if(this.currentTopWin.mlbPageData && 
+		            this.currentTopWin.mlbPageData.initialized){
 		   	//Subframe was reloaded
 		      this.reloadFrame();
 		   }else{
@@ -76,37 +85,49 @@
 		   //dump("MouselessBrowsing: Initialization takes " + ((new Date()).getTime() - start) + " msec\n");
 		},
 		
-		FIRST_CALL: 1,
-		INTERMEDIATE_CALL: 2,
-		FINAL_CALL: 4,
+		CallTypes: {
+         FIRST_CALL: 1,
+         INTERMEDIATE_CALL: 2,
+         FINAL_CALL: 4,
+		},
 		
-		initAll: function (callType){
+		initAll: function (callType, initPageData){
+			if(MlbPrefs.debugPerf){
+				var perfTimer = new PerfTimer()
+			}
 			//Todo
 			if(callType==null){
-				callType=this.FINAL_CALL
+				callType=this.CallTypes.FINAL_CALL
 			}
 			//Utils.logMessage("MBL_initAll: callType " + callType);
-		   this.currentWin = this.currentTopWin;
 			
-			if(callType&this.FINAL_CALL && this.Timer!=null){
-				clearTimeout(this.Timer);
-				this.Timer = null;
+			if(callType&this.CallTypes.FINAL_CALL && this.initTimer!=null){
+				clearTimeout(this.initTimer);
+				this.initTimer = null;
 			}	
 			
 		    //Initilize Page-Data
-			this.currentTopWin.mlbPageData = new mouselessbrowsing.PageData()
+		   if(this.currentTopWin.mlbPageData==null || initPageData){
+			   this.currentTopWin.mlbPageData = new mouselessbrowsing.PageData()
+		   }
+
+			if(callType==this.CallTypes.FIRST_CALL){
+			   this.initTimer = setTimeout("initAll("+ this.INTERMEDIATE_CALL + ")", 200);
+			   return	
+			}
 
 		    //Init-Frames
-		    this.initFrame(this.currentTopWin);
-		
-			//	if(!(callType&this.FINAL_CALL) || callType&this.INTERMEDIATE_CALL){
-			//		this.Timer = setTimeout("initAll("+ this.INTERMEDIATE_CALL + ")", 200);	
-			//	}
+		   this.initFrame(this.currentTopWin);
 			
 		    //Set init-Flag
-		    if(callType & this.FINAL_CALL){
-		    	this.currentTopWin.initialized=true;
-		    }
+		   if(callType & this.CallTypes.FINAL_CALL){
+            this.currentTopWin.mlbPageData.initialized=true;
+		   }
+		   if(MlbPrefs.debugPerf){
+            var timeConsumed = perfTimer.stop()
+            Utils.logMessage("MLB Time for loading:" + timeConsumed)
+         }
+		   
 		},
 		
 		/*
@@ -154,7 +175,7 @@
 		    this.initFrame(this.currentWin);
 		    var actNumberOfIds = this.currentTopWin.mlbPageData.counter - startId;
 		    if(actNumberOfIds>oldNumberOfIds){
-		        this.initAll();
+		        this.initAll(null, true);
 		    }
 		},
 		
@@ -191,12 +212,18 @@
 		initLinks: function (){
 		    //Iteration over links
 		    var links = this.currentDoc.getElementsByTagName("A");
-		    for(var i=0; i<links.length; i++){
+		    var maxIdNumber = MlbPrefs.maxIdNumber
+		    var counter = this.currentTopWin.mlbPageData.counter
+		    var max = Math.min(links.length, maxIdNumber-counter)
+		    var linkCounter = 0
+		    for(var i=0; i < links.length; i++){
 		       var link = links[i];
 		       //is there anything noteworth
-		       if (!this.isMarkableLink(link))
+		       if (!this.isMarkableLink(link)){
 		          continue;
-		
+		       }
+		       
+		       
 		       //Display image links?
 		       var hasOnlyImgLink = this.hasOnlyImgChilds(link);
 		       
@@ -207,6 +234,11 @@
 		            continue;
 		       }
 		
+		       linkCounter++
+		       if(linkCounter>max){
+		       	break;
+		       }
+
 		       //Is there already a span with the id
 		       if(link.idSpan!=null){
 		          var showIdSpan = hasOnlyImgLink && MlbPrefs.idsForImgLinksEnabled ||
@@ -221,20 +253,40 @@
 		          }
 		           
 		          //Append to last element in link except for imgages
-		          var appender = link;
-		          var lastChild = link.lastChild;
-		          if(link.hasChildNodes() && lastChild.nodeType==Node.ELEMENT_NODE && 
-		             XMLUtils.isTagName(lastChild, "img")){
-		                appender = lastChild;
-		          }
-		          appender.appendChild(newSpan);
-					
+//		          var appender = link;
+//		          if(link.hasChildNodes() && link.lastChild.nodeType==Node.ELEMENT_NODE && 
+//		             XMLUtils.isTagName(link.lastChild, "img")){
+//		                appender = link.lastChild;
+//		          }
+//		          appender.appendChild(newSpan);
+                link.appendChild(newSpan)
+                
+                if(hasOnlyImgLink){
+                	var img = link.getElementsByTagName("img")[0]
+                	this.smartImageLinkPositioning(img, newSpan)
+                }					
 					 //Set reference to idSpan 
 		          link.idSpan=newSpan;
 		        }
 		        //Update elements array
 		        this.currentTopWin.mlbPageData.addElementWithId(link);
 		    }
+		},
+		
+		smartImageLinkPositioning: function(img, idSpan){
+			var offsets = this.calculateOffsets(img, idSpan)
+			var overlayPositions = this.calculateOverlayPosition(img, idSpan, offsets)
+			var factor = 0.25
+			var style = idSpan.style
+			if(img.offsetWidth*factor<idSpan.offsetWidth && 
+			   img.offsetHeight*factor<idSpan.offsetHeight){
+				overlayPositions.left=overlayPositions.left+idSpan.offsetWidth
+			}else{
+				style.backgroundColor="#EEF3F9"
+				style.color="black"
+			}
+			style.left = overlayPositions.left+"px"
+			style.top = overlayPositions.top+"px"
 		},
 		
 		/*
@@ -290,65 +342,112 @@
 			   var parent = element.parentNode;
 			   if(element.idSpan!=null){
 			      this.updateSpan(MlbPrefs.idsForFormElementsEnabled, element.idSpan);
-//		      }else if(element.type=="submit"){
-//			      element.oldValue = element.value
-//			      element.value = element.value + " [" + 
-//			         this.currentTopWin.mlbPageData.getNextId() + "]"
-//			      element.style.overflow = "visible" 		        	
+			      this.setElementStyle(element, MlbPrefs.idsForFormElementsEnabled)
 			   }else{
-			      //Adjust width
-			      //this.adjustWidthOfFormElement(element);
-			        
 			      //Generate new span
 			      var newSpan = this.getNewSpan(MlbCommon.IdSpanTypes.FORMELEMENT);
-			        
-			      if(element.nextSibling!=null){
-			         parent.insertBefore(newSpan, element.nextSibling);
+			      
+			      if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.BUTTON)||
+			         MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXT) ||
+			         MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.PASSWORD) ||
+			         MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT)){
+			      	var orgWidth = element.style.width
+			      	element.style.width = (orgWidth-10)+"px"
+			      	var widthAdjusted = true
 			      }else{
-			         parent.appendChild(newSpan);
+			      	var widthAdjusted = false
 			      }
-			      //Set reference to the idSpan
-			      element.idSpan = newSpan;
-               this.smartFormelementPositioning(element, newSpan); 
-			    //Update element array
+			      if(element.nextSibling!=null){
+			         newSpan = parent.insertBefore(newSpan, element.nextSibling);
+			      }else{
+			         newSpan = parent.appendChild(newSpan);
+			      }
+			      //newSpan = parent.insertBefore(newSpan, element)
+			      
+			      if(widthAdjusted){
+			      	element.style.width = orgWidth
+			      }
+			      //Set cross reference 
+			      element.idSpan = newSpan
+			      MlbUtils.setElementForIdSpan(newSpan, element)
+			      
+				    if(true){
+				       //var adjusted = this.adjustWidthOfFormElement(element, newSpan)
+		             this.smartFormelementPositioning(element)
+				    } 
 			    }
-			    this.currentTopWin.mlbPageData.addElementWithId(element);
+			    this.currentTopWin.mlbPageData.addElementWithId(element)
 			}
 		},
 		
-		smartFormelementPositioning:function(element, newSpan){
-         var style = newSpan.style
-	      style.position = "relative"
-		   var elemOffsetLeft = MlbUtils.getOffsetLeftToBody(element)
-	      var elemOffsetTop = MlbUtils.getOffsetTopToBody(element)
-	      var spanOffsetTop = MlbUtils.getOffsetTopToBody(newSpan)
-		   var spanOffsetLeft = MlbUtils.getOffsetLeftToBody(newSpan)
+		smartFormelementPositioning:function(element){
+			var elemStylesIdOff = new Array()
+			var elemStylesIdOn = new Array()
+			
+         var idSpan = element.idSpan
+          
+         var style = idSpan.style
+         //Do first everything what could change offsets
+         if(this.isLineBreakInbetween(element, idSpan)){
+         	elemStylesIdOff.push({style:"marginBottom", value:element.style.marginBottom})
+         	var newMarginBottom = (-idSpan.offsetHeight+5)+"px"
+         	element.style.marginBottom = newMarginBottom
+         	elemStylesIdOn.push({style:"marginBottom", value:newMarginBottom})
+         }else{
+	         style.marginLeft = (-idSpan.offsetWidth)+"px"
+         }
+         if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT)){
+            //Pos in middle of button
+            style.border = null;
+         }else if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.BUTTON) ||
+                   MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.RADIO) ||
+                   MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.CHECKBOX)){
+            //Pos in middle next to button
+         	elemStylesIdOff.push({style:"marginRight", value:element.style.marginRight})
+            element.style.marginRight=(idSpan.offsetWidth)+"px"
+            elemStylesIdOn.push({style:"marginRight", value:idSpan.offsetWidth+"px"})
+         }
+         if(elemStylesIdOff.length>0){
+         	element.elemStylesIdOff=elemStylesIdOff
+         }
+         if(elemStylesIdOn.length>0){
+            element.elemStylesIdOn=elemStylesIdOn
+         }
+         
+         //Calculate offsets
+         var offsets = this.calculateOffsets(element, idSpan)
+         
 		   var left = null;
 		   var top = null;
+		   
+		   //Calculate left and top
 		   if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXT) || 
 		      MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.PASSWORD) ||
 		      MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXTAREA)){
 		      //Pos in upper right corner
-		      left = elemOffsetLeft-spanOffsetLeft + element.offsetWidth - newSpan.offsetWidth
-		      top = elemOffsetTop-spanOffsetTop
-		      style.marginRight = (-newSpan.offsetWidth)+"px"
+	         var positions = this.calculateOverlayPosition(element, idSpan, offsets)
+	         left = positions.left
+	         top = positions.top
 		      style.borderColor="#7F9DB9"
+		      var compStyle = getComputedStyle(element, "")
+		      style.color = compStyle.color
 		   }else if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT)){
 		   	//Pos in middle of button
 		   	var widthOfSelectButton = 18
-		      left = elemOffsetLeft-spanOffsetLeft + (element.offsetWidth-widthOfSelectButton) + 
-		             (widthOfSelectButton-newSpan.offsetWidth)/2
-		      top = elemOffsetTop-spanOffsetTop + (element.offsetHeight-newSpan.offsetHeight)/2
-		      style.border = null;
+		      left = offsets.elemOffsetLeft-offsets.spanOffsetLeft + (element.offsetWidth-widthOfSelectButton) + 
+		             (widthOfSelectButton-idSpan.offsetWidth)/2
+         		      top = offsets.elemOffsetTop-offsets.spanOffsetTop + (element.offsetHeight-idSpan.offsetHeight)/2
 		      style.backgroundColor="#B4C7EB"
 		   }else if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.BUTTON) ||
 		             MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.RADIO) ||
 		             MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.CHECKBOX)){
             //Pos in middle next to button
-		      left = elemOffsetLeft-spanOffsetLeft + element.offsetWidth
-		      top = elemOffsetTop-spanOffsetTop + (element.offsetHeight-newSpan.offsetHeight)/2
-		      style.marginRight = left+"px"
+            left = offsets.elemOffsetLeft-offsets.spanOffsetLeft + element.offsetWidth
+            top = offsets.elemOffsetTop-offsets.spanOffsetTop + (element.offsetHeight-idSpan.offsetHeight)/2
+           	element.style.marginRight=(idSpan.offsetWidth)+"px"
          }
+		  
+		   //Set top and left
 		   if(top!=null){
 		      style.top = top+"px"
 		   }
@@ -357,19 +456,30 @@
 		   }
 		},
 		
+		
 		/*
 		 * Adjust the width of textfield and selectboxes, to minimize
 		 * the impact on the overall layout
+		 * @returns true if offsets have to recalculated
 		 */
-		adjustWidthOfFormElement: function(element){
-		    var isTextOrPassword = XMLUtils.isTagName(element, "INPUT") && 
-		                            (element.type=="text" || element.type=="password")
-		    var isSelectbox = XMLUtils.isTagName(element, "SELECT"); 
-		    if(isTextOrPassword || isSelectbox){
-		    	var isBiggerThan = element.offsetWidth && element.offsetWidth>=100;
-		    	if(isBiggerThan)
-			        element.style.width = (element.offsetWidth-20)+"px";
-		    }
+		adjustWidthOfFormElement: function(element, newSpan){
+		   if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXT) ||
+		      MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.PASSWORD) ||
+		      MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT)){
+               var isBiggerThan = element.offsetWidth && element.offsetWidth>=90;
+			      if(isBiggerThan && this.isLineBreakInbetween(newSpan, element)){
+			           element.style.width = (element.offsetWidth-newSpan.offsetWidth)+"px";
+			           //offsets has to be recalcualted
+			           return true
+	            }
+		   }
+		   return false
+		},
+		
+		isLineBreakInbetween: function(elem1, elem2){
+         var elem1OffsetTop = MlbUtils.getOffsetTopToBody(elem1)
+         var elem2OffsetTop = MlbUtils.getOffsetTopToBody(elem2)
+         return elem1OffsetTop<elem2OffsetTop-10
 		},
 		
 		/*
@@ -420,8 +530,8 @@
 		    if(link.getAttribute("href") == null && link.getAttribute("onclick") == null) 
 		        return false;
 		
-		    //Img Link is ok    
-		    if(link.getElementsByTagName("img").length>0)
+		    //Img Link is ok or with class is ok    
+		    if(link.getElementsByTagName("img").length>0 || link.className!=null)
 		        return true;
 		        
 		    //empty link
@@ -446,81 +556,117 @@
 		/*
 		 * Updates an id span which already exists
 		 */
-		updateSpan: function(visible, span){
+		updateSpan: function(visible, span, element){
 			if(visible){
 				span.innerHTML=this.currentTopWin.mlbPageData.getNextId();
 				span.style.display = "inline";
 		    }else{
-		    	span.style.display = "none";	            	
+		    	span.style.display = "none";
 		    }
 		},
 		
-		webProgressListener: {
-		    onLocationChange: function  (webProgress , request , location ){
-		    	this.currentWin = webProgress.DOMWindow;
-		    	Utils.logMessage("Loc-Change: " + location.host + location.path +
-		    		"  " + webProgress.DOMWindow);
-		    	
-		    	this.doOnload(null, this.FIRST_CALL);
-		    },
-		    
-		    onStateChange: function( webProgress , request , stateFlags , status ){
-		    	this.currentWin = webProgress.DOMWindow;
-		    	
-		    	
-		    	var message = "State-Change: ";
-		    	message += this.currentWin.name + "  ";
-		    	if (stateFlags&1)
-		    		message += "start";
-		    	else if (stateFlags&2)
-		    		message += "redirect";
-		    	else if (stateFlags&4)
-		    		message += "transfering";
-		    	else if (stateFlags&16)
-		    		message += "stop";
+		setElementStyle: function(element, idSpanVisible){
+			var styleArray = null
+			if(idSpanVisible==false && element.elemStylesIdOff!=null){
+				styleArray = element.elemStylesIdOff
+         } else if (idSpanVisible==true && element.elemStylesIdOn!=null){
+				styleArray = element.elemStylesIdOn
+         }
+         if(styleArray==null){
+         	return
+         }
+         for(var i=0; i<styleArray.length; i++ ){
+            var styleEntry = styleArray[i]
+            element.style[styleEntry.style] = styleEntry.value
+         }
+		},
 		
-				message += "  ";
-				if(stateFlags&65536)
-					message += "STATE_IS_REQUEST  ";
+		calculateOverlayPosition:function(element, idSpan, offsets){
+         var left = offsets.elemOffsetLeft-offsets.spanOffsetLeft + element.offsetWidth - idSpan.offsetWidth
+         var top = offsets.elemOffsetTop-offsets.spanOffsetTop
+         return {left:left, top:top}
+		},
 		
-				if(stateFlags&131072)
-					message += "STATE_IS_DOCUMENT  ";
-		
-				if(stateFlags&262144)
-					message += "STATE_IS_NETWORK  ";			
-		
-				if(stateFlags&524288)
-					message += "STATE_IS_WINDOW  ";			
-		
-				if(stateFlags&16777216)
-					message += "STATE_RESTORING  ";			
-				
-		    	Utils.logMessage(message + " " + webProgress.DOMWindow);
-				
-				if(stateFlags&MlbCommon.WEBPROGRESS_STATE_STOP)
-					doOnload(null, this.FINAL_CALL);
-		    },
-		    
-		    onProgressChange: function ( webProgress , request , curSelfProgress , maxSelfProgress , curTotalProgress , maxTotalProgress ){
-		    },
-		    
-		    onSecurityChange: function ( webProgress , request , state ){
-		    },
-		    
-		    onStatusChange: function ( webProgress , request , status , message ){
-		    },
-		
-			QueryInterface: function(iid) {
-				if (!iid.equals(Components.interfaces.nsISupports)
-						&& !iid.equals(Components.interfaces.nsISupportsWeakReference)
-						&& !iid.equals(Components.interfaces.nsIWebProgressListener)) {
-					dump("MBL Window Pref-Observer factory object: QI unknown interface: " + iid + "\n");
-					throw Components.results.NS_ERROR_NO_INTERFACE; }
-				return this;
-			}
-		}
+		calculateOffsets: function(element, idSpan){
+         var offsets = {
+            elemOffsetLeft:MlbUtils.getOffsetLeftToBody(element),
+            elemOffsetTop: MlbUtils.getOffsetTopToBody(element),
+            spanOffsetTop: MlbUtils.getOffsetTopToBody(idSpan),
+            spanOffsetLeft: MlbUtils.getOffsetLeftToBody(idSpan)
+         }
+         return offsets
+      },			
 	}
 	
    var NS = rno_common.Namespace
    NS.bindToNamespace("mouselessbrowsing", "PageInitializer", PageInitializer)
+   
+   
+   MLB_webProgressListener = {
+          onLocationChange: function  (webProgress , request , location ){
+            var currentTopWin = webProgress.DOMWindow.top;
+            var init = currentTopWin.mlbPageData && currentTopWin.mlbPageData.initialized
+//            Utils.logMessage("Loc-Change: Host:" + location.host + " Path: " + location.path +
+//               "  Window name:" + this.currentWin.name + " init: " + init + " request: " + request);
+            
+//          this.doOnload(null, this.FIRST_CALL);
+          },
+          
+          onStateChange: function( webProgress , request , stateFlags , status ){
+            this.currentWin = webProgress.DOMWindow;
+            
+            
+            var message = "State-Change: ";
+            message += "Win name: " + this.currentWin.name + "  Stateflags: ";
+            if (stateFlags&1)
+               message += "start";
+            else if (stateFlags&2)
+               message += "redirect";
+            else if (stateFlags&4)
+               message += "transfering";
+            else if (stateFlags&16)
+               message += "stop";
+      
+            message += "  ";
+            if(stateFlags&65536)
+               message += "STATE_IS_REQUEST  ";
+      
+            if(stateFlags&131072)
+               message += "STATE_IS_DOCUMENT  ";
+      
+            if(stateFlags&262144)
+               message += "STATE_IS_NETWORK  ";       
+      
+            if(stateFlags&524288)
+               message += "STATE_IS_WINDOW  ";        
+      
+            if(stateFlags&16777216)
+               message += "STATE_RESTORING  ";        
+            
+            //Utils.logMessage(message + " Doc title:" + webProgress.DOMWindow.document.title);
+            
+//            if(stateFlags&MlbCommon.WEBPROGRESS_STATE_STOP)
+//               doOnload(null, this.FINAL_CALLServicer
+          },
+          
+          onProgressChange: function ( webProgress , request , curSelfProgress , maxSelfProgress , curTotalProgress , maxTotalProgress ){
+          },
+          
+          onSecurityChange: function ( webProgress , request , state ){
+          },
+          
+          onStatusChange: function ( webProgress , request , status , message ){
+          },
+      
+         QueryInterface: function(iid) {
+            if (!iid.equals(Components.interfaces.nsISupports)
+                  && !iid.equals(Components.interfaces.nsISupportsWeakReference)
+                  && !iid.equals(Components.interfaces.nsIWebProgressListener)) {
+               dump("MBL Window Pref-Observer factory object: QI unknown interface: " + iid + "\n");
+               throw Components.results.NS_ERROR_NO_INTERFACE; }
+            return this;
+         }
+      }
+   
 })()
+
