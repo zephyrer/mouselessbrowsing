@@ -8,6 +8,8 @@
 function doOnload(){
    rno_common.Prefs.loadPrefs(document);
 	MLB_onTogglingVisibilityAllIds();
+	MLB_setPreviewForIds("styleForIdSpan", "previewIdSpan")
+	MLB_setPreviewForIds("styleForFrameIdSpan", "previewFrameIdSpan")
 }
 
 function saveUserPrefs(){
@@ -33,3 +35,17 @@ function MLB_onTogglingVisibilityAllIds(){
 	}
 }
 
+function MLB_setStyleDefault(styleTextboxId){
+	var Prefs = rno_common.Prefs 
+	var textbox = document.getElementById(styleTextboxId)
+	var prefId = textbox.getAttribute("prefid")
+	if(Prefs.hasUserPref(prefId)){
+	  Prefs.clearUserPref(prefId)
+	}
+	textbox.value=Prefs.getCharPref(prefId)
+}
+
+function MLB_setPreviewForIds(styleTextboxId, previewSpanId){
+	var previewSpan = document.getElementById(previewSpanId)
+	previewSpan.style.cssText=document.getElementById(styleTextboxId).value
+}
