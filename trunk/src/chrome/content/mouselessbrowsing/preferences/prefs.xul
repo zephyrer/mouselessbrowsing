@@ -105,23 +105,44 @@
         </tabpanel>
         <tabpanel id="styletab">
             <vbox flex="1">
-            <groupbox>
+            <groupbox flex="1">
             <grid flex="1">
                 <columns>
                   <column flex="1"/>
                 </columns>
-                <rows>
+                <rows flex="1">
                     <row>
                         <label value="Style for id span"/>&#160;
                     </row>
+                    <row flex="1">
+                        <textbox id="styleForIdSpan" prefid="mouselessbrowsing.styleForIdSpan" flex="1" multiline="true" rows="5"
+                           oninput="MLB_setPreviewForIds('styleForIdSpan', 'previewIdSpan')"/>
+                    </row>
                     <row>
-                        <textbox prefid="mouselessbrowsing.styleForIdSpan" flex="1" multiline="true" rows="5"/>
+                        <hbox>
+                           <spacer width="5px"/>
+                           <html:div>
+                               Preview: <html:span id="previewIdSpan">42</html:span>
+                           </html:div>
+	                        <spacer flex="1"/>
+	                        <button label="Restore Default" oncommand="MLB_setStyleDefault('styleForIdSpan')"/>
+                        </hbox>
                     </row>
                     <row>
                         <label value="Style for frame id span"/>&#160;
                     </row>
+                    <row flex="1">
+                        <textbox id="styleForFrameIdSpan" prefid="mouselessbrowsing.styleForFrameIdSpan" flex="1" multiline="true" rows="5"/>
+                    </row>
                     <row>
-                        <textbox prefid="mouselessbrowsing.styleForFrameIdSpan" flex="1" multiline="true" rows="5"/>
+                        <hbox>
+                           <spacer width="5px"/>
+                           <html:div>
+                               Preview: <html:span id="previewFrameIdSpan">42</html:span>
+                           </html:div>
+	                        <spacer flex="1"/>
+	                        <button label="Restore Default" oncommand="MLB_setStyleDefault('styleForFrameIdSpan')"/>
+                        </hbox>
                     </row>
 <!--  For Version 0.4
                     <row>
