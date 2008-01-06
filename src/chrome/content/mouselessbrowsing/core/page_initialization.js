@@ -26,11 +26,17 @@
 		//Prototype for Id-span-elment for Ids
 		spanPrototype: null,
 		
+		//Prototype for Class def
+		styleClassDefPrototype: null,
+		
 		//RegEx for checking if an link is empty
 		regexWhitespace: /\s/g,
 		
 		//Timer for intermediate Initialization
 		initTimer: null,
+		
+		STYLE_CLASS_DEF_ID: "mlbStyleClass",
+		STYLE_CLASS_NAME: "mlbIdSpan",
 		
 		//Called after update of Prefs
 		init: function(){
@@ -141,6 +147,9 @@
 		    //Saving start Id
 		    var startId = this.currentTopWin.mlbPageData.counter;   
 		    
+		    //Insert Style Class Def
+		    this.insertStyleClassDef()
+		    
 		    //Init ids for frames
 		    if(MlbPrefs.idsForFramesEnabled && this.currentDoc){
 		        this.initFramesIds();
@@ -166,6 +175,27 @@
 		    var endId = this.currentTopWin.mlbPageData.counter;
 		    this.currentTopWin.mlbPageData.numberOfIdsMap[win.name]=endId-startId;
 		    this.currentTopWin.mlbPageData.startIdMap[win.name]=startId;
+		},
+		
+		insertStyleClassDef: function(){
+			if(this.currentDoc.getElementById(MlbCommon.STYLE_CLASS_DEF_ID)!=null){
+				return
+			}
+			var styleElem = this.currentDoc.createElement("style")
+			styleElem.setAttribute("type", "text/css")
+			styleElem.setAttribute("id", this.STYLE_CLASS_DEF_ID)
+			
+			//var styleNode = this.currentDoc.importNode(this.styleClassDefPrototype, true)
+			var appendNode = this.currentDoc.getElementsByTagName('head')[0]
+			if(appendNode==null){
+				appendNode = this.currentDoc.documentElement
+			}
+			appendNode.appendChild(styleElem)
+			var mlbStyleSheet = this.currentDoc.styleSheets[this.currentDoc.styleSheets.length-1]
+			mlbStyleSheet.insertRule("." + this.STYLE_CLASS_NAME + "{" + 
+			    MlbPrefs.styleForIdSpan+"}", 0)
+			
+			
 		},
 		
 		reloadFrame: function (){
@@ -252,15 +282,15 @@
 		             var newSpan = this.getNewSpan(MlbCommon.IdSpanTypes.LINK);
 		          }
 		           
-		          //Append to last element in link except for imgages
-//		          var appender = link;
-//		          if(link.hasChildNodes() && link.lastChild.nodeType==Node.ELEMENT_NODE && 
-//		             XMLUtils.isTagName(link.lastChild, "img")){
-//		                appender = link.lastChild;
-//		          }
-//		          appender.appendChild(newSpan);
-                link.appendChild(newSpan)
-                
+		          //Append to last element in link except for imgages for better style
+		          if(link.hasChildNodes() && 
+		             link.lastChild.nodeType==Node.ELEMENT_NODE && 
+		             !XMLUtils.isTagName(link.lastChild, "img")){
+		                link.lastChild.appendChild(newSpan);
+		          }else{
+			          link.appendChild(newSpan);
+		          }
+                                
                 if(hasOnlyImgLink){
                 	var img = link.getElementsByTagName("img")[0]
                 	this.smartImageLinkPositioning(img, newSpan)
@@ -352,7 +382,7 @@
 			         MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.PASSWORD) ||
 			         MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT)){
 			      	var orgWidth = element.style.width
-			      	element.style.width = (orgWidth-10)+"px"
+		      	   element.style.width = "0px"
 			      	var widthAdjusted = true
 			      }else{
 			      	var widthAdjusted = false
@@ -388,7 +418,7 @@
           
          var style = idSpan.style
          //Do first everything what could change offsets
-         if(this.isLineBreakInbetween(element, idSpan)){
+         if(this.isLineBreakInbetween(element, idSpan) && idSpan.nextSibling==null){
          	elemStylesIdOff.push({style:"marginBottom", value:element.style.marginBottom})
          	var newMarginBottom = (-idSpan.offsetHeight+5)+"px"
          	element.style.marginBottom = newMarginBottom
@@ -479,7 +509,7 @@
 		isLineBreakInbetween: function(elem1, elem2){
          var elem1OffsetTop = MlbUtils.getOffsetTopToBody(elem1)
          var elem2OffsetTop = MlbUtils.getOffsetTopToBody(elem2)
-         return elem1OffsetTop<elem2OffsetTop-10
+         return elem1OffsetTop+elem1.offsetHeight<elem2OffsetTop
 		},
 		
 		/*
@@ -502,7 +532,7 @@
 		    if(this.spanPrototype==null){
 		        //span
 		        var span = this.currentDoc.createElement("span");
-		        span.style.cssText = MlbPrefs.styleForIdSpan;
+		        span.className = this.STYLE_CLASS_NAME
 		        
 		        //The span has to be hidden before inserting into the DOM
 		        //otherwise the layout will not be correct.
