@@ -1,13 +1,12 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://browser/skin/"?>
-<?xml-stylesheet href="chrome://mouselessbrowsing/content/common/common.css" type="text/css"?>
+<?xml-stylesheet href="chrome://mouselessbrowsing/content/settings.css" type="text/css"?>
 
 <!-- 
- *
  * Mouseless Browsing 
- * Version 0.5
+ * Version 0.4.3
  * Created by Rudolf No�
- * 01.01.2008
+ * 30.12.2007
  *
  * The "keyinputbox" is borrowed from Hit-a-Hint created by 
  * Pekka P. Sillanpaa (c) (THANKS!)
@@ -17,18 +16,21 @@
 <dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         xmlns:html="http://www.w3.org/1999/xhtml"
         id="pref-mouselessbrowsing"
-        title="Mouseless Browsing 0.5"
+        title="Mouseless Browsing"
         centerWindowOnScreen="true"
         modal="true"
-        onload="doOnload()"
+        onload="doOnload(); MLB_doOnload();"
         ondialogaccept="saveUserPrefs()"
         ondialoghelp="dialogHelp()"
         buttons="help,accept,cancel"
         >
 
-    <script type="application/x-javascript" src="../mlb_common.js"/>
-    <script type="application/x-javascript" src="prefs_dialog.js"/>
+    <script type="application/x-javascript" src="prefs.js"/>
+    <script type="application/x-javascript" src="mlb_prefs.js"/>
+    <script type="application/x-javascript" src="utils.js"/>
+    <script type="application/x-javascript" src="keyCodeMapper.js"/>
     
+    <dialogheader id="header" title="Mouseless Browsing 0.4.3"/>
     <tabbox>
       <tabs>
         <tab label="General"/>
@@ -63,15 +65,11 @@
                             <rows>
                                 <row align="center">
                                     <label value="Delay for automatic execution/clearing keybuffer (msec)"/>
-                                    <textbox prefid="mouselessbrowsing.autoExecuteDelay" maxlength="6" width="70"/>
+                                    <textbox id="autoExecuteDelay" prefid="mouselessbrowsing.autoExecuteDelay" defaultValue="500" maxlength="6" width="70"/>
                                 </row>
                                 <row align="center">
                                      <label value="Pixels to scroll when pressing shortcuts"/>
-                                     <textbox prefid="mouselessbrowsing.pixelsToScroll" maxlength="6" width="70"/>
-                                </row>
-                                <row align="center">
-                                     <label value="Maximum number of ids"/>
-                                     <textbox prefid="mouselessbrowsing.maxIdNumber" maxlength="6" width="70"/>
+                                     <textbox id="pixelsToScroll" prefid="mouselessbrowsing.pixelsToScroll" defaultValue="150" maxlength="6" width="70"/>
                                 </row>
                             </rows>
                         </grid>
@@ -105,44 +103,20 @@
         </tabpanel>
         <tabpanel id="styletab">
             <vbox flex="1">
-            <groupbox flex="1">
-            <grid flex="1">
-                <columns>
-                  <column flex="1"/>
-                </columns>
-                <rows flex="1">
+            <groupbox>
+            <grid>
+                <rows>
                     <row>
                         <label value="Style for id span"/>&#160;
                     </row>
-                    <row flex="1">
-                        <textbox id="styleForIdSpan" prefid="mouselessbrowsing.styleForIdSpan" flex="1" multiline="true" rows="5"
-                           oninput="MLB_setPreviewForIds('styleForIdSpan', 'previewIdSpan')"/>
-                    </row>
                     <row>
-                        <hbox>
-                           <spacer width="5px"/>
-                           <html:div>
-                               Preview: <html:span id="previewIdSpan">42</html:span>
-                           </html:div>
-	                        <spacer flex="1"/>
-	                        <button label="Restore Default" oncommand="MLB_setStyleDefault('styleForIdSpan')"/>
-                        </hbox>
+                        <textbox id="styleForIdSpan" width="300" prefid="mouselessbrowsing.styleForIdSpan" style="width:600" defaultValue="float:none; margin-left:2px; z-index:500;font-size:xx-small;font-family:sans-serif;border-color:grey; border-width:1px;border-style:solid;padding:0px 3px 0px 3px;"/>
                     </row>
                     <row>
                         <label value="Style for frame id span"/>&#160;
                     </row>
-                    <row flex="1">
-                        <textbox id="styleForFrameIdSpan" prefid="mouselessbrowsing.styleForFrameIdSpan" flex="1" multiline="true" rows="5"/>
-                    </row>
                     <row>
-                        <hbox>
-                           <spacer width="5px"/>
-                           <html:div>
-                               Preview: <html:span id="previewFrameIdSpan">42</html:span>
-                           </html:div>
-	                        <spacer flex="1"/>
-	                        <button label="Restore Default" oncommand="MLB_setStyleDefault('styleForFrameIdSpan')"/>
-                        </hbox>
+                        <textbox id="styleForFrameIdSpan" prefid="mouselessbrowsing.styleForFrameIdSpan" defaultValue="z-index:500;font-size:xx-small;font-family:sans-serif;background-color:D6E3FE;border-color:black; border-width:1px;border-style:solid;padding:0px 3px 0px 3px; position:absolute; top:0; left:0;"/>
                     </row>
 <!--  For Version 0.4
                     <row>
@@ -191,47 +165,43 @@
                     <rows>
                         <row align="center">
                             <label value="Toggling visibility of ids on/off"/>
-                            <keyinputbox prefid="mouselessbrowsing.keys.toggleMLB" maxlength="1" size="20" allowmodifiers="true"/>
+                            <keyinputbox id="keys.toggleMLB" prefid="mouselessbrowsing.keys.toggleMLB" defaultValue="1760" maxlength="1" size="20" allowmodifiers="true"/>
                         </row>
                         <row align="center">
                             <label value="Toggling visibility of ids for all/only configured elements"/>
-                            <keyinputbox prefid="mouselessbrowsing.keys.toggleAllIds" maxlength="1" size="20" allowmodifiers="true"/>
+                            <keyinputbox id="keys.toggleAllIds" prefid="mouselessbrowsing.keys.toggleAllIds" defaultValue="1762" maxlength="1" size="20" allowmodifiers="true"/>
                         </row>
                         <row align="center">
                             <label value="Toggling exclusive use of numpad"/>
-                            <keyinputbox prefid="mouselessbrowsing.keys.toggleExlusiveUseOfNumpad" maxlength="1" size="20" allowmodifiers="true"/>
+                            <keyinputbox id="keys.toggleExlusiveUseOfNumpad" prefid="mouselessbrowsing.keys.toggleExlusiveUseOfNumpad" defaultValue="2304" maxlength="1" size="20" allowmodifiers="true"/>
                         </row>
                         <row>
                              <label value="Clearing keybuffer"/>
-                             <keyinputbox prefid="mouselessbrowsing.keys.clearKeybuffer" maxlength="1" size="20" allowmodifiers="true"/>
+                             <keyinputbox id="keys.clearKeybuffer" prefid="mouselessbrowsing.keys.clearKeybuffer" defaultValue="432" maxlength="1" size="20" allowmodifiers="true"/>
                         </row>
                         <row>
                              <label value="Postfix-key to open link in new tab"/>
-                             <keyinputbox prefid="mouselessbrowsing.keys.openInNewTabPostfixKey" maxlength="1" size="20" allowmodifiers="true"/>
+                             <keyinputbox id="keys.openInNewTabPostfixKey" prefid="mouselessbrowsing.keys.openInNewTabPostfixKey" defaultValue="1712" maxlength="1" size="20" allowmodifiers="true"/>
                         </row>
                         <row>
                              <label value="Postfix-key to select a link"/>
-                             <keyinputbox prefid="mouselessbrowsing.keys.selectLink" maxlength="1" size="20" allowmodifiers="true"/>
+                             <keyinputbox id="keys.selectLink" prefid="mouselessbrowsing.keys.selectLink" defaultValue="260" maxlength="1" size="20" allowmodifiers="true"/>
                         </row>
                         <row>
                              <label value="History back"/>
-                             <keyinputbox prefid="mouselessbrowsing.keys.historyBack" maxlength="1" size="20" allowmodifiers="true"/>
+                             <keyinputbox id="keys.historyBack" prefid="mouselessbrowsing.keys.historyBack" defaultValue="1776" maxlength="1" size="20" allowmodifiers="true"/>
                         </row>
                         <row>
                              <label value="History forward"/> 
-                             <keyinputbox prefid="mouselessbrowsing.keys.historyForward" maxlength="1" size="20" allowmodifiers="true"/>
+                             <keyinputbox id="keys.historyForward" prefid="mouselessbrowsing.keys.historyForward" defaultValue="1696" maxlength="1" size="20" allowmodifiers="true"/>
                         </row>
                         <row>
                              <label value="Scroll down"/> 
-                             <keyinputbox prefid="mouselessbrowsing.keys.scrollDown" maxlength="1" size="20" allowmodifiers="true"/>
+                             <keyinputbox id="keys.scrollDown" prefid="mouselessbrowsing.keys.scrollDown" defaultValue="1712" maxlength="1" size="20" allowmodifiers="true"/>
                         </row>
                         <row>
                              <label value="Scroll up"/> 
-                             <keyinputbox prefid="mouselessbrowsing.keys.scrollUp" maxlength="1" size="20" allowmodifiers="true"/>
-                        </row>
-                        <row>
-                             <label value="Open Configuration"/> 
-                             <keyinputbox prefid="mouselessbrowsing.keys.openConfig" maxlength="1" size="20" allowmodifiers="true"/>
+                             <keyinputbox id="keys.scrollUp" prefid="mouselessbrowsing.keys.scrollUp" defaultValue="1744" maxlength="1" size="20" allowmodifiers="true"/>
                         </row>
                     </rows>
                 </grid>
