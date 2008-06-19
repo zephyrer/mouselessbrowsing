@@ -1,3 +1,0 @@
-keyinputbox {
-    -moz-binding: url("chrome://mouselessbrowsing/content/bindings.xml#keyinputbox") !important;
-}
