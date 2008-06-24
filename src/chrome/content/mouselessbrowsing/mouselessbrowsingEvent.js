@@ -83,7 +83,8 @@ function MLB_onkeydown(event){
 
 function MLB_isExecuteAutomatic(event){
     //Always if Ctrl or Alt-Key was Pressed
-    if (event.ctrlKey || event.altKey)
+    if ((event.ctrlKey || event.altKey) && 
+         !(event.ctrlKey && event.altKey))
         return true;
 
     var executeAutomatic = true;
@@ -138,9 +139,12 @@ function MLB_execute(){
         return;
     }
     
+    //If no ids visible return
+    if(MLB_visibilityMode=="none"){
+    	return
+    }
     
     //Check for changing tab by number
-    
     if(MLB_changeTabByNumberRegExp.test(MLB_keybuffer)){
     	MLB_changeTabByNumber();
     	return;
@@ -344,7 +348,7 @@ function MLB_scrollUpDown(direction){
   */
 function MLB_isCaseOfExclusivlyUseOfNumpad(event){
     var keyCode = event.keyCode;
-    var isNumpad = keyCode>=96 && keyCode<=107 || keyCode>=110 && keyCode<=111;
+    var isNumpad = keyCode>=96 && keyCode<=107 || keyCode>=109 && keyCode<=111;
     return MLB_exclusiveUseOfNumpad && isNumpad;
 }
 
