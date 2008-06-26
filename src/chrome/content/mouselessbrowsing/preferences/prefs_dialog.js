@@ -8,8 +8,8 @@
 function doOnload(){
    rno_common.Prefs.loadPrefs(document);
 	MLB_onTogglingVisibilityAllIds();
-	MLB_setPreviewForIds("styleForIdSpan", "previewIdSpan")
-	MLB_setPreviewForIds("styleForFrameIdSpan", "previewFrameIdSpan")
+	MLB_setPreviewForIds("styleForIdSpan")
+	MLB_setPreviewForIds("styleForFrameIdSpan")
 }
 
 function saveUserPrefs(){
@@ -43,9 +43,11 @@ function MLB_setStyleDefault(styleTextboxId){
 	  Prefs.clearUserPref(prefId)
 	}
 	textbox.value=Prefs.getCharPref(prefId)
+   MLB_setPreviewForIds(styleTextboxId)
 }
 
-function MLB_setPreviewForIds(styleTextboxId, previewSpanId){
-	var previewSpan = document.getElementById(previewSpanId)
-	previewSpan.style.cssText=document.getElementById(styleTextboxId).value
+function MLB_setPreviewForIds(styleTextboxId){
+	var styleTextbox = document.getElementById(styleTextboxId);
+	var previewSpan = document.getElementById(styleTextbox.getAttribute('previewSpanId'));
+	previewSpan.style.cssText=styleTextbox.value
 }

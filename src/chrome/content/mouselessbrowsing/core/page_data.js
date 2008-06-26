@@ -4,6 +4,7 @@
    	
    //Constructor
 	function PageData(){	
+		
 		//Element Counter
 		this.counter = 0
 		

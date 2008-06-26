@@ -15,7 +15,6 @@
 	//Add event for each window
 	window.addEventListener('load',  MLB_initOnStartup, false);
 	
-	var MLB_prefObserver = null;
 	/*
 	Initilization for main window
 	*/
@@ -30,20 +29,15 @@
 		
 		//Add pageshow listener to each page
 		var appcontent = document.getElementById("appcontent");   // browser
+		//Todo: Change to DOMContentLoaded
 		if(appcontent){
+			appcontent.addEventListener("DOMContentLoaded", {handleEvent: function(event){PageInitializer.onDOMContentLoaded(event)}}, true);
 			appcontent.addEventListener("pageshow", {handleEvent: function(event){PageInitializer.onPageShow(event)}}, true);
 		}
 		
 		//Focus Listener
 		getBrowser().addEventListener("focus",{handleEvent: function(event){EventHandler.elementFocused(event)}},true);
       getBrowser().addEventListener("blur",{handleEvent: function(event){EventHandler.elementFocusLost(event)}},true);
-		
-		//Add preferences-observer
-		MLB_prefObserver = Utils.createObserverForInterface(mouselessbrowsing.InitManager)
-		Utils.registerObserver(MlbCommon.MLB_PREF_OBSERVER, MLB_prefObserver)
-		
-		//Todo change or remove
-	   getBrowser().addProgressListener(MLB_webProgressListener);
 		
 		//Init shortcuts and preferences
 		mouselessbrowsing.InitManager.init();

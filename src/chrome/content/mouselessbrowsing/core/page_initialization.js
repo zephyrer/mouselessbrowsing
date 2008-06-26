@@ -13,21 +13,38 @@
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	var MlbUtils = mouselessbrowsing.MlbUtils
 	var GlobalData = mouselessbrowsing.GlobalData
+	var PageData = mouselessbrowsing.PageData
 	var EventHandler = mouselessbrowsing.EventHandler
+	
+   var CallTypes = {
+      FIRST_CALL: 1,
+      INTERMEDIATE_CALL: 2,
+      FINAL_CALL: 4,
+   }
+
+	//Data Containter for holding
+	//all data needed for init process
+	function PageInitData(currentTopWin, currentWin, currentDoc, pageData, callType){
+      //
+      this.currentTopWin = currentTopWin;
+      this.currentWin = currentWin;
+      this.currentDoc = currentDoc;
+      
+      this.pageData = pageData;
+      //Call Type
+      this.callType = callType;      	
+	}
 	
 	var PageInitializer = {
 		
 		//Variables which contain objects of webpage, which is
 		//actually initialized
-		currentDoc: null,
-		currentWin: null,
-		currentTopWin: null,
+//		currentDoc: null,
+//		currentWin: null,
+//		currentTopWin: null,
 		
 		//Prototype for Id-span-elment for Ids
 		spanPrototype: null,
-		
-		//Prototype for Class def
-		styleClassDefPrototype: null,
 		
 		//RegEx for checking if an link is empty
 		regexWhitespace: /\s/g,
@@ -44,23 +61,20 @@
 		},
 		
 		onPageShow: function(event){
-			//Utils.logMessage("Pageshow: " + event.originalTarget.defaultView.document.title)
-		   //var start = (new Date()).getTime();
-		
-		   //Seting actual window, document object and top-Window
-		   //Must be set for the eventuality that Ids are switched on
-		   if(event!=null){
-				this.startInitilizing(event.originalTarget.defaultView, this.CallTypes.FINAL_CALL);
+		   if(event!=null && event.persisted){
+				this.startInitilizing(event.originalTarget.defaultView, CallTypes.FINAL_CALL);
 		   }
-			else{
-				return; 
+		},
+		
+		onDOMContentLoaded: function(event){
+			if(event!=null){
+				this.startInitilizing(event.originalTarget.defaultView, CallTypes.FINAL_CALL);
 			}
 		},
 		
 		startInitilizing: function(win, callType){
-			this.currentWin = win		
-		   this.currentDoc = win.document;
-		   this.currentTopWin = win.top;
+		   var pageInitData = new PageInitData(win.top, win, win.document, 
+            this.getPageData(win), callType)  
 		
 		   //Is MLB activated?
 		   if(MlbPrefs.disableAllIds==true || MlbPrefs.showIdsOnDemand==true ){
@@ -68,66 +82,68 @@
 		   	GlobalData.previousVisibilityMode=MlbCommon.VisibilityModes.CONFIG
 		   	//If history back was pressed after toggling of the ids 
 		   	//the alreay generated ids must be hidden
-		   	if(this.hasIdSpans(this.currentWin)){
+		   	if(this.hasIdSpans(pageInitData.currentWin)){
 					EventHandler.updateIdsAfterToggling();
 		   	}
 		   	return;
 		   }
 		
-		   if(this.currentTopWin==this.currentWin){
+		   if(win==win.top){
 		   	//Topwin is loaded
-		      this.initAll(callType);
-		   }else if(this.currentTopWin.mlbPageData && 
-		            this.currentTopWin.mlbPageData.initialized){
+		   	//Create new page data
+		   	var pageData = new PageData()
+            this.setPageData(win, pageData)
+            pageInitData.pageData = pageData
+		      this.initAll(pageInitData);
+		   }else if(this.getPageData(win) && 
+		            this.getPageData(win).initialized){
 		   	//Subframe was reloaded
-		      this.reloadFrame();
+		      this.reloadFrame(pageInitData);
 		   }else{
 		   	//Subframe was loaded but topwin isn't fully loaded
 			   //Frames will be initialized starting at the top
 		   	return
 		   }
-		   
-		   //Dumping consumed time
-		   //dump("MouselessBrowsing: Initialization takes " + ((new Date()).getTime() - start) + " msec\n");
 		},
 		
-		CallTypes: {
-         FIRST_CALL: 1,
-         INTERMEDIATE_CALL: 2,
-         FINAL_CALL: 4,
+		initAfterToggling: function(win){
+			var pageData = new mouselessbrowsing.PageData();
+         var pageInitData = new PageInitData(win.top, win, win.document, pageData, CallTypes.FINAL_CALL);
+         this.setPageData(win.top, pageData)
+         this.initAll(pageInitData)  
 		},
 		
-		initAll: function (callType, initPageData){
+		initAll: function (pageInitData){
 			if(MlbPrefs.debugPerf){
 				var perfTimer = new PerfTimer()
 			}
 			//Todo
-			if(callType==null){
-				callType=this.CallTypes.FINAL_CALL
+			if(pageInitData.callType==null){
+				pageInitData.callType=CallTypes.FINAL_CALL
 			}
 			//Utils.logMessage("MBL_initAll: callType " + callType);
 			
-			if(callType&this.CallTypes.FINAL_CALL && this.initTimer!=null){
+			if(pageInitData.callType&CallTypes.FINAL_CALL && this.initTimer!=null){
 				clearTimeout(this.initTimer);
 				this.initTimer = null;
 			}	
 			
 		    //Initilize Page-Data
-		   if(this.currentTopWin.mlbPageData==null || initPageData){
-			   this.currentTopWin.mlbPageData = new mouselessbrowsing.PageData()
+		   if(pageInitData.pageData==null){
+			   this.setPageData(pageInitData.currentTopWin, new mouselessbrowsing.PageData())
 		   }
 
-			if(callType==this.CallTypes.FIRST_CALL){
+			if(pageInitData.callType==CallTypes.FIRST_CALL){
 			   this.initTimer = setTimeout("initAll("+ this.INTERMEDIATE_CALL + ")", 200);
 			   return	
 			}
 
 		    //Init-Frames
-		   this.initFrame(this.currentTopWin);
+		   this.initFrame(pageInitData, pageInitData.currentTopWin);
 			
 		    //Set init-Flag
-		   if(callType & this.CallTypes.FINAL_CALL){
-            this.currentTopWin.mlbPageData.initialized=true;
+		   if(pageInitData.callType & CallTypes.FINAL_CALL){
+            pageInitData.pageData.initialized=true;
 		   }
 		   if(MlbPrefs.debugPerf){
             var timeConsumed = perfTimer.stop()
@@ -140,70 +156,69 @@
 		 * Initializes one Frame
 		 * Is called recursivly
 		 */
-		initFrame: function(win){
-		    this.currentWin = win;
-		    this.currentDoc = win.document;
+		initFrame: function(pageInitData, win){
+		    pageInitData.currentWin = win;
+		    pageInitData.currentDoc = win.document;
 		
 		    //Saving start Id
-		    var startId = this.currentTopWin.mlbPageData.counter;   
+		    var startId = pageInitData.pageData.counter;   
 		    
 		    //Insert Style Class Def
-		    this.insertStyleClassDef()
+		    this.insertStyleClassDef(pageInitData)
 		    
 		    //Init ids for frames
-		    if(MlbPrefs.idsForFramesEnabled && this.currentDoc){
-		        this.initFramesIds();
+		    if(MlbPrefs.idsForFramesEnabled && pageInitData.currentDoc){
+		        this.initFramesIds(pageInitData);
 		    }
 		    
 		    //Init ids for form elements
-		    if(MlbPrefs.idsForFormElementsEnabled && this.currentDoc){
-		        this.initFormElements()
+		    if(MlbPrefs.idsForFormElementsEnabled && pageInitData.currentDoc){
+		        this.initFormElements(pageInitData)
 		    }    
 		
 			//Init ids for links
 		    if((MlbPrefs.idsForLinksEnabled || MlbPrefs.idsForImgLinksEnabled) 
-		        && this.currentDoc){
-		        this.initLinks()
+		        && pageInitData.currentDoc){
+		        this.initLinks(pageInitData)
 		    }
 		    
 		    //Recursive call for all subframes
 		    for(var i = 0; i<win.frames.length; i++){
-		        this.initFrame(win.frames[i]);
+		        this.initFrame(pageInitData, win.frames[i]);
 		    }
 		    
 		    //Saving start and end ids of one frame
-		    var endId = this.currentTopWin.mlbPageData.counter;
-		    this.currentTopWin.mlbPageData.numberOfIdsMap[win.name]=endId-startId;
-		    this.currentTopWin.mlbPageData.startIdMap[win.name]=startId;
+		    var endId = pageInitData.pageData.counter;
+		    pageInitData.pageData.numberOfIdsMap[win.name]=endId-startId;
+		    pageInitData.pageData.startIdMap[win.name]=startId;
 		},
 		
-		insertStyleClassDef: function(){
-			if(this.currentDoc.getElementById(MlbCommon.STYLE_CLASS_DEF_ID)!=null){
+		insertStyleClassDef: function(pageInitData){
+			if(pageInitData.currentDoc.getElementById(MlbCommon.STYLE_CLASS_DEF_ID)!=null){
 				return
 			}
-			var styleElem = this.currentDoc.createElement("style")
+			var styleElem = pageInitData.currentDoc.createElement("style")
 			styleElem.setAttribute("type", "text/css")
 			styleElem.setAttribute("id", this.STYLE_CLASS_DEF_ID)
 			
-			//var styleNode = this.currentDoc.importNode(this.styleClassDefPrototype, true)
-			var appendNode = this.currentDoc.getElementsByTagName('head')[0]
+			var appendNode = pageInitData.currentDoc.getElementsByTagName('head')[0]
 			if(appendNode==null){
-				appendNode = this.currentDoc.documentElement
+				appendNode = pageInitData.currentDoc.documentElement
 			}
 			appendNode.appendChild(styleElem)
-			var mlbStyleSheet = this.currentDoc.styleSheets[this.currentDoc.styleSheets.length-1]
+			var mlbStyleSheet = pageInitData.currentDoc.styleSheets[pageInitData.currentDoc.styleSheets.length-1]
 			mlbStyleSheet.insertRule("." + this.STYLE_CLASS_NAME + "{" + 
 			    MlbPrefs.styleForIdSpan+"}", 0)
 			
 			
 		},
 		
-		reloadFrame: function (){
-		    var oldNumberOfIds = this.currentTopWin.mlbPageData.numberOfIdsMap[this.currentWin.name];
-		    var startId = this.currentTopWin.mlbPageData.counter = 
-		             this.currentTopWin.mlbPageData.startIdMap[this.currentWin.name];
-		    this.initFrame(this.currentWin);
-		    var actNumberOfIds = this.currentTopWin.mlbPageData.counter - startId;
+		reloadFrame: function (pageInitData){
+		    var oldNumberOfIds = pageInitData.pageData.numberOfIdsMap[pageInitData.currentWin.name];
+		    var startId = pageInitData.pageData.counter = 
+		             pageInitData.pageData.startIdMap[pageInitData.currentWin.name];
+		    this.initFrame(pageInitData, pageInitData.currentWin);
+		    var actNumberOfIds = pageInitData.pageData.counter - startId;
 		    if(actNumberOfIds>oldNumberOfIds){
 		        this.initAll(null, true);
 		    }
@@ -212,15 +227,15 @@
 		/*
 		 * Init Frame-Ids
 		 */
-		initFramesIds: function(){
-         for(var i = 0; i<this.currentWin.frames.length; i++){
-            var frame = this.currentWin.frames[i];
+		initFramesIds: function(pageInitData){
+         for(var i = 0; i<pageInitData.currentWin.frames.length; i++){
+            var frame = pageInitData.currentWin.frames[i];
 			   var doc = frame.document
 		    	if(frame.idSpan!=null){
                //Id Span is already there
-               this.updateSpan(MlbPrefs.idsForFramesEnabled, frame.idSpan);
+               this.updateSpan(pageInitData, MlbPrefs.idsForFramesEnabled, frame.idSpan);
 		      }else{
-			      var idSpan = this.getNewSpan(MlbCommon.IdSpanTypes.FRAME);
+			      var idSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.FRAME);
 			      //Setting different style
 			      idSpan.style.cssText = MlbPrefs.styleForFrameIdSpan;
 			      
@@ -232,54 +247,53 @@
 			      frame.idSpan = idSpan;
 			   }
 			   //Update element Array
-		      this.currentTopWin.mlbPageData.addElementWithId(doc.body);
+		      pageInitData.pageData.addElementWithId(doc.body);
 		   }
 		},
 		
 		/*
 		    Init for Links
 		*/
-		initLinks: function (){
+		initLinks: function (pageInitData){
 		    //Iteration over links
-		    var links = this.currentDoc.getElementsByTagName("A");
+		    var links = pageInitData.currentDoc.getElementsByTagName("A");
+		    
+		    //Limit max. number of links
 		    var maxIdNumber = MlbPrefs.maxIdNumber
-		    var counter = this.currentTopWin.mlbPageData.counter
-		    var max = Math.min(links.length, maxIdNumber-counter)
-		    var linkCounter = 0
+		    
 		    for(var i=0; i < links.length; i++){
+		       if(pageInitData.pageData.counter>=maxIdNumber){
+		       	break;
+		       }
+
 		       var link = links[i];
 		       //is there anything noteworth
 		       if (!this.isMarkableLink(link)){
 		          continue;
 		       }
 		       
-		       
 		       //Display image links?
-		       var hasOnlyImgLink = this.hasOnlyImgChilds(link);
+		       var isImageLink = this.hasOnlyImgChilds(link);
 		       
 		       //Check against preferences
 		       if(link.idSpan==null &&
-		         ((hasOnlyImgLink && !MlbPrefs.idsForImgLinksEnabled) ||
-		          (!hasOnlyImgLink && !MlbPrefs.idsForLinksEnabled))){
+		         ((isImageLink && !MlbPrefs.idsForImgLinksEnabled) ||
+		          (!isImageLink && !MlbPrefs.idsForLinksEnabled))){
 		            continue;
 		       }
 		
-		       linkCounter++
-		       if(linkCounter>max){
-		       	break;
-		       }
 
 		       //Is there already a span with the id
 		       if(link.idSpan!=null){
-		          var showIdSpan = hasOnlyImgLink && MlbPrefs.idsForImgLinksEnabled ||
-		       					      !hasOnlyImgLink && MlbPrefs.idsForLinksEnabled;
-		          this.updateSpan(showIdSpan, link.idSpan);
+		          var showIdSpan = isImageLink && MlbPrefs.idsForImgLinksEnabled ||
+		       					      !isImageLink && MlbPrefs.idsForLinksEnabled;
+		          this.updateSpan(pageInitData, showIdSpan, link.idSpan);
 		       }else{
 		          //Insert new Span
-		          if(hasOnlyImgLink){
-		             var newSpan = this.getNewSpan(MlbCommon.IdSpanTypes.IMG);
+		          if(isImageLink){
+		             var newSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.IMG);
 		          }else{
-		             var newSpan = this.getNewSpan(MlbCommon.IdSpanTypes.LINK);
+		             var newSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.LINK);
 		          }
 		           
 		          //Append to last element in link except for imgages for better style
@@ -291,7 +305,7 @@
 			          link.appendChild(newSpan);
 		          }
                                 
-                if(hasOnlyImgLink){
+                if(isImageLink && MlbPrefs.smartPositioning){
                 	var img = link.getElementsByTagName("img")[0]
                 	this.smartImageLinkPositioning(img, newSpan)
                 }					
@@ -299,7 +313,7 @@
 		          link.idSpan=newSpan;
 		        }
 		        //Update elements array
-		        this.currentTopWin.mlbPageData.addElementWithId(link);
+		        pageInitData.pageData.addElementWithId(link);
 		    }
 		},
 		
@@ -315,6 +329,7 @@
 				style.backgroundColor="#EEF3F9"
 				style.color="black"
 			}
+			style.position="relative"
 			style.left = overlayPositions.left+"px"
 			style.top = overlayPositions.top+"px"
 		},
@@ -345,22 +360,28 @@
 		/*
 		    Init for form-elements
 		*/
-		initFormElements: function (){
-		    //Iteration over form elements
-		    var formelements = this.currentDoc.getElementsByTagName("input");
-		    this.addIdToFormElements(formelements);
-		    formelements = this.currentDoc.getElementsByTagName("select");
-		    this.addIdToFormElements(formelements);
-		    formelements = this.currentDoc.getElementsByTagName("button");
-		    this.addIdToFormElements(formelements);
-		    formelements = this.currentDoc.getElementsByTagName("textarea");
-		    this.addIdToFormElements(formelements);
+		initFormElements: function (pageInitData){
+			//RNO, 20.06.2008: included
+//         var forms = pageInitData.currentDoc.forms
+//         for(var i=0; i<forms.length; i++ ){
+//            this.addIdToFormElements(pageInitData, forms[i].elements);
+//		   }
+		   //Todo adapt
+		   //Iteration over form elements
+		   var formelements = pageInitData.currentDoc.getElementsByTagName("input");
+		   this.addIdToFormElements(pageInitData, formelements);
+		   formelements = pageInitData.currentDoc.getElementsByTagName("select");
+		   this.addIdToFormElements(pageInitData, formelements);
+		   formelements = pageInitData.currentDoc.getElementsByTagName("button");
+		   this.addIdToFormElements(pageInitData, formelements);
+		   formelements = pageInitData.currentDoc.getElementsByTagName("textarea");
+		   this.addIdToFormElements(pageInitData, formelements);
 		},
 		
 		/*
 		 * Inserts Ids for a list of form elements
 		 */
-		addIdToFormElements: function(nodeList){
+		addIdToFormElements: function(pageInitData, nodeList){
 			for(var i=0; i<nodeList.length; i++){
 			   var element = nodeList.item(i);
 			
@@ -371,11 +392,11 @@
 			
 			   var parent = element.parentNode;
 			   if(element.idSpan!=null){
-			      this.updateSpan(MlbPrefs.idsForFormElementsEnabled, element.idSpan);
+			      this.updateSpan(pageInitData, MlbPrefs.idsForFormElementsEnabled, element.idSpan);
 			      this.setElementStyle(element, MlbPrefs.idsForFormElementsEnabled)
 			   }else{
 			      //Generate new span
-			      var newSpan = this.getNewSpan(MlbCommon.IdSpanTypes.FORMELEMENT);
+			      var newSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.FORMELEMENT);
 			      
 			      if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.BUTTON)||
 			         MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXT) ||
@@ -401,12 +422,12 @@
 			      element.idSpan = newSpan
 			      MlbUtils.setElementForIdSpan(newSpan, element)
 			      
-				    if(true){
+				    if(MlbPrefs.smartPositioning){
 				       //var adjusted = this.adjustWidthOfFormElement(element, newSpan)
 		             this.smartFormelementPositioning(element)
 				    } 
 			    }
-			    this.currentTopWin.mlbPageData.addElementWithId(element)
+			    pageInitData.pageData.addElementWithId(element)
 			}
 		},
 		
@@ -417,6 +438,7 @@
          var idSpan = element.idSpan
           
          var style = idSpan.style
+         style.position="relative"
          //Do first everything what could change offsets
          if(this.isLineBreakInbetween(element, idSpan) && idSpan.nextSibling==null){
          	elemStylesIdOff.push({style:"marginBottom", value:element.style.marginBottom})
@@ -428,7 +450,7 @@
          }
          if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT)){
             //Pos in middle of button
-            style.border = null;
+            style.borderStyle = "none";
          }else if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.BUTTON) ||
                    MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.RADIO) ||
                    MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.CHECKBOX)){
@@ -515,9 +537,9 @@
 		/*
 		 *  Gets new span for id; 
 		 */
-		getNewSpan: function(typeOfSpan){
-		    var newSpan = this.createSpan();
-		    newSpan.innerHTML = this.currentTopWin.mlbPageData.getNextId();
+		getNewSpan: function(pageInitData, typeOfSpan){
+		    var newSpan = this.createSpan(pageInitData);
+		    newSpan.innerHTML = pageInitData.pageData.getNextId();
 		    //Setting the type the element the id span is created for
 		    newSpan.setAttribute(MlbCommon.ATTR_ID_SPAN_FOR, typeOfSpan);
 		    return newSpan;
@@ -528,10 +550,10 @@
 		 * TODO: Performance tuning
 		 * Is Prototype still sensefull
 		 */
-		createSpan: function(){
+		createSpan: function(pageInitData){
 		    if(this.spanPrototype==null){
 		        //span
-		        var span = this.currentDoc.createElement("span");
+		        var span = pageInitData.currentDoc.createElement("span");
 		        span.className = this.STYLE_CLASS_NAME
 		        
 		        //The span has to be hidden before inserting into the DOM
@@ -548,7 +570,7 @@
 //		    if(this.spanPrototype.style.cssText!=MlbPrefs.styleForIdSpan){
 //		        this.spanPrototype.style.cssText=MlbPrefs.styleForIdSpan;
 //		    }
-		    return this.currentDoc.importNode(this.spanPrototype, true);
+		    return pageInitData.currentDoc.importNode(this.spanPrototype, true);
 		},
 		
 		/*
@@ -586,15 +608,18 @@
 		/*
 		 * Updates an id span which already exists
 		 */
-		updateSpan: function(visible, span, element){
+		updateSpan: function(pageInitData, visible, span){
 			if(visible){
-				span.innerHTML=this.currentTopWin.mlbPageData.getNextId();
+				span.innerHTML=pageInitData.pageData.getNextId();
 				span.style.display = "inline";
 		    }else{
 		    	span.style.display = "none";
 		    }
 		},
 		
+		/*
+		 * Set special/orignal styles according visibility of id span
+		 */
 		setElementStyle: function(element, idSpanVisible){
 			var styleArray = null
 			if(idSpanVisible==false && element.elemStylesIdOff!=null){
@@ -625,78 +650,22 @@
             spanOffsetLeft: MlbUtils.getOffsetLeftToBody(idSpan)
          }
          return offsets
-      },			
+      },
+      
+      //gets the current page data
+      getPageData: function(win){
+      	return win.top.mlbPageData
+      },
+      
+      //sets the current page data
+      setPageData: function(win, pageData){
+      	win.top.mlbPageData = pageData
+      }
+      
 	}
 	
    var NS = rno_common.Namespace
    NS.bindToNamespace("mouselessbrowsing", "PageInitializer", PageInitializer)
-   
-   
-   MLB_webProgressListener = {
-          onLocationChange: function  (webProgress , request , location ){
-            var currentTopWin = webProgress.DOMWindow.top;
-            var init = currentTopWin.mlbPageData && currentTopWin.mlbPageData.initialized
-//            Utils.logMessage("Loc-Change: Host:" + location.host + " Path: " + location.path +
-//               "  Window name:" + this.currentWin.name + " init: " + init + " request: " + request);
-            
-//          this.doOnload(null, this.FIRST_CALL);
-          },
-          
-          onStateChange: function( webProgress , request , stateFlags , status ){
-            this.currentWin = webProgress.DOMWindow;
-            
-            
-            var message = "State-Change: ";
-            message += "Win name: " + this.currentWin.name + "  Stateflags: ";
-            if (stateFlags&1)
-               message += "start";
-            else if (stateFlags&2)
-               message += "redirect";
-            else if (stateFlags&4)
-               message += "transfering";
-            else if (stateFlags&16)
-               message += "stop";
-      
-            message += "  ";
-            if(stateFlags&65536)
-               message += "STATE_IS_REQUEST  ";
-      
-            if(stateFlags&131072)
-               message += "STATE_IS_DOCUMENT  ";
-      
-            if(stateFlags&262144)
-               message += "STATE_IS_NETWORK  ";       
-      
-            if(stateFlags&524288)
-               message += "STATE_IS_WINDOW  ";        
-      
-            if(stateFlags&16777216)
-               message += "STATE_RESTORING  ";        
-            
-            //Utils.logMessage(message + " Doc title:" + webProgress.DOMWindow.document.title);
-            
-//            if(stateFlags&MlbCommon.WEBPROGRESS_STATE_STOP)
-//               doOnload(null, this.FINAL_CALLServicer
-          },
-          
-          onProgressChange: function ( webProgress , request , curSelfProgress , maxSelfProgress , curTotalProgress , maxTotalProgress ){
-          },
-          
-          onSecurityChange: function ( webProgress , request , state ){
-          },
-          
-          onStatusChange: function ( webProgress , request , status , message ){
-          },
-      
-         QueryInterface: function(iid) {
-            if (!iid.equals(Components.interfaces.nsISupports)
-                  && !iid.equals(Components.interfaces.nsISupportsWeakReference)
-                  && !iid.equals(Components.interfaces.nsIWebProgressListener)) {
-               dump("MBL Window Pref-Observer factory object: QI unknown interface: " + iid + "\n");
-               throw Components.results.NS_ERROR_NO_INTERFACE; }
-            return this;
-         }
-      }
    
 })()
 

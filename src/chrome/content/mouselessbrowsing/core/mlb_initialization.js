@@ -10,16 +10,24 @@
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	var Prefs = rno_common.Prefs
 	var MlbPrefs = mouselessbrowsing.MlbPrefs
-
+	var Utils = rno_common.Utils
+   
+   //Prefs observer
+   var MLB_prefObserver = null;
+   
 	InitManager = {
 		init: function (){
+		    this.registerAsObserver();
 		    MlbPrefs.initPrefs();
-		    //Todo Remove
-		    //MLB_ConfigManager.initPrefs();
 		    this.initShortCuts();
 		    this.initRemaining();
 		},
 		
+		registerAsObserver: function(){
+			//Add preferences-observer
+	      MLB_prefObserver = Utils.createObserverForInterface(InitManager)
+	      Utils.registerObserver(MlbCommon.MLB_PREF_OBSERVER, MLB_prefObserver)
+		},
 		
 		initShortCuts: function (){
 		    ShortCutManager.clearAllShortCutsForClientId(MlbCommon.SCM_CLIENT_ID);
@@ -52,10 +60,13 @@
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.selectLink");
 		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.selectLink()", MlbCommon.SCM_CLIENT_ID);
 
+		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.blurActiveElement");
+		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.blurActiveElement()", MlbCommon.SCM_CLIENT_ID);
+		    
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.openConfig");
 		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.openConfiguration()", MlbCommon.SCM_CLIENT_ID);
 		
-		    //Toggling exclusive use with dobble stroke of numpad-key
+		    //Toggling exclusive use with double stroke of numpad-key
 		    ShortCutManager.addJsShortCutWithCombinedKeyCode(2304, "mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpad()", MlbCommon.SCM_CLIENT_ID);
 		
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.toggleExlusiveUseOfNumpad");

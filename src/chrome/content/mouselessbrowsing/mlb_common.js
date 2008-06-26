@@ -1,3 +1,6 @@
+/**
+ * Contains constants and loading of common subscripts
+ */
 (function(){
 	var MlbCommon = { 
 		//Constants
