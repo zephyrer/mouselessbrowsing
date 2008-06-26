@@ -11,37 +11,40 @@
    var MlbCommon = mouselessbrowsing.MlbCommon
    
 	var MlbPrefs = {
+		showIdsOnDemand: null,
+		exclusiveUseOfNumpad: null,
+		smartPositioning: null,
+		showKeybufferInStatusbar: null,
+		executeAutomaticEnabled: null,
+		delayForAutoExecute: null,
+		pixelsToScroll: null,
+		maxIdNumber: null,
 		disableAllIds: null,
 		idsForLinksEnabled: null,
 		idsForImgLinksEnabled: null,
 		idsForFormElementsEnabled: null,
 		idsForFramesEnabled: null,
-		showKeybufferInStatusbar: null,
-		exclusiveUseOfNumpad: null,
-		showIdsOnDemand: null,
-		executeAutomaticEnabled: null,
-		delayForAutoExecute: null,
-		maxIdNumber: null,
 		styleForIdSpan: null,
 		styleForFrameIdSpan: null,
-		pixelsToScroll: null,
-		visibilityMode: null,
+		//No configured 
 		debugPerf: null,
+		visibilityMode: null,
 
 		initPrefs: function (){
 		    try{
 				//Checking actual preference settings
-				this.initShowIdPrefs();
 				this.showIdsOnDemand = Prefs.getBoolPref("mouselessbrowsing.showIdsOnDemand");
-		      this.showKeybufferInStatusbar = Prefs.getBoolPref("mouselessbrowsing.showKeybufferInStatusbar");
 		      this.exclusiveUseOfNumpad = Prefs.getBoolPref("mouselessbrowsing.exclusiveNumpad");
+				this.smartPositioning = Prefs.getBoolPref("mouselessbrowsing.smartPositioning");
+		      this.showKeybufferInStatusbar = Prefs.getBoolPref("mouselessbrowsing.showKeybufferInStatusbar");
 		      this.executeAutomaticEnabled = Prefs.getBoolPref("mouselessbrowsing.executeAutomatic");
 		      this.delayForAutoExecute = Prefs.getCharPref("mouselessbrowsing.autoExecuteDelay");
-		      this.maxIdNumber = Prefs.getCharPref("mouselessbrowsing.maxIdNumber");
 		      this.pixelsToScroll = Prefs.getCharPref("mouselessbrowsing.pixelsToScroll");
+		      this.maxIdNumber = Prefs.getCharPref("mouselessbrowsing.maxIdNumber");
+		      this.disableAllIds = Prefs.getBoolPref("mouselessbrowsing.disableAllIds");
+				this.initShowIdPrefs();
 		      this.styleForIdSpan = Prefs.getCharPref("mouselessbrowsing.styleForIdSpan");
 		      this.styleForFrameIdSpan = Prefs.getCharPref("mouselessbrowsing.styleForFrameIdSpan");
-		      this.disableAllIds = Prefs.getBoolPref("mouselessbrowsing.disableAllIds");
 				this.visibilityMode = this.disableAllIds==false?
 				  MlbCommon.VisibilityModes.CONFIG:MlbCommon.VisibilityModes.NONE;
 		      
@@ -59,13 +62,23 @@
 		},
 		
 		/*
-		 * Sepearte function for reuse when toggling visibility of spans
+		 * Seperate function for reuse when toggling visibility of spans
 		 */
 		initShowIdPrefs: function (){
 			this.idsForLinksEnabled = Prefs.getBoolPref("mouselessbrowsing.enableLinkIds");
 		   this.idsForImgLinksEnabled = Prefs.getBoolPref("mouselessbrowsing.enableImgLinkIds");
 		   this.idsForFormElementsEnabled = Prefs.getBoolPref("mouselessbrowsing.enableFormElementIds");
 			this.idsForFramesEnabled = Prefs.getBoolPref("mouselessbrowsing.enableFrameIds");
+		},
+		
+		/*
+		 * Sets all flags for displaying/hiding different ids to true/false 
+		 */
+      setVisibilityFlags: function(show){
+	     this.idsForFormElementsEnabled = show;
+        this.idsForImgLinksEnabled = show;
+        this.idsForLinksEnabled = show;
+        this.idsForFramesEnabled = show;
 		}
 	
 	} 

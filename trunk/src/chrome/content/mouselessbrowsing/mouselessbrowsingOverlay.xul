@@ -33,6 +33,6 @@
     </script>
 
     <statusbar id="status-bar">
-		<statusbarpanel id="mlb-status" label="MLB" style="width:100px"/>
+		<statusbarpanel id="mlb-status" label="MLB" style="width:200px"/>
 	</statusbar> 
 </overlay>

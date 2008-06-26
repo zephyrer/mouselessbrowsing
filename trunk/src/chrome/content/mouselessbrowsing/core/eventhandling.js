@@ -26,7 +26,7 @@
 		currentDoc: null,
 		
 		//Flag for openening link in new tab
-		openInNewTabFlag: true,
+		openInNewTabFlag: false,
 		
 		//Regexp for keybuffercontent to focus special tab
 		changeTabByNumberRegExp: /^0[1-9]$/,
@@ -60,15 +60,17 @@
 		   if(!browser){
 		      return;
 		   }
-		    
-		   if(event.shiftKey ||
+         
+         //In case of Shift/Alt Gr key or if no ids are visible, do nothing
+         if(event.shiftKey ||
+            (event.ctrlKey && event.altKey) ||		   		  
 		      MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.NONE){
             this.resetVars();
 		    	return;
 		   }
 		    
 		   this.setWinVariables();
-		
+         		
 		   //With new keystroke clear old timer
 		   clearTimeout(this.timerId);
 		    
@@ -208,7 +210,7 @@
 		    } 
 		    //If its an anchor and it should be openend in a new Tab
 		    else if(tagName=="a" && this.openInNewTabFlag){
-		        openNewTabWith(element.href, element);
+		        Utils.openUrlInNewTab(element.href);
 		        return;
 		    }
 		    //In every other case try to focus
@@ -220,8 +222,8 @@
 		    	
 		    //And simulate click
 		    var clickEvent = this.currentDoc.createEvent("MouseEvents");
-		    clickEvent.initMouseEvent( "click", true, true, this.currentWin, 0, 0, 0, 0, 0, 
-		        this.openInNewTabFlag, false, false, false, 0, element );
+		    clickEvent.initMouseEvent( "click", true, true, this.currentWin, 1, 0, 0, 0, 0, 
+		        this.openInNewTabFlag, false, false, false, 0, null);
 		    element.dispatchEvent(clickEvent);
 		 
 		},
@@ -230,25 +232,26 @@
 		 * Toggles the visibility of the Ids
 		 */
 		toggleIds: function(){
-		   if(this.isSuppressShortCut()){
-		    return;
-		   }
+			if(this.isSuppressShortCut()){
+				return
+			}
 		   this.setWinVariables();
 			
 			if(MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.CONFIG || MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.ALL){
+				//If ids are currently shown, switch to visibility mode "none"
 				GlobalData.previousVisibilityMode=MlbPrefs.visibilityMode;
 		    	MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.NONE;
-		    }
-		    else if (GlobalData.previousVisibilityMode==MlbCommon.VisibilityModes.CONFIG){
-		       GlobalData.previousVisibilityMode=MlbPrefs.visibilityMode;
-		       MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.CONFIG;
-		    }
-		    else {
-		       GlobalData.previousVisibilityMode=MlbPrefs.visibilityMode;
-		       MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.ALL;
-		    }
-		    this.updateIdsAfterToggling();
-		    return ShortCutManager.SUPPRESS_KEY
+		   }else if(GlobalData.previousVisibilityMode==MlbCommon.VisibilityModes.CONFIG){
+	         //Previous mode was config, switch back to config mode		   	
+            GlobalData.previousVisibilityMode=MlbPrefs.visibilityMode;
+            MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.CONFIG;
+			}else {
+			   //Previous mode was all, switch back to all mode
+			   GlobalData.previousVisibilityMode=MlbPrefs.visibilityMode;
+			   MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.ALL;
+			}
+		   this.updateIdsAfterToggling();
+		   return ShortCutManager.SUPPRESS_KEY
 		},
 		
 		/*
@@ -257,8 +260,7 @@
 		 */
 		toggleAllIds: function(){
 			GlobalData.previousVisibilityMode=MlbPrefs.visibilityMode;
-		   if(MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.NONE || 
-		      MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.CONFIG){
+		   if(MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.NONE || MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.CONFIG){
 		    	MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.ALL;
 		   }else{ 
 		    	MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.CONFIG;
@@ -266,33 +268,33 @@
 		   this.updateIdsAfterToggling();
 		},
 		
+		/*
+		 * Initiates the update of the id spans after toggling the ids
+		 */
 		updateIdsAfterToggling: function(){
+		   this.setWinVariables();
+
+			//Make visibility mode persistent
 		   if(MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.NONE){
 			   MlbPrefs.disableAllIds=true;
 		   }else{
 			   MlbPrefs.disableAllIds=false;
 		   }
 			Prefs.setBoolPref("mouselessbrowsing.disableAllIds", MlbPrefs.disableAllIds);
-		
-		   this.setWinVariables();
+         
+         //Set visibility flags		    
 			if(MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.NONE){
-		       MlbPrefs.idsForFormElementsEnabled = false;
-		       MlbPrefs.idsForImgLinksEnabled = false;
-		       MlbPrefs.idsForLinksEnabled = false;
-		       MlbPrefs.idsForFramesEnabled = false;
+		       MlbPrefs.setVisibilityFlags(false);
 		       this.hideIdSpans(this.currentTopWin);
 		       //Reset PageData
 		       this.currentTopWin.mlbPageData = new mouselessbrowsing.PageData()
 		    }else if(MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.CONFIG){
 		       //Setting prefs back to configured values
 		       MlbPrefs.initShowIdPrefs()
-		       this.getPageInitializer().initAll(null, true);
+		       this.getPageInitializer().initAfterToggling(this.currentTopWin);
 		    }else{
-		        MlbPrefs.idsForFormElementsEnabled = true;
-		        MlbPrefs.idsForImgLinksEnabled = true;
-		        MlbPrefs.idsForLinksEnabled = true;
-		        MlbPrefs.idsForFramesEnabled = true;
-		        this.getPageInitializer().initAll(null, true);
+		       MlbPrefs.setVisibilityFlags(true);
+		       this.getPageInitializer().initAfterToggling(this.currentTopWin);
 		    }
 		},
 		
@@ -329,15 +331,16 @@
 		 * Moves back or forward in history
 		 */ 
 		moveHistory: function(direction){
-		    if(this.isSuppressShortCut())
-		        return;
+			if(this.isSuppressShortCut()){
+				return
+			}
 		    //Due to fact ff crashes otherwise a setTimeout must be applied
 		    if(direction=="forward")
 		        getBrowser().goForward();
 		    else
 		        getBrowser().goBack();
 		    
-		    return ShortCutManager.SUPPRESS_EVENT;
+		    return ShortCutManager.SUPPRESS_KEY;
 		},
 		
 		/*
@@ -345,12 +348,13 @@
 		 * and a textfield or selectbox is focused
 		 */
 		isSuppressShortCut: function(){
-		    var lEvent = ShortCutManager.currentEvent;
-		    if(this.isNonPrintableKey(lEvent))
+		    var event = ShortCutManager.currentEvent;
+		    if(this.isNonPrintableKey(event))
 		    	return false;
-		    return !lEvent.altKey && !lEvent.ctrlKey && 
-		        MlbUtils.isWritableElement(lEvent.originalTarget) && 
-		        !this.isCaseOfExclusivlyUseOfNumpad(lEvent);
+		    var modifierPressed = event.altKey || event.ctrlKey
+		    return !modifierPressed && 
+		        MlbUtils.isWritableElement(event.originalTarget) && 
+		        !this.isCaseOfExclusivlyUseOfNumpad(event);
 		},
 		
 		isNonPrintableKey: function(event){
@@ -372,7 +376,10 @@
 		 * scrolling up/down
 		 */
 		scrollUpDown: function(direction){
-		    if(this.keybuffer!="" || this.isSuppressShortCut()){
+		    if(this.isSuppressShortCut()){
+		    	return
+		    }
+		    if(this.keybuffer!=""){
 		        //Then it's case of opening in new tab with postfix character
 		        return;
 		    }
@@ -382,13 +389,14 @@
 		        focusedWindow.scrollBy(0, -MlbPrefs.pixelsToScroll);
 		    else
 		        focusedWindow.scrollBy(0, MlbPrefs.pixelsToScroll);
+		    return ShortCutManager.SUPPRESS_KEY; 
 		},
 		 /*
 		  * Checks wether the actual-keystroke should be suppressed
 		  */
 		isCaseOfExclusivlyUseOfNumpad: function(event){
 		    var keyCode = event.keyCode;
-		    var isNumpad = keyCode>=96 && keyCode<=107 || keyCode>=110 && keyCode<=111;
+		    var isNumpad = (keyCode>=96 && keyCode<=106) || (keyCode>=110 && keyCode<=111) 
 		    return MlbPrefs.exclusiveUseOfNumpad && isNumpad;
 		},
 		
@@ -396,7 +404,7 @@
 		 * Opens Link in a new tab
 		 */
 		openLinkInNewTabViaPostfixKey: function(){
-		    if(this.keybuffer=="" || this.isSuppressShortCut())
+		    if(this.keybuffer=="")
 		        return;
 		    var element = this.currentTopWin.mlbPageData.elementsWithId[this.keybuffer];   
 		    if(element==null)
@@ -404,7 +412,7 @@
 		    var tagName = element.tagName.toLowerCase();
 		    if(tagName!="a")
 		        return;
-		    openNewTabWith(element.href, element);
+		    Utils.openUrlInNewTab(element.href);
 		    this.resetVars();
 		},
 		
@@ -431,16 +439,10 @@
 		changeTabByNumber: function(){
 			var index = this.keybuffer.substring(1);
 			index = index-1;
-			var browser = getBrowser();
-			if (index >= browser.tabContainer.childNodes.length)
-				return;
-		
-			var oldTab = browser.selectedTab;
-		  	var newTab = browser.tabContainer.childNodes[index];
-		  	if (newTab != oldTab) {
-		    	oldTab.selected = false;
-		    	browser.selectedTab = newTab;
-		  	}
+			var tabs = Application.activeWindow.tabs
+			if(index<=tabs.length){
+				tabs[index].focus()
+			}
 		},
 		
 		/**
@@ -462,14 +464,11 @@
 		
 		stopEvent: function(event){
          event.preventDefault();
-         //needed?
-//		   event.preventBubble();
-//		   event.preventCapture();
 		   event.stopPropagation();
 		},
 		
 		selectLink: function(){
-		   if(this.keybuffer=="" || this.isSuppressShortCut())
+		   if(this.keybuffer=="")
 		        return;
 		    var element = this.currentTopWin.mlbPageData.elementsWithId[this.keybuffer];   
 		    if(element==null)
@@ -491,7 +490,7 @@
 		    element.dispatchEvent(clickEvent);
 			
 		    this.resetVars();
-		    return ShortCutManager.SUPPRESS_EVENT;
+		    return ShortCutManager.SUPPRESS_KEY;
 		},
 		
 		openConfiguration: function(){
@@ -527,7 +526,19 @@
 		
 		getPageInitializer: function(){
 			return mouselessbrowsing.PageInitializer
+		},
+		
+		firefoxPopupset: new Array('PopupAutoComplete', 'contentAreaContextMenu'),
+		blurActiveElement: function(event){
+			for(var i=0; i<this.firefoxPopupset.length; i++) {
+				if(document.getElementById(this.firefoxPopupset[i]).state=="open"){
+					return
+				}
+			}
+         getBrowser().contentDocument.activeElement.blur()			
 		}
+		
+		
    }
 
    var NS = rno_common.Namespace

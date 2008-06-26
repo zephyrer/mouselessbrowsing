@@ -32,6 +32,7 @@
     <tabbox>
       <tabs>
         <tab label="General"/>
+        <tab label="Visibilities"/>
         <tab label="Styles"/>
         <tab label="Keys"/>
       </tabs>
@@ -46,10 +47,13 @@
                         <checkbox id="onDemandFlag" label="Show ids only on demand" prefid="mouselessbrowsing.showIdsOnDemand" defaultValue="0"/>
                     </row>
                     <row>
-                        <checkbox id="status" label="Show keybuffer in statusbar" prefid="mouselessbrowsing.showKeybufferInStatusbar" defaultValue="1"/>
+                        <checkbox id="exclusiveNumpad" label="Use numpad exclusively for Mouseless Browsing" prefid="mouselessbrowsing.exclusiveNumpad" defaultValue="0"/>
                     </row>
                     <row>
-                        <checkbox id="exclusiveNumpad" label="Use numpad exclusively for Mouseless Browsing" prefid="mouselessbrowsing.exclusiveNumpad" defaultValue="0"/>
+                        <checkbox id="smartPositioning" label="Smart positioning of ids" prefid="mouselessbrowsing.smartPositioning" defaultValue="1"/>
+                    </row>
+                    <row>
+                        <checkbox id="status" label="Show keybuffer in statusbar" prefid="mouselessbrowsing.showKeybufferInStatusbar" defaultValue="1"/>
                     </row>
                     <row>
                         <checkbox id="executeAutomatic" label="Execute automatically without pressing Enter" prefid="mouselessbrowsing.executeAutomatic" defaultValue="false"/>
@@ -79,10 +83,14 @@
                 </rows>
             </grid>
             </groupbox>
-            <groupbox>
+            </vbox>
+        </tabpanel>
+        <tabpanel id="visibilitytab">
+            <vbox flex="1">
+            <groupbox >
             <caption label="Visibility of ids"></caption>
             <grid>
-                <rows>
+                <rows >
                     <row>
                         <checkbox id="allIds" label="Hide all Ids" prefid="mouselessbrowsing.disableAllIds" defaultValue="0" oncommand="MLB_onTogglingVisibilityAllIds()"/>
                     </row>
@@ -101,7 +109,8 @@
                  </rows>
            </grid>
            </groupbox>
-            </vbox>
+           <!-- spacer flex="1"/-->
+           </vbox>
         </tabpanel>
         <tabpanel id="styletab">
             <vbox flex="1">
@@ -116,13 +125,14 @@
                     </row>
                     <row flex="1">
                         <textbox id="styleForIdSpan" prefid="mouselessbrowsing.styleForIdSpan" flex="1" multiline="true" rows="5"
-                           oninput="MLB_setPreviewForIds('styleForIdSpan', 'previewIdSpan')"/>
+                           previewSpanId="previewIdSpan" oninput="MLB_setPreviewForIds('styleForIdSpan')"/>
                     </row>
                     <row>
-                        <hbox>
+                        <hbox align="center">
                            <spacer width="5px"/>
+                           <html:div>Preview:</html:div>
                            <html:div>
-                               Preview: <html:span id="previewIdSpan">42</html:span>
+                               <html:span id="previewIdSpan">42</html:span>
                            </html:div>
 	                        <spacer flex="1"/>
 	                        <button label="Restore Default" oncommand="MLB_setStyleDefault('styleForIdSpan')"/>
@@ -132,16 +142,18 @@
                         <label value="Style for frame id span"/>&#160;
                     </row>
                     <row flex="1">
-                        <textbox id="styleForFrameIdSpan" prefid="mouselessbrowsing.styleForFrameIdSpan" flex="1" multiline="true" rows="5"/>
+                        <textbox id="styleForFrameIdSpan" prefid="mouselessbrowsing.styleForFrameIdSpan" flex="1" multiline="true" rows="5"
+                        previewSpanId="previewFrameIdSpan" oninput="MLB_setPreviewForIds('styleForFrameIdSpan')"/>
                     </row>
                     <row>
-                        <hbox>
+                        <hbox align="center">
                            <spacer width="5px"/>
+                           <html:div>Preview:</html:div>
                            <html:div>
-                               Preview: <html:span id="previewFrameIdSpan">42</html:span>
+                                <html:span id="previewFrameIdSpan">42</html:span>
                            </html:div>
-	                        <spacer flex="1"/>
-	                        <button label="Restore Default" oncommand="MLB_setStyleDefault('styleForFrameIdSpan')"/>
+                           <spacer flex="1"/>
+                           <button label="Restore Default" oncommand="MLB_setStyleDefault('styleForFrameIdSpan')"/>
                         </hbox>
                     </row>
 <!--  For Version 0.4
@@ -228,6 +240,10 @@
                         <row>
                              <label value="Scroll up"/> 
                              <keyinputbox prefid="mouselessbrowsing.keys.scrollUp" maxlength="1" size="20" allowmodifiers="true"/>
+                        </row>
+                        <row>
+                             <label value="Blur active element"/> 
+                             <keyinputbox prefid="mouselessbrowsing.keys.blurActiveElement" maxlength="1" size="20" allowmodifiers="true"/>
                         </row>
                         <row>
                              <label value="Open Configuration"/> 
