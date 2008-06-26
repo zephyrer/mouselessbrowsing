@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<overlay id="mouselessbrowsing" 
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <script type="application/x-javascript" 
+        src="mlb_common.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="core/mlb_utils.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="core/page_data.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="core/global_data.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="core/preferences.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="core/eventhandling.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="core/page_initialization.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="core/mlb_initialization.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="../common/shortcutmanager.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="mouselessbrowsingOverlay.js">
+    </script>
+
+    <statusbar id="status-bar">
+		<statusbarpanel id="mlb-status" label="MLB" style="width:200px"/>
+	</statusbar> 
+</overlay>
