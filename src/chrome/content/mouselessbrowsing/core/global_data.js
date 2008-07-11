@@ -3,7 +3,7 @@
  */
 (function(){
 	var GlobalData = {
-      previousVisibilityMode: null,		
+      previousVisibilityMode: null,
 	}
    var NS = rno_common.Namespace
    NS.bindToNamespace("mouselessbrowsing", "GlobalData", GlobalData)

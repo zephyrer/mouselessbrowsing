@@ -61,13 +61,13 @@
 		},
 		
 		onPageShow: function(event){
-		   if(event!=null && event.persisted){
+		   if(event!=null && (event.persisted || !MlbPrefs.initOnDomContentLoaded)){
 				this.startInitilizing(event.originalTarget.defaultView, CallTypes.FINAL_CALL);
 		   }
 		},
 		
 		onDOMContentLoaded: function(event){
-			if(event!=null){
+			if(event!=null && MlbPrefs.initOnDomContentLoaded){
 				this.startInitilizing(event.originalTarget.defaultView, CallTypes.FINAL_CALL);
 			}
 		},
@@ -75,15 +75,17 @@
 		startInitilizing: function(win, callType){
 		   var pageInitData = new PageInitData(win.top, win, win.document, 
             this.getPageData(win), callType)  
-		
+		   
+		   MlbPrefs.applySiteRules(win)
+		   
 		   //Is MLB activated?
 		   if(MlbPrefs.disableAllIds==true || MlbPrefs.showIdsOnDemand==true ){
-		   	MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.NONE;
-		   	GlobalData.previousVisibilityMode=MlbCommon.VisibilityModes.CONFIG
+		      MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.NONE;
+            GlobalData.previousVisibilityMode=MlbCommon.VisibilityModes.CONFIG
 		   	//If history back was pressed after toggling of the ids 
 		   	//the alreay generated ids must be hidden
 		   	if(this.hasIdSpans(pageInitData.currentWin)){
-					EventHandler.updateIdsAfterToggling();
+					EventHandler.hideIdSpans(pageInitData.currentTopWin);
 		   	}
 		   	return;
 		   }
@@ -91,7 +93,7 @@
 		   if(win==win.top){
 		   	//Topwin is loaded
 		   	//Create new page data
-		   	var pageData = new PageData()
+		   	var pageData = this.createPageData()
             this.setPageData(win, pageData)
             pageInitData.pageData = pageData
 		      this.initAll(pageInitData);
@@ -107,8 +109,8 @@
 		},
 		
 		initAfterToggling: function(win){
-			var pageData = new mouselessbrowsing.PageData();
-         var pageInitData = new PageInitData(win.top, win, win.document, pageData, CallTypes.FINAL_CALL);
+			var pageData = this.createPageData();
+         var pageInitData = new PageInitData(win.top, win, win.document, pageData, CallTypes.FINAL_CAL);
          this.setPageData(win.top, pageData)
          this.initAll(pageInitData)  
 		},
@@ -130,7 +132,7 @@
 			
 		    //Initilize Page-Data
 		   if(pageInitData.pageData==null){
-			   this.setPageData(pageInitData.currentTopWin, new mouselessbrowsing.PageData())
+			   this.setPageData(pageInitData.currentTopWin, this.createPageData())
 		   }
 
 			if(pageInitData.callType==CallTypes.FIRST_CALL){
@@ -157,14 +159,15 @@
 		 * Is called recursivly
 		 */
 		initFrame: function(pageInitData, win){
+			 //If document of win is editable skip it, it is a "rich-text-field"
+			 if(win.document.designMode=="on"){
+			 	return
+			 }
 		    pageInitData.currentWin = win;
 		    pageInitData.currentDoc = win.document;
 		
 		    //Saving start Id
 		    var startId = pageInitData.pageData.counter;   
-		    
-		    //Insert Style Class Def
-		    this.insertStyleClassDef(pageInitData)
 		    
 		    //Init ids for frames
 		    if(MlbPrefs.idsForFramesEnabled && pageInitData.currentDoc){
@@ -193,26 +196,6 @@
 		    pageInitData.pageData.startIdMap[win.name]=startId;
 		},
 		
-		insertStyleClassDef: function(pageInitData){
-			if(pageInitData.currentDoc.getElementById(MlbCommon.STYLE_CLASS_DEF_ID)!=null){
-				return
-			}
-			var styleElem = pageInitData.currentDoc.createElement("style")
-			styleElem.setAttribute("type", "text/css")
-			styleElem.setAttribute("id", this.STYLE_CLASS_DEF_ID)
-			
-			var appendNode = pageInitData.currentDoc.getElementsByTagName('head')[0]
-			if(appendNode==null){
-				appendNode = pageInitData.currentDoc.documentElement
-			}
-			appendNode.appendChild(styleElem)
-			var mlbStyleSheet = pageInitData.currentDoc.styleSheets[pageInitData.currentDoc.styleSheets.length-1]
-			mlbStyleSheet.insertRule("." + this.STYLE_CLASS_NAME + "{" + 
-			    MlbPrefs.styleForIdSpan+"}", 0)
-			
-			
-		},
-		
 		reloadFrame: function (pageInitData){
 		    var oldNumberOfIds = pageInitData.pageData.numberOfIdsMap[pageInitData.currentWin.name];
 		    var startId = pageInitData.pageData.counter = 
@@ -231,7 +214,10 @@
          for(var i = 0; i<pageInitData.currentWin.frames.length; i++){
             var frame = pageInitData.currentWin.frames[i];
 			   var doc = frame.document
-		    	if(frame.idSpan!=null){
+			   if(doc.designMode=="on"){
+			   	//do not mark editable IFrames; these are used as rich text fields
+			   	continue
+			   }else if(frame.idSpan!=null){
                //Id Span is already there
                this.updateSpan(pageInitData, MlbPrefs.idsForFramesEnabled, frame.idSpan);
 		      }else{
@@ -273,7 +259,9 @@
 		       }
 		       
 		       //Display image links?
-		       var isImageLink = this.hasOnlyImgChilds(link);
+		       //Todo remove one of possibilities, no performance impact
+//		       var isImageLink = this.hasOnlyImgChilds(link);
+		       var isImageLink = this.isImageLink(link);
 		       
 		       //Check against preferences
 		       if(link.idSpan==null &&
@@ -291,24 +279,10 @@
 		       }else{
 		          //Insert new Span
 		          if(isImageLink){
-		             var newSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.IMG);
+                  var newSpan = this.insertSpanForImageLink(pageInitData, link)		             
 		          }else{
-		             var newSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.LINK);
+                  var newSpan = this.insertSpanForTextLink(pageInitData, link)		             
 		          }
-		           
-		          //Append to last element in link except for imgages for better style
-		          if(link.hasChildNodes() && 
-		             link.lastChild.nodeType==Node.ELEMENT_NODE && 
-		             !XMLUtils.isTagName(link.lastChild, "img")){
-		                link.lastChild.appendChild(newSpan);
-		          }else{
-			          link.appendChild(newSpan);
-		          }
-                                
-                if(isImageLink && MlbPrefs.smartPositioning){
-                	var img = link.getElementsByTagName("img")[0]
-                	this.smartImageLinkPositioning(img, newSpan)
-                }					
 					 //Set reference to idSpan 
 		          link.idSpan=newSpan;
 		        }
@@ -317,6 +291,69 @@
 		    }
 		},
 		
+		insertSpanForTextLink: function(pageInitData, link){
+         var newSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.LINK);
+         //Append to last element in link except for imgages for better style
+			if(link.hasChildNodes() && 
+			   link.lastChild.nodeType==Node.ELEMENT_NODE && 
+			   !XMLUtils.isTagName(link.lastChild, "img")){
+			      link.lastChild.appendChild(newSpan);
+			}else{
+			   link.appendChild(newSpan);
+			}
+			return newSpan
+		},
+		
+		insertSpanForImageLink: function(pageInitData, link){
+			var newSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.IMG);
+         if(!MlbPrefs.smartPositioning){
+         	return link.appendChild(newSpan)
+         }else{             
+            var imgElement = link.getElementsByTagName("img")[0]
+            if(imgElement==null){
+            	//Case of background-image
+            	imgElement = link
+            }
+			   //Before! inserting evaluate offsets
+			   var imgElementOffsetLeft = MlbUtils.getOffsetLeftToBody(imgElement)
+			   var imgElementOffsetTop = MlbUtils.getOffsetTopToBody(imgElement)
+			   
+	      	//Set link position relative
+	      	var linkStyle = getComputedStyle(link, null)
+	      	if(linkStyle.position=="static"){
+	      		link.style.position="relative"
+	      	}
+			   //Insert Link with absolute Positioning // Todo has to be changed for small pictures
+	         newSpan.style.position="absolute"
+	         newSpan.style.left="0px"
+	         newSpan.style.top="0px"
+	      	link.appendChild(newSpan)
+	      	
+	      	//If img is to small relative to the span do not overlay image
+	      	var factor = 2
+	      	if(imgElement.offsetWidth<factor*newSpan.offsetWidth && 
+	      	    imgElement.offsetHeight<factor*newSpan.offsetHeight){
+	      		newSpan.style.position="relative"
+	      		return newSpan
+	      	}
+				
+				//Offsets for img Element
+			   var idSpanOffsetLeft = MlbUtils.getOffsetLeftToBody(newSpan)
+			   var idSpanOffsetTop = MlbUtils.getOffsetTopToBody(newSpan)
+	      	var left = imgElementOffsetLeft - idSpanOffsetLeft + imgElement.offsetWidth - newSpan.offsetWidth
+	      	var top = imgElementOffsetTop - idSpanOffsetTop
+	         newSpan.style.left = left+"px"
+	         newSpan.style.top = top+"px"
+				newSpan.style.backgroundColor="#EEF3F9"
+				newSpan.style.color="black"
+				return newSpan
+         }
+		},
+		
+		
+		/*
+		 * Remove, replaced by insertSpan for image link
+		 */
 		smartImageLinkPositioning: function(img, idSpan){
 			var offsets = this.calculateOffsets(img, idSpan)
 			var overlayPositions = this.calculateOverlayPosition(img, idSpan, offsets)
@@ -333,7 +370,7 @@
 			style.left = overlayPositions.left+"px"
 			style.top = overlayPositions.top+"px"
 		},
-		
+
 		/*
 		 * Checks wether this link consists 
 		 */
@@ -357,43 +394,56 @@
 		    return true;
 		},
 		
+		isImageLink: function(element){
+			if((element.getElementsByTagName('img').length>0 ||
+			   getComputedStyle(element, null).backgroundImage!="none") &&
+			   XMLUtils.containsNoText(element)){
+				return true
+			}else{
+				return false
+			}
+		},
+		
 		/*
 		    Init for form-elements
+		    Idea: switch to document.evaluate
 		*/
 		initFormElements: function (pageInitData){
-			//RNO, 20.06.2008: included
-//         var forms = pageInitData.currentDoc.forms
-//         for(var i=0; i<forms.length; i++ ){
-//            this.addIdToFormElements(pageInitData, forms[i].elements);
-//		   }
-		   //Todo adapt
-		   //Iteration over form elements
+         var forms = pageInitData.currentDoc.forms
+         for(var i=0; i<forms.length; i++ ){
+            this.setIdsOnFormElements(pageInitData, forms[i].elements, false);
+		   }
 		   var formelements = pageInitData.currentDoc.getElementsByTagName("input");
-		   this.addIdToFormElements(pageInitData, formelements);
+         this.setIdsOnFormElements(pageInitData, formelements, true);
 		   formelements = pageInitData.currentDoc.getElementsByTagName("select");
-		   this.addIdToFormElements(pageInitData, formelements);
+         this.setIdsOnFormElements(pageInitData, formelements, true);
 		   formelements = pageInitData.currentDoc.getElementsByTagName("button");
-		   this.addIdToFormElements(pageInitData, formelements);
+         this.setIdsOnFormElements(pageInitData, formelements, true);
 		   formelements = pageInitData.currentDoc.getElementsByTagName("textarea");
-		   this.addIdToFormElements(pageInitData, formelements);
+         this.setIdsOnFormElements(pageInitData, formelements, true);
 		},
 		
 		/*
 		 * Inserts Ids for a list of form elements
 		 */
-		addIdToFormElements: function(pageInitData, nodeList){
-			for(var i=0; i<nodeList.length; i++){
-			   var element = nodeList.item(i);
+		setIdsOnFormElements : function(pageInitData, formNodeList, excludeElementsWithIdSpan){
+			for(var i=0; i<formNodeList.length; i++){
+			   var element = formNodeList.item(i)
 			
-			   //Hidden input-fields do not get ids ;-)
-			   if(element.type=="hidden"){
+			   //Hidden input-fields and fieldsets do not get ids ;-)
+			   if(element.type=="hidden" ||
+			      MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.FIELDSET)){
 			      continue;
 			   }
 			
 			   var parent = element.parentNode;
-			   if(element.idSpan!=null){
-			      this.updateSpan(pageInitData, MlbPrefs.idsForFormElementsEnabled, element.idSpan);
-			      this.setElementStyle(element, MlbPrefs.idsForFormElementsEnabled)
+            if(element.idSpan!=null){
+            	if(excludeElementsWithIdSpan){
+            		continue
+            	}else{
+				      this.updateSpan(pageInitData, MlbPrefs.idsForFormElementsEnabled, element.idSpan);
+				      this.setElementStyle(element, MlbPrefs.idsForFormElementsEnabled)
+            	}
 			   }else{
 			      //Generate new span
 			      var newSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.FORMELEMENT);
@@ -554,7 +604,9 @@
 		    if(this.spanPrototype==null){
 		        //span
 		        var span = pageInitData.currentDoc.createElement("span");
-		        span.className = this.STYLE_CLASS_NAME
+//		        Todo change
+//		        span.className = this.STYLE_CLASS_NAME
+		        span.style.cssText = MlbPrefs.styleForIdSpan
 		        
 		        //The span has to be hidden before inserting into the DOM
 		        //otherwise the layout will not be correct.
@@ -660,8 +712,15 @@
       //sets the current page data
       setPageData: function(win, pageData){
       	win.top.mlbPageData = pageData
-      }
+      },
       
+      createPageData: function(){
+         if(MlbPrefs.useSelfDefinedCharsForIds){
+         	return new PageData(MlbPrefs.idChars)
+         }else{
+         	return new PageData(null)
+         }
+      }      
 	}
 	
    var NS = rno_common.Namespace

@@ -20,11 +20,6 @@
 		//Keybuffer
 		keybuffer: "",
 		
-		//global varials
-		currentWin: null,
-		currentTopWin: null,
-		currentDoc: null,
-		
 		//Flag for openening link in new tab
 		openInNewTabFlag: false,
 		
@@ -54,33 +49,31 @@
 		/*
 		    Main-eventhandling for every page
 		*/
-		onkeydown: function(event){
+		onkeypress: function(event){
+
+		   var keyCode = event.which;
+		   var charCode = event.charCode
+		   var charString = String.fromCharCode(charCode).toUpperCase()
+
 		   //All events are handled by the chrome window
 		   var browser = window.getBrowser();
-		   if(!browser){
-		      return;
-		   }
-         
+		   //Do nothing if
          //In case of Shift/Alt Gr key or if no ids are visible, do nothing
-         if(event.shiftKey ||
-            (event.ctrlKey && event.altKey) ||		   		  
-		      MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.NONE){
-            this.resetVars();
+		   if(!browser ||
+            event.shiftKey ||
+            //Alt GR 
+            (event.ctrlKey && event.altKey) ||
+            //Ids not visible		   		  
+		      MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.NONE ||
+		      //Focus is on writable Element
+		      !this.isCharCodeInIds(charString)){ 
 		    	return;
 		   }
 		    
-		   this.setWinVariables();
-         		
 		   //With new keystroke clear old timer
 		   clearTimeout(this.timerId);
 		    
-		   var keyCode = event.keyCode;
 		    
-		   //Suppress event if exclusive use
-		   if(this.isCaseOfExclusivlyUseOfNumpad(event)){
-		   	this.stopEvent(event);
-		   }
-		
 		   //On enter 
 		   if(keyCode==13 && this.keybuffer!=""){
 		       if(this.shouldExecute()){
@@ -91,42 +84,38 @@
 		       return;
 		   }
 		
-		   //Translation for numpad-keys (NUMPAD0-NUMPAD9)
-		   if(keyCode>=96 && keyCode<=105){
-		       keyCode -= 48;
-		   }
-		    
-		   //Check rules for not applying mouseless browsing
-		   var numberWasPressed =  keyCode>=KeyboardEvent.DOM_VK_0 && keyCode<=KeyboardEvent.DOM_VK_9
-		   var backspaceWasPressed = keyCode==KeyboardEvent.DOM_VK_BACK_SPACE
-		   
-		   //Reset vars if...
-		   if( (!numberWasPressed && !backspaceWasPressed) ||
-		       (!(event.altKey || event.ctrlKey) && 
-		         MlbUtils.isWritableElement(event.originalTarget) && 
-		         !this.isCaseOfExclusivlyUseOfNumpad(event))){
-		       this.resetVars();
-		       return
-		   }
-		    
-			//Update this.keybuffer
-			if(backspaceWasPressed){
-			   this.keybuffer = this.keybuffer.substring(0,this.keybuffer.length-1);
-			}else{
-			   this.keybuffer = this.keybuffer + String.fromCharCode(keyCode);
-			}
+			this.keybuffer = this.keybuffer + String.fromCharCode(charCode);
+
 			//Update statusbar
 			if(MlbPrefs.showKeybufferInStatusbar){
 			   this.updateStatuspanel(this.keybuffer);
 			}
 			
 			//Set flag whether link should be opened in new tab
-			this.openInNewTabFlag = this.isOpenInNewTab(event)
+			this.openInNewTabFlag = event.altKey
 			
 			if(this.isExecuteAutomatic(event)){
 			   this.timerId = setTimeout("mouselessbrowsing.EventHandler.executeAutomatic()", MlbPrefs.delayForAutoExecute);
 			}else{
 			   this.timerId = setTimeout("mouselessbrowsing.EventHandler.resetVars()", MlbPrefs.delayForAutoExecute);
+			}
+		},
+		
+		onkeydown: function(event){
+         //Suppress event if exclusive use
+         //Todo make it properly as in case of alphanummeric ids it makes no sense
+         if(MlbUtils.isWritableElement(event.originalTarget) && 
+         	!this.isCaseOfExclusivlyUseOfNumpad(event)){
+               this.stopEvent(event)
+               this.eventStopped = true
+         }
+		},
+		
+		isCharCodeInIds: function(charString){
+			if(MlbPrefs.idChars.indexOf(charString)!=-1){
+				return true;
+			}else{
+				return false;
 			}
 		},
 		
@@ -144,10 +133,6 @@
 		    }
 		},
 			
-		isOpenInNewTab: function(event){
-		    return event.altKey;
-		},
-		
 		/*
 		    Autoexecution function when pressed ctrl-key
 		*/
@@ -160,7 +145,7 @@
 		},
 		
 		shouldExecute: function(){
-			if(this.currentTopWin.mlbPageData.elementsWithId[this.keybuffer]!=null ||
+			if(this.getContentWin().mlbPageData.hasElementWithId(this.keybuffer) ||
 				this.globalIds[this.keybuffer]!=null){
 				return true;
 			}else{
@@ -190,16 +175,16 @@
 		    }
 		        
 		    //Else...
-		    var element = this.currentTopWin.mlbPageData.getElementForId(this.keybuffer);
-		    this.currentDoc = element.ownerDocument;
-		    this.currentWin = this.currentDoc.defaultView;
+		    var element = this.getContentWin().mlbPageData.getElementForId(this.keybuffer);
+		    var currentDoc = element.ownerDocument;
+		    var currentWin = currentDoc.defaultView;
 		    //Return code for onclick-functions
 		    var returnCode = true;
 		    var tagName = element.tagName.toLowerCase();
 		    var type = element.type?element.type.toLowerCase():null;
 		    
 		    if(tagName=="body"){
-		        this.currentDoc.defaultView.focus();
+		        currentWin.focus();
 		        return;
 		    }
 		    //If it is text- or password-field
@@ -221,8 +206,8 @@
 		    }
 		    	
 		    //And simulate click
-		    var clickEvent = this.currentDoc.createEvent("MouseEvents");
-		    clickEvent.initMouseEvent( "click", true, true, this.currentWin, 1, 0, 0, 0, 0, 
+		    var clickEvent = currentDoc.createEvent("MouseEvents");
+		    clickEvent.initMouseEvent( "click", true, true, currentWin, 1, 0, 0, 0, 0, 
 		        this.openInNewTabFlag, false, false, false, 0, null);
 		    element.dispatchEvent(clickEvent);
 		 
@@ -235,22 +220,21 @@
 			if(this.isSuppressShortCut()){
 				return
 			}
-		   this.setWinVariables();
-			
+			var resultingVisibilityMode = null;
 			if(MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.CONFIG || MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.ALL){
 				//If ids are currently shown, switch to visibility mode "none"
 				GlobalData.previousVisibilityMode=MlbPrefs.visibilityMode;
-		    	MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.NONE;
+		    	resultingVisibilityMode=MlbCommon.VisibilityModes.NONE;
 		   }else if(GlobalData.previousVisibilityMode==MlbCommon.VisibilityModes.CONFIG){
 	         //Previous mode was config, switch back to config mode		   	
             GlobalData.previousVisibilityMode=MlbPrefs.visibilityMode;
-            MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.CONFIG;
+            resultingVisibilityMode=MlbCommon.VisibilityModes.CONFIG;
 			}else {
 			   //Previous mode was all, switch back to all mode
 			   GlobalData.previousVisibilityMode=MlbPrefs.visibilityMode;
-			   MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.ALL;
+			   resultingVisibilityMode=MlbCommon.VisibilityModes.ALL;
 			}
-		   this.updateIdsAfterToggling();
+		   this.updateIdsAfterToggling(resultingVisibilityMode);
 		   return ShortCutManager.SUPPRESS_KEY
 		},
 		
@@ -260,41 +244,25 @@
 		 */
 		toggleAllIds: function(){
 			GlobalData.previousVisibilityMode=MlbPrefs.visibilityMode;
+		   var resultingVisibilityMode = null
 		   if(MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.NONE || MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.CONFIG){
-		    	MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.ALL;
+		    	resultingVisibilityMode=MlbCommon.VisibilityModes.ALL;
 		   }else{ 
-		    	MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.CONFIG;
+		    	resultingVisibilityMode=MlbCommon.VisibilityModes.CONFIG;
 		   }
-		   this.updateIdsAfterToggling();
+		   this.updateIdsAfterToggling(resultingVisibilityMode);
 		},
 		
 		/*
 		 * Initiates the update of the id spans after toggling the ids
 		 */
-		updateIdsAfterToggling: function(){
-		   this.setWinVariables();
-
-			//Make visibility mode persistent
-		   if(MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.NONE){
-			   MlbPrefs.disableAllIds=true;
-		   }else{
-			   MlbPrefs.disableAllIds=false;
-		   }
-			Prefs.setBoolPref("mouselessbrowsing.disableAllIds", MlbPrefs.disableAllIds);
-         
+		updateIdsAfterToggling: function(visibilityMode){
+	       MlbPrefs.initShowIdPrefs(visibilityMode);
          //Set visibility flags		    
-			if(MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.NONE){
-		       MlbPrefs.setVisibilityFlags(false);
-		       this.hideIdSpans(this.currentTopWin);
-		       //Reset PageData
-		       this.currentTopWin.mlbPageData = new mouselessbrowsing.PageData()
-		    }else if(MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.CONFIG){
-		       //Setting prefs back to configured values
-		       MlbPrefs.initShowIdPrefs()
-		       this.getPageInitializer().initAfterToggling(this.currentTopWin);
-		    }else{
-		       MlbPrefs.setVisibilityFlags(true);
-		       this.getPageInitializer().initAfterToggling(this.currentTopWin);
+			if(visibilityMode==MlbCommon.VisibilityModes.NONE){
+		       this.hideIdSpans(this.getContentWin());
+		    }else {
+		       this.getPageInitializer().initAfterToggling(this.getContentWin());
 		    }
 		},
 		
@@ -303,6 +271,8 @@
 		 * Called recusvily an all frames
 		 */
 		hideIdSpans: function(winObj){
+	       //Reset PageData
+	       this.getContentWin().mlbPageData = new mouselessbrowsing.PageData()
 		    var spans = winObj.document.getElementsByTagName("span");
 		    for(var i=0; i<spans.length; i++){
 		        var span = spans[i];
@@ -321,10 +291,8 @@
 		    }
 		},
 		
-		setWinVariables: function(){
-		    if(window.getBrowser()){
-		        this.currentTopWin = this.currentWin = window.getBrowser().contentWindow;
-		    }
+		getContentWin: function(){
+			return window.getBrowser().contentWindow;
 		},
 		
 		/*
@@ -379,11 +347,6 @@
 		    if(this.isSuppressShortCut()){
 		    	return
 		    }
-		    if(this.keybuffer!=""){
-		        //Then it's case of opening in new tab with postfix character
-		        return;
-		    }
-		    this.setWinVariables();
 		    var focusedWindow = document.commandDispatcher.focusedWindow;
 		    if(direction=="up")
 		        focusedWindow.scrollBy(0, -MlbPrefs.pixelsToScroll);
@@ -406,7 +369,7 @@
 		openLinkInNewTabViaPostfixKey: function(){
 		    if(this.keybuffer=="")
 		        return;
-		    var element = this.currentTopWin.mlbPageData.elementsWithId[this.keybuffer];   
+		    var element = this.getContentWin().mlbPageData.getElementForId[this.keybuffer];   
 		    if(element==null)
 		        return;
 		    var tagName = element.tagName.toLowerCase();
@@ -430,9 +393,9 @@
 		},
 		
 		updateStatuspanel: function(status){
-			var label = "MLB 0.5";
+			var label = "MLB 0.5 ";
 			if(MlbPrefs.exclusiveUseOfNumpad)
-				label = label + " [Exclusive] ";
+				label = label + "[Exclusive] ";
 		    document.getElementById("mlb-status").label= label + status;
 		},
 		
@@ -470,27 +433,27 @@
 		selectLink: function(){
 		   if(this.keybuffer=="")
 		        return;
-		    var element = this.currentTopWin.mlbPageData.elementsWithId[this.keybuffer];   
+		    var element = this.getContentWin().mlbPageData.getElementForId[this.keybuffer];   
 		    if(element==null)
 		        return;
 		    var tagName = element.tagName.toLowerCase();
 		    if(tagName!="a")
 		        return;
 		 	//Select Link
-		   	element.focus();
-		   	var range = this.currentDoc.createRange();
-		   	range.selectNode(element);
-			var selection = this.currentWin.getSelection()
+		   element.focus();
+		   var doc = element.ownerDocument;
+			var selection = doc.defaultView.getSelection()
+
+		   //Create new Range
+		   var range = doc.createRange();
+		   range.selectNode(element);
+		   range.setEndBefore(element.idSpan)
+			//Set new Selection
 			selection.removeAllRanges();
 			selection.addRange(range);
-		
-		    var clickEvent = this.currentDoc.createEvent("MouseEvents");
-		    clickEvent.initMouseEvent( "click", true, true, this.currentWin, 0, 0, 0, 0, 0, 
-		        this.openInNewTabFlag, false, false, false, 2, element );
-		    element.dispatchEvent(clickEvent);
 			
-		    this.resetVars();
-		    return ShortCutManager.SUPPRESS_KEY;
+			this.resetVars();
+		   return ShortCutManager.SUPPRESS_KEY;
 		},
 		
 		openConfiguration: function(){
@@ -536,9 +499,44 @@
 				}
 			}
          getBrowser().contentDocument.activeElement.blur()			
+		},
+
+		/*
+		 * (Re) numbers the tabs
+		 */
+		numberTabs: function(){
+			if(!MlbPrefs.showTabIds){
+				return
+			}
+			var tabs = Application.activeWindow.tabs
+			for(var i=0; i<tabs.length; i++) {
+				var tab = tabs[i]._getTab()
+				if(tab==null){
+					return
+				}
+				tab.label = this.createTabIdText(i) + tabs[i].document.title
+			}
+			
+			Utils.logMessage("Tabs changed")
+		},
+		
+		renumberTab:function(event){
+         if(!MlbPrefs.showTabIds){
+            return
+         }
+			var activeTabIndex = Application.activeWindow.activeTab.index
+			var activeTab = Application.activeWindow.tabs[activeTabIndex]._getTab()
+			activeTab.label = this.createTabIdText(activeTabIndex) + activeTab.label  
+		},
+		
+		createTabIdText: function(index){
+			return "[0" + (index+1) + "] "
+		},
+		
+		addSiteRule:function(){
+			var urlbar = document.getElementById("urlbar")
+			openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "prefs", "chrome, modal, centerscreen", urlbar.value)
 		}
-		
-		
    }
 
    var NS = rno_common.Namespace

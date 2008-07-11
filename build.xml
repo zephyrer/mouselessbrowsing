@@ -6,7 +6,7 @@
 <property name="build_dir" location="./build" />
 <property name="dist_dir" location="./dist" />
 <property name="backup_dir" location="./backup" />
-<property name="version" value="0_5_beta_1"/>
+<property name="version" value="0_5_beta_3"/>
 
 <target name="createDistributionXPI">
     <delete>

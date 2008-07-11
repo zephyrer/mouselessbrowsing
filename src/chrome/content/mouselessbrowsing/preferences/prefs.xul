@@ -21,7 +21,7 @@
         centerWindowOnScreen="true"
         modal="true"
         onload="doOnload()"
-        ondialogaccept="saveUserPrefs()"
+        ondialogaccept="return saveUserPrefs()"
         ondialoghelp="dialogHelp()"
         buttons="help,accept,cancel"
         >
@@ -33,11 +33,12 @@
       <tabs>
         <tab label="General"/>
         <tab label="Visibilities"/>
+        <tab label="Site Rules" id="siteruletab"/>
         <tab label="Styles"/>
         <tab label="Keys"/>
       </tabs>
       <tabpanels>
-        <tabpanel id="generaltab">
+        <tabpanel>
             <vbox flex="1">
            <groupbox >
            <caption label="General Options"></caption>
@@ -50,8 +51,14 @@
                         <checkbox id="exclusiveNumpad" label="Use numpad exclusively for Mouseless Browsing" prefid="mouselessbrowsing.exclusiveNumpad" defaultValue="0"/>
                     </row>
                     <row>
+                        <checkbox id="smartPositioning" label="Show Ids before all images are loaded (could lead to missing and misplaced ids)" prefid="mouselessbrowsing.initOnDomContentLoaded" />
+                    </row>
+                    <row>
                         <checkbox id="smartPositioning" label="Smart positioning of ids" prefid="mouselessbrowsing.smartPositioning" defaultValue="1"/>
                     </row>
+                    <!-- row>
+                        <checkbox id="tabIds" label="Show tab ids" prefid="mouselessbrowsing.showTabIds" defaultValue="1"/>
+                    </row-->
                     <row>
                         <checkbox id="status" label="Show keybuffer in statusbar" prefid="mouselessbrowsing.showKeybufferInStatusbar" defaultValue="1"/>
                     </row>
@@ -67,15 +74,19 @@
                             <rows>
                                 <row align="center">
                                     <label value="Delay for automatic execution/clearing keybuffer (msec)"/>
-                                    <textbox prefid="mouselessbrowsing.autoExecuteDelay" maxlength="6" width="70"/>
+                                    <textbox prefid="mouselessbrowsing.autoExecuteDelay" maxlength="6"/>
                                 </row>
                                 <row align="center">
                                      <label value="Pixels to scroll when pressing shortcuts"/>
-                                     <textbox prefid="mouselessbrowsing.pixelsToScroll" maxlength="6" width="70"/>
+                                     <textbox prefid="mouselessbrowsing.pixelsToScroll" maxlength="6" />
                                 </row>
                                 <row align="center">
                                      <label value="Maximum number of ids"/>
-                                     <textbox prefid="mouselessbrowsing.maxIdNumber" maxlength="6" width="70"/>
+                                     <textbox prefid="mouselessbrowsing.maxIdNumber" maxlength="6" />
+                                </row>
+                                <row>
+                                     <checkbox id="useSelfDefinedCharsCB" label="Use self-defined character set for generating ids" prefid="mouselessbrowsing.useSelfDefinedCharsForIds" oncommand="MLB_onCommandUseSelfDefinedChars(event)"/>
+                                     <textbox id="idCharsTB" prefid="mouselessbrowsing.idChars" oninput="MLB_onInputIdCharsTB()"/>                                    
                                 </row>
                             </rows>
                         </grid>
@@ -85,7 +96,7 @@
             </groupbox>
             </vbox>
         </tabpanel>
-        <tabpanel id="visibilitytab">
+        <tabpanel>
             <vbox flex="1">
             <groupbox >
             <caption label="Visibility of ids"></caption>
@@ -112,7 +123,54 @@
            <!-- spacer flex="1"/-->
            </vbox>
         </tabpanel>
-        <tabpanel id="styletab">
+         <tabpanel >
+            <vbox flex="1">
+               <grid>
+                  <columns flex="1">
+                     <column></column>
+                     <column flex="1"></column>
+                  </columns>
+                  <rows >
+                     <row align="center">
+                        <label value="URL Pattern" control="urlPatterTB" accesskey="p"/>
+                        <textbox id="urlPatterTB" flex="1"/>
+                     </row>
+                     <row align="center">
+                        <label value="Visibility Mode"/>
+                        <menulist id="visibilityModeML" persist="value">
+                           <menupopup>
+                              <menuitem label="Hide Ids" value="NONE"/>
+                              <menuitem label="Show Ids as configured" value="CONFIG"/>
+                              <menuitem label="Show all Ids" value="ALL"/>
+                           </menupopup>
+                        </menulist>
+                     </row>
+                  </rows>
+               </grid>
+               <checkbox id="siteRuleExclusiveNumpadCB" label="Use numpad exclusively for Mouseless Browsing" persist="checked"/>
+               <checkbox id="siteRuleOnDemandFlagCB" label="Show Ids only on demand" persist="checked"/>
+               <hbox pack="center">
+                  <button label="Add" oncommand="MLB_addSiteRule()" accesskey="a"/>
+                  <button id="updateBtn" label="Update" oncommand="MLB_updateSiteRule()" accesskey="u" disabled="true"/>
+                  <button id="removeBtn" label="Remove" oncommand="MLB_removeSiteRule()" accesskey="r" disabled="true"/>
+               </hbox>
+               <listbox id="siteRulesLB" prefid="mouselessbrowsing.siteRules" flex="1" disabled="false">
+                  <listhead>
+                     <listheader label="URL Pattern"/>
+                     <listheader align="center" style="display:none"/>
+                     <listheader style="display:none" />
+                     <listheader style="display:none" />
+                  </listhead>
+                  <listcols>
+                     <listcol flex="1"/>
+                     <listcol style="display:none"/>
+                     <listcol style="display:none"/>
+                     <listcol style="display:none"/>
+                  </listcols>
+               </listbox>
+            </vbox>
+         </tabpanel>
+        <tabpanel>
             <vbox flex="1">
             <groupbox flex="1">
             <grid flex="1">
@@ -156,43 +214,13 @@
                            <button label="Restore Default" oncommand="MLB_setStyleDefault('styleForFrameIdSpan')"/>
                         </hbox>
                     </row>
-<!--  For Version 0.4
-                    <row>
-                        <checkbox id="smartPositioningOfImg" 
-                                  label="Use smart positioning of image ids" 
-                                  prefid="mouselessbrowsing.smartPositioningOfImg" 
-                                  defaultValue="1"
-                                  onclick="onClickSmartPos(event)"/>
-                    </row>
-                    <row>
-                        <hbox>
-                            <spacer style="width:30px"/>
-                            <vbox>
-                                <grid>
-                                    <rows>
-                                        <row>
-                                            <label value="Use smart positioning for images that are higher than"/>
-                                            <textbox id="smartPosMinHeight" prefid="mouselessbrowsing.smartPosMinHeight" default="40" />
-                                        </row>
-                                        <row>
-                                            <label value="Use smart positioning for images that are wider than"/>
-                                            <textbox id="smartPosMinWidth" prefid="mouselessbrowsing.smartPosMinWidth" default="60" />
-                                        </row>
-                                    </rows>
-                                </grid>
-                                <label value="Style for image id span"/>
-                                <textbox id="styleForImageIdSpan" prefid="mouselessbrowsing.styleForImageIdSpan" flex="1" defaultValue="z-index:500;font-size:xx-small;font-family:sans-serif;border-color:grey; border-width:1px;border-style:solid;padding:0px 3px 0px 3px;"/>                                    
-                            </vbox>
-                        </hbox>
-                    </row>
- -->
                 </rows>
             </grid>
             </groupbox>
             <spacer flex="1"/>
             </vbox>
         </tabpanel>
-        <tabpanel id="keytab">
+        <tabpanel >
             <vbox flex="1">
                 <groupbox>
                 <grid>
@@ -249,7 +277,11 @@
                              <label value="Open Configuration"/> 
                              <keyinputbox prefid="mouselessbrowsing.keys.openConfig" maxlength="1" size="20" allowmodifiers="true"/>
                         </row>
-                    </rows>
+                        <row>
+                             <label value="Add Site Rule"/> 
+                             <keyinputbox prefid="mouselessbrowsing.keys.addSiteRule" maxlength="1" size="20" allowmodifiers="true"/>
+                        </row>
+                  </rows>
                 </grid>
                 </groupbox>
                 <spacer flex="1"/>

@@ -65,7 +65,10 @@
 		    
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.openConfig");
 		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.openConfiguration()", MlbCommon.SCM_CLIENT_ID);
-		
+
+		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.addSiteRule");
+		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.addSiteRule()", MlbCommon.SCM_CLIENT_ID);
+
 		    //Toggling exclusive use with double stroke of numpad-key
 		    ShortCutManager.addJsShortCutWithCombinedKeyCode(2304, "mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpad()", MlbCommon.SCM_CLIENT_ID);
 		
