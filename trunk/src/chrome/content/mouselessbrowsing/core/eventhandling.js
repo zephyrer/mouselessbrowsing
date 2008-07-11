@@ -20,6 +20,8 @@
 		//Keybuffer
 		keybuffer: "",
 		
+		eventStopped: false, 
+		
 		//Flag for openening link in new tab
 		openInNewTabFlag: false,
 		
@@ -61,10 +63,11 @@
          //In case of Shift/Alt Gr key or if no ids are visible, do nothing
 		   if(!browser ||
             event.shiftKey ||
-            //Alt GR 
-            (event.ctrlKey && event.altKey) ||
             //Ids not visible		   		  
 		      MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.NONE ||
+            (!MlbPrefs.useSelfDefinedCharsForIds && event.ctrlKey && event.altKey) ||
+            (MlbPrefs.useSelfDefinedCharsForIds && (event.ctrlKey || event.altKey)) ||
+            (MlbUtils.isWritableElement(event.originalTarget) && !this.eventStopped) ||
 		      //Focus is on writable Element
 		      !this.isCharCodeInIds(charString)){ 
 		    	return;
@@ -73,17 +76,6 @@
 		   //With new keystroke clear old timer
 		   clearTimeout(this.timerId);
 		    
-		    
-		   //On enter 
-		   if(keyCode==13 && this.keybuffer!=""){
-		       if(this.shouldExecute()){
-		           this.execute();
-		           this.stopEvent(event);
-		       }
-		       this.resetVars();
-		       return;
-		   }
-		
 			this.keybuffer = this.keybuffer + String.fromCharCode(charCode);
 
 			//Update statusbar
@@ -105,10 +97,21 @@
          //Suppress event if exclusive use
          //Todo make it properly as in case of alphanummeric ids it makes no sense
          if(MlbUtils.isWritableElement(event.originalTarget) && 
-         	!this.isCaseOfExclusivlyUseOfNumpad(event)){
+         	this.isCaseOfExclusivlyUseOfNumpad(event)){
                this.stopEvent(event)
-               this.eventStopped = true
+               this.eventStopped=true
+         }else{
+         	   this.eventStopped=false
          }
+		},
+		
+		handleEnter: function(){
+			var event = ShortCutManager.currentEvent;
+         if(this.keybuffer!="" && this.shouldExecute()){
+           this.execute();
+           this.stopEvent(event);
+         }
+         this.resetVars();
 		},
 		
 		isCharCodeInIds: function(charString){
@@ -338,6 +341,7 @@
 		   this.openInNewTabFlag=false;
 		   this.updateStatuspanel("");
 			this.openContextMenu = false;
+			clearTimeout(this.timerId);
 		},
 		
 		/*
@@ -369,7 +373,7 @@
 		openLinkInNewTabViaPostfixKey: function(){
 		    if(this.keybuffer=="")
 		        return;
-		    var element = this.getContentWin().mlbPageData.getElementForId[this.keybuffer];   
+		    var element = this.getContentWin().mlbPageData.getElementForId(this.keybuffer);   
 		    if(element==null)
 		        return;
 		    var tagName = element.tagName.toLowerCase();
@@ -516,8 +520,6 @@
 				}
 				tab.label = this.createTabIdText(i) + tabs[i].document.title
 			}
-			
-			Utils.logMessage("Tabs changed")
 		},
 		
 		renumberTab:function(event){

@@ -410,9 +410,11 @@
 		*/
 		initFormElements: function (pageInitData){
          var forms = pageInitData.currentDoc.forms
-         for(var i=0; i<forms.length; i++ ){
-            this.setIdsOnFormElements(pageInitData, forms[i].elements, false);
-		   }
+         if(forms!=null){
+	         for(var i=0; i<forms.length; i++ ){
+	            this.setIdsOnFormElements(pageInitData, forms[i].elements, false);
+			   }
+         }
 		   var formelements = pageInitData.currentDoc.getElementsByTagName("input");
          this.setIdsOnFormElements(pageInitData, formelements, true);
 		   formelements = pageInitData.currentDoc.getElementsByTagName("select");

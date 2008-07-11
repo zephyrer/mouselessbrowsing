@@ -33,7 +33,7 @@
 		if(appcontent){
 			appcontent.addEventListener("DOMContentLoaded", {handleEvent: function(event){PageInitializer.onDOMContentLoaded(event)}}, true);
 			appcontent.addEventListener("pageshow", {handleEvent: function(event){PageInitializer.onPageShow(event)}}, true);
-			appcontent.addEventListener("mousedown", showOffsets, true);
+//			appcontent.addEventListener("mousedown", showOffsets, true);
          //Todo
 //			appcontent.addEventListener("pageshow", {handleEvent: function(event){EventHandler.renumberTab(event)}}, true);
 		}
@@ -53,6 +53,7 @@
 		mouselessbrowsing.InitManager.init();
 	} 
 	
+	//Todo remove
 	function showOffsets(event){
 		if(event.ctrlKey && event.button==2){
 		  var target = event.originalTarget

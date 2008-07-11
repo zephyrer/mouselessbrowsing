@@ -33,6 +33,9 @@
 		    ShortCutManager.clearAllShortCutsForClientId(MlbCommon.SCM_CLIENT_ID);
 		    this.allCombinedShortCutKeys = null;
 		
+		    //Shortcut for Enter
+		    ShortCutManager.addJsShortCutWithCombinedKeyCode(208, "mouselessbrowsing.EventHandler.handleEnter()", MlbCommon.SCM_CLIENT_ID);
+		    
 		    var combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.toggleMLB");
 		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.toggleIds()", MlbCommon.SCM_CLIENT_ID);
 		    
