@@ -38,7 +38,8 @@
 		   var type = element.type?element.type.toUpperCase():"";
 		   var isWritableFormElement = (tagName.indexOf("INPUT")!=-1 && (type=="TEXT" || 
 		           type=="PASSWORD")) || tagName.indexOf("TEXTAREA")!=-1 || 
-		           tagName.indexOf("SELECT")!=-1;
+		           tagName.indexOf("SELECT")!=-1 ||
+		           element.ownerDocument.designMode=="on"
 		   return isWritableFormElement;
 		},
 		
@@ -49,7 +50,8 @@
 			SELECT: "SELECT",
 			CHECKBOX: "CHECKBOX",
 			RADIO: "RADIO",
-			BUTTON: "BUTTON"
+			BUTTON: "BUTTON",
+			FIELDSET: "FIELDSET"
 		},
 		
 		isElementOfType: function(element, type){
@@ -72,6 +74,8 @@
             return XMLUtils.isTagName(element, "INPUT") && "checkbox"==element.type
          }else if(this.ElementTypes.RADIO==type){
             return XMLUtils.isTagName(element, "INPUT") && "radio"==element.type
+         }else if(this.ElementTypes.FIELDSET==type){
+            return XMLUtils.isTagName(element, "FIELDSET")
          }
 		},
 		
