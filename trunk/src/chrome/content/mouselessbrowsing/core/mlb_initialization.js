@@ -83,9 +83,10 @@
 		
 		initRemaining: function(){
 		    //Display keybuffer in statusbar?
-		    var statusbarpanel = document.getElementById("mlb-status");
+		    var statusbarpanel = document.getElementById("mlb-status-panel");
 		    if(MlbPrefs.showKeybufferInStatusbar){
 		        statusbarpanel.style.display="block";
+		        document.getElementById('mlb-status-image').tooltipText = "Mouseless Browsing " + MlbCommon.MLB_VERSION
 		    }else{
 		        statusbarpanel.style.display="none";
 		    }
