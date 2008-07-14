@@ -397,10 +397,10 @@
 		},
 		
 		updateStatuspanel: function(status){
-			var label = "MLB 0.5 ";
-			if(MlbPrefs.exclusiveUseOfNumpad)
-				label = label + "[Exclusive] ";
-		    document.getElementById("mlb-status").label= label + status;
+			//Todo update
+//			if(MlbPrefs.exclusiveUseOfNumpad)
+//				label = label + "[Exclusive] ";
+		    document.getElementById("mlb-status").value= status;
 		},
 		
 		changeTabByNumber: function(){

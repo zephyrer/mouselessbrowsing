@@ -51,7 +51,7 @@
                         <checkbox id="exclusiveNumpad" label="Use numpad exclusively for Mouseless Browsing" prefid="mouselessbrowsing.exclusiveNumpad" defaultValue="0"/>
                     </row>
                     <row>
-                        <checkbox id="smartPositioning" label="Show Ids before all images are loaded (could lead to missing and misplaced ids)" prefid="mouselessbrowsing.initOnDomContentLoaded" />
+                        <checkbox label="Show Ids before all images are loaded (could lead to missing and misplaced ids)" prefid="mouselessbrowsing.initOnDomContentLoaded" />
                     </row>
                     <row>
                         <checkbox id="smartPositioning" label="Smart positioning of ids" prefid="mouselessbrowsing.smartPositioning" defaultValue="1"/>

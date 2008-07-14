@@ -33,6 +33,11 @@
     </script>
 
     <statusbar id="status-bar">
-		<statusbarpanel id="mlb-status" label="MLB" style="width:200px"/>
+         <statusbarpanel id="mlb-status-panel" style="width:70px; overflow:hidden" onclick="mouselessbrowsing.EventHandler.openConfiguration()">
+           <hbox crop="end">
+			    <image id="mlb-status-image" src="chrome://mouselessbrowsing/content/mouselessbrowsing/MLB.ico"/>
+			    <label id="mlb-status" crop="end" />
+           </hbox>
+		</statusbarpanel>
 	</statusbar> 
 </overlay>

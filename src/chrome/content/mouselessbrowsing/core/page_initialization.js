@@ -16,32 +16,18 @@
 	var PageData = mouselessbrowsing.PageData
 	var EventHandler = mouselessbrowsing.EventHandler
 	
-   var CallTypes = {
-      FIRST_CALL: 1,
-      INTERMEDIATE_CALL: 2,
-      FINAL_CALL: 4,
-   }
-
 	//Data Containter for holding
 	//all data needed for init process
-	function PageInitData(currentTopWin, currentWin, currentDoc, pageData, callType){
+	function PageInitData(currentTopWin, currentWin, currentDoc, pageData, event){
       //
       this.currentTopWin = currentTopWin;
       this.currentWin = currentWin;
       this.currentDoc = currentDoc;
-      
       this.pageData = pageData;
-      //Call Type
-      this.callType = callType;      	
+      this.onpageshow2ndCall = event!=null&&event.type=="pageshow"&&!event.persisted
 	}
 	
 	var PageInitializer = {
-		
-		//Variables which contain objects of webpage, which is
-		//actually initialized
-//		currentDoc: null,
-//		currentWin: null,
-//		currentTopWin: null,
 		
 		//Prototype for Id-span-elment for Ids
 		spanPrototype: null,
@@ -49,10 +35,6 @@
 		//RegEx for checking if an link is empty
 		regexWhitespace: /\s/g,
 		
-		//Timer for intermediate Initialization
-		initTimer: null,
-		
-		STYLE_CLASS_DEF_ID: "mlbStyleClass",
 		STYLE_CLASS_NAME: "mlbIdSpan",
 		
 		//Called after update of Prefs
@@ -61,20 +43,16 @@
 		},
 		
 		onPageShow: function(event){
-		   if(event!=null && (event.persisted || !MlbPrefs.initOnDomContentLoaded)){
-				this.startInitilizing(event.originalTarget.defaultView, CallTypes.FINAL_CALL);
-		   }
+			this.startInitilizing(event.originalTarget.defaultView, event);
 		},
 		
 		onDOMContentLoaded: function(event){
-			if(event!=null && MlbPrefs.initOnDomContentLoaded){
-				this.startInitilizing(event.originalTarget.defaultView, CallTypes.FINAL_CALL);
-			}
+			this.startInitilizing(event.originalTarget.defaultView, event);
 		},
 		
-		startInitilizing: function(win, callType){
+		startInitilizing: function(win, event){
 		   var pageInitData = new PageInitData(win.top, win, win.document, 
-            this.getPageData(win), callType)  
+            this.getPageData(win), event)  
 		   
 		   MlbPrefs.applySiteRules(win)
 		   
@@ -93,9 +71,13 @@
 		   if(win==win.top){
 		   	//Topwin is loaded
 		   	//Create new page data
-		   	var pageData = this.createPageData()
-            this.setPageData(win, pageData)
-            pageInitData.pageData = pageData
+		   	if(pageInitData.onpageshow2ndCall){
+		   		pageInitData.pageData = this.getPageData(win)
+		   	}else{
+			   	var pageData = this.createPageData()
+	            this.setPageData(win, pageData)
+	            pageInitData.pageData = pageData
+		   	}
 		      this.initAll(pageInitData);
 		   }else if(this.getPageData(win) && 
 		            this.getPageData(win).initialized){
@@ -110,7 +92,7 @@
 		
 		initAfterToggling: function(win){
 			var pageData = this.createPageData();
-         var pageInitData = new PageInitData(win.top, win, win.document, pageData, CallTypes.FINAL_CAL);
+         var pageInitData = new PageInitData(win.top, win, win.document, pageData);
          this.setPageData(win.top, pageData)
          this.initAll(pageInitData)  
 		},
@@ -119,37 +101,23 @@
 			if(MlbPrefs.debugPerf){
 				var perfTimer = new PerfTimer()
 			}
-			//Todo
-			if(pageInitData.callType==null){
-				pageInitData.callType=CallTypes.FINAL_CALL
-			}
-			//Utils.logMessage("MBL_initAll: callType " + callType);
-			
-			if(pageInitData.callType&CallTypes.FINAL_CALL && this.initTimer!=null){
-				clearTimeout(this.initTimer);
-				this.initTimer = null;
-			}	
 			
 		    //Initilize Page-Data
 		   if(pageInitData.pageData==null){
 			   this.setPageData(pageInitData.currentTopWin, this.createPageData())
 		   }
 
-			if(pageInitData.callType==CallTypes.FIRST_CALL){
-			   this.initTimer = setTimeout("initAll("+ this.INTERMEDIATE_CALL + ")", 200);
-			   return	
-			}
-
 		    //Init-Frames
 		   this.initFrame(pageInitData, pageInitData.currentTopWin);
 			
-		    //Set init-Flag
-		   if(pageInitData.callType & CallTypes.FINAL_CALL){
-            pageInitData.pageData.initialized=true;
+		   //Set init-Flag
+		   if(pageInitData.onpageshow2ndCall){
+			   pageInitData.pageData.initialized=true;
 		   }
+
 		   if(MlbPrefs.debugPerf){
             var timeConsumed = perfTimer.stop()
-            Utils.logMessage("MLB Time for loading:" + timeConsumed)
+            Utils.logMessage("MLB Time for loading " + (pageInitData.onpageshow2ndCall?"2st":"1nd") + " call :" + timeConsumed)
          }
 		   
 		},
@@ -214,12 +182,16 @@
          for(var i = 0; i<pageInitData.currentWin.frames.length; i++){
             var frame = pageInitData.currentWin.frames[i];
 			   var doc = frame.document
-			   if(doc.designMode=="on"){
+			   if(doc.designMode=="on" || doc.body==null){
 			   	//do not mark editable IFrames; these are used as rich text fields
+			   	//onDomContentLoaded the body of frames are partly not available
 			   	continue
 			   }else if(frame.idSpan!=null){
-               //Id Span is already there
-               this.updateSpan(pageInitData, MlbPrefs.idsForFramesEnabled, frame.idSpan);
+			   	if(pageInitData.onpageshow2ndCall){
+			   		continue
+			   	}else{
+	               this.updateSpan(pageInitData, MlbPrefs.idsForFramesEnabled, frame.idSpan);
+			   	}
 		      }else{
 			      var idSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.FRAME);
 			      //Setting different style
@@ -272,10 +244,14 @@
 		
 
 		       //Is there already a span with the id
-		       if(link.idSpan!=null){
-		          var showIdSpan = isImageLink && MlbPrefs.idsForImgLinksEnabled ||
+             if(link.idSpan!=null){
+   		       if(pageInitData.onpageshow2ndCall){
+		       	    continue
+		       	 }else{
+		             var showIdSpan = isImageLink && MlbPrefs.idsForImgLinksEnabled ||
 		       					      !isImageLink && MlbPrefs.idsForLinksEnabled;
-		          this.updateSpan(pageInitData, showIdSpan, link.idSpan);
+		             this.updateSpan(pageInitData, showIdSpan, link.idSpan);
+		       	 }
 		       }else{
 		          //Insert new Span
 		          if(isImageLink){
@@ -440,9 +416,9 @@
 			
 			   var parent = element.parentNode;
             if(element.idSpan!=null){
-            	if(excludeElementsWithIdSpan){
+            	if(excludeElementsWithIdSpan || pageInitData.onpageshow2ndCall){
             		continue
-            	}else{
+            	}else {
 				      this.updateSpan(pageInitData, MlbPrefs.idsForFormElementsEnabled, element.idSpan);
 				      this.setElementStyle(element, MlbPrefs.idsForFormElementsEnabled)
             	}
