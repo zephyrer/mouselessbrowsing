@@ -19,22 +19,22 @@
 			this.idToElementMap = new Object()
 		}
 		
+		//Todo remove as no longer needed
 		//Object used as map to store the number of Ids
 		//used in this window/frame and all its subframes
 		//Key: window.name; Value: number of ids (including the ids of all subframes)
 		this.numberOfIdsMap = new Object()
 		
+		//Todo remove as no longer needed
 		//Object used as map to store the start-id of windows/frames
 		//Key: window.name; Value: start-id
 		this.startIdMap = new Object()
 
-		//Flag which indicates that document is already initialised
-		//i.e. the ids were inserted
-		//Used for frames
-		this.initialized = false
-
+      //Todo no yet used
 		//previousVisisbility Mode
 		this.previousVisibilityMode = MlbCommon.VisibilityModes.CONFIG
+		
+		this.absolutePositionedFormElements = new Array();
 	}
 	
 	PageData.prototype =  {
@@ -98,7 +98,9 @@
 			}
 		},
 		
-		
+		addToAbsolutePosFormElements: function(element){
+			this.absolutePositionedFormElements.push(element)
+		}
 	}
 	
 	var NS = rno_common.Namespace;

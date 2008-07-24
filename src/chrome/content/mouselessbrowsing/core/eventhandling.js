@@ -10,6 +10,7 @@
    
    //Imports   		
 	var Utils = rno_common.Utils
+	var StringUtils = rno_common.StringUtils
 	var Prefs = rno_common.Prefs
 	var MlbPrefs = mouselessbrowsing.MlbPrefs
 	var MlbCommon = mouselessbrowsing.MlbCommon
@@ -57,22 +58,17 @@
 		   var charCode = event.charCode
 		   var charString = String.fromCharCode(charCode).toUpperCase()
 
-		   //All events are handled by the chrome window
-		   var browser = window.getBrowser();
 		   //Do nothing if
-         //In case of Shift/Alt Gr key or if no ids are visible, do nothing
-		   if(!browser ||
-            event.shiftKey ||
+		   if(!window.getBrowser() ||
             //Ids not visible		   		  
 		      MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.NONE ||
-            (!MlbPrefs.useSelfDefinedCharsForIds && event.ctrlKey && event.altKey) ||
-            (MlbPrefs.useSelfDefinedCharsForIds && (event.ctrlKey || event.altKey)) ||
+            (MlbPrefs.isCharIdType() && (event.ctrlKey || event.altKey)) ||
+            (MlbPrefs.isNumericIdType() && MlbUtils.isWritableElement(event.originalTarget) && !this.eventStopped && !this.isOneOfConfiguredModifierCombination(event)) ||
             (MlbUtils.isWritableElement(event.originalTarget) && !this.eventStopped) ||
-		      //Focus is on writable Element
 		      !this.isCharCodeInIds(charString)){ 
 		    	return;
 		   }
-		    
+ 
 		   //With new keystroke clear old timer
 		   clearTimeout(this.timerId);
 		    
@@ -84,7 +80,7 @@
 			}
 			
 			//Set flag whether link should be opened in new tab
-			this.openInNewTabFlag = event.altKey
+			this.openInNewTabFlag = ShortCutManager.encodeEventModifier(event)==MlbPrefs.modifierForOpenInNewTab
 			
 			if(this.isExecuteAutomatic(event)){
 			   this.timerId = setTimeout("mouselessbrowsing.EventHandler.executeAutomatic()", MlbPrefs.delayForAutoExecute);
@@ -96,13 +92,29 @@
 		onkeydown: function(event){
          //Suppress event if exclusive use
          //Todo make it properly as in case of alphanummeric ids it makes no sense
-         if(MlbUtils.isWritableElement(event.originalTarget) && 
-         	this.isCaseOfExclusivlyUseOfNumpad(event)){
+         if((MlbUtils.isWritableElement(event.originalTarget) &&	this.isCaseOfExclusivlyUseOfNumpad(event)) 
+            || (MlbPrefs.isNumericIdType() && this.isDigitPressed(event) && this.isOneOfConfiguredModifierCombination(event))){
                this.stopEvent(event)
                this.eventStopped=true
          }else{
          	   this.eventStopped=false
          }
+		},
+		
+      isOneOfConfiguredModifierCombination: function(event) {
+			var encodedModifierCode = ShortCutManager.encodeEventModifier(event)
+			if (encodedModifierCode == MlbPrefs.modifierForWritableElement
+					|| encodedModifierCode == MlbPrefs.modifierForOpenInNewTab) {
+				return true
+			} else {
+				return false
+			}
+		},
+		
+		isDigitPressed: function(event){
+         var keyCode = event.which
+         return (keyCode>=KeyEvent.DOM_VK_0 && keyCode<=KeyEvent.DOM_VK_9) ||
+                 (keyCode>=KeyEvent.DOM_VK_NUMPAD0 && keyCode<=KeyEvent.DOM_VK_NUMPAD9)
 		},
 		
 		handleEnter: function(){
@@ -148,7 +160,7 @@
 		},
 		
 		shouldExecute: function(){
-			if(this.getContentWin().mlbPageData.hasElementWithId(this.keybuffer) ||
+			if(MlbUtils.getCurrentContentWin().mlbPageData.hasElementWithId(this.keybuffer) ||
 				this.globalIds[this.keybuffer]!=null){
 				return true;
 			}else{
@@ -178,7 +190,7 @@
 		    }
 		        
 		    //Else...
-		    var element = this.getContentWin().mlbPageData.getElementForId(this.keybuffer);
+		    var element = MlbUtils.getCurrentContentWin().mlbPageData.getElementForId(this.keybuffer);
 		    var currentDoc = element.ownerDocument;
 		    var currentWin = currentDoc.defaultView;
 		    //Return code for onclick-functions
@@ -207,12 +219,20 @@
 		            element.focus();
 		        }catch(e){}
 		    }
-		    	
+		    
+
+		    var targetBlank = false
+		    if(tagName=="a" && (element.target=="_blank" || element.target=="_new")){
+		    	targetBlank = true
+		    }
+		    
 		    //And simulate click
 		    var clickEvent = currentDoc.createEvent("MouseEvents");
 		    clickEvent.initMouseEvent( "click", true, true, currentWin, 1, 0, 0, 0, 0, 
-		        this.openInNewTabFlag, false, false, false, 0, null);
+		        targetBlank, false, false, false, 0, null);
 		    element.dispatchEvent(clickEvent);
+		    
+		    
 		 
 		},
 		
@@ -263,9 +283,9 @@
 	       MlbPrefs.initShowIdPrefs(visibilityMode);
          //Set visibility flags		    
 			if(visibilityMode==MlbCommon.VisibilityModes.NONE){
-		       this.hideIdSpans(this.getContentWin());
+		       this.hideIdSpans(MlbUtils.getCurrentContentWin());
 		    }else {
-		       this.getPageInitializer().initAfterToggling(this.getContentWin());
+		       this.getPageInitializer().initAfterPrefChange();
 		    }
 		},
 		
@@ -275,7 +295,7 @@
 		 */
 		hideIdSpans: function(winObj){
 	       //Reset PageData
-	       this.getContentWin().mlbPageData = new mouselessbrowsing.PageData()
+	       MlbUtils.getCurrentContentWin().mlbPageData = new mouselessbrowsing.PageData()
 		    var spans = winObj.document.getElementsByTagName("span");
 		    for(var i=0; i<spans.length; i++){
 		        var span = spans[i];
@@ -292,10 +312,6 @@
 		    for(var i=0; i<frames.length; i++){
 		        this.hideIdSpans(frames[i]);
 		    }
-		},
-		
-		getContentWin: function(){
-			return window.getBrowser().contentWindow;
 		},
 		
 		/*
@@ -364,7 +380,7 @@
 		isCaseOfExclusivlyUseOfNumpad: function(event){
 		    var keyCode = event.keyCode;
 		    var isNumpad = (keyCode>=96 && keyCode<=106) || (keyCode>=110 && keyCode<=111) 
-		    return MlbPrefs.exclusiveUseOfNumpad && isNumpad;
+		    return MlbPrefs.isNumericIdType() && MlbPrefs.exclusiveUseOfNumpad && isNumpad;
 		},
 		
 		/*
@@ -373,7 +389,7 @@
 		openLinkInNewTabViaPostfixKey: function(){
 		    if(this.keybuffer=="")
 		        return;
-		    var element = this.getContentWin().mlbPageData.getElementForId(this.keybuffer);   
+		    var element = MlbUtils.getCurrentContentWin().mlbPageData.getElementForId(this.keybuffer);   
 		    if(element==null)
 		        return;
 		    var tagName = element.tagName.toLowerCase();
@@ -397,9 +413,6 @@
 		},
 		
 		updateStatuspanel: function(status){
-			//Todo update
-//			if(MlbPrefs.exclusiveUseOfNumpad)
-//				label = label + "[Exclusive] ";
 		    document.getElementById("mlb-status").value= status;
 		},
 		
@@ -412,23 +425,6 @@
 			}
 		},
 		
-		/**
-		 * Override function of browser.js to suppress
-		 * Changetab on input of ctrl + number
-		 */
-		ctrlNumberTabSelection: function(event){
-		  if (event.altKey && event.keyCode == KeyEvent.DOM_VK_RETURN) {
-		    // XXXblake Proper fix is to just check whether focus is in the urlbar. However, focus with the autocomplete widget is all
-		    // hacky and broken and there's no way to do that right now. So this just patches it to ensure that alt+enter works when focus
-		    // is on a link.
-		    if (!(document.commandDispatcher.focusedElement instanceof HTMLAnchorElement)) {
-		      // Don't let winxp beep on ALT+ENTER, since the URL bar uses it.
-		      event.preventDefault();
-		      return;
-		    }
-		  }
-		},
-		
 		stopEvent: function(event){
          event.preventDefault();
 		   event.stopPropagation();
@@ -437,7 +433,7 @@
 		selectLink: function(){
 		   if(this.keybuffer=="")
 		        return;
-		    var element = this.getContentWin().mlbPageData.getElementForId[this.keybuffer];   
+		    var element = MlbUtils.getCurrentContentWin().mlbPageData.getElementForId(this.keybuffer);   
 		    if(element==null)
 		        return;
 		    var tagName = element.tagName.toLowerCase();
@@ -496,13 +492,20 @@
 		},
 		
 		firefoxPopupset: new Array('PopupAutoComplete', 'contentAreaContextMenu'),
+		
 		blurActiveElement: function(event){
 			for(var i=0; i<this.firefoxPopupset.length; i++) {
 				if(document.getElementById(this.firefoxPopupset[i]).state=="open"){
 					return
 				}
 			}
-         getBrowser().contentDocument.activeElement.blur()			
+			var activeElement = getBrowser().contentDocument.activeElement
+			while(activeElement.tagName=="FRAME"){
+				activeElement = activeElement.contentDocument.activeElement
+			}
+			if(activeElement.blur){       
+				activeElement.blur()
+			}
 		},
 
 		/*

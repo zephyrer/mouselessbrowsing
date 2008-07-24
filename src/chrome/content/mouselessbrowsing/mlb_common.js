@@ -28,21 +28,28 @@
 			FRAME: "FRAME",
 			IMG: "IMG",
 			FORMELEMENT: "FORMELEMENT",
-			LINK: "LINK",
+			LINK: "LINK"
 		},
 		
 		VisibilityModes: {
 			ALL: "ALL",
 			CONFIG: "CONFIG",
-			NONE: "NONE",
+			NONE: "NONE"
+		},
+		
+		ModifierCodes:{
+			CTRL: 1,
+			ALT: 2,
+			SHIFT: 4
+		},
+		
+		IdTypes:{
+			NUMERIC: "NUMERIC",
+			CHAR: "CHAR"
 		},
 		
 		//ShortcutManager-ClientId
 		SCM_CLIENT_ID: "MLB",
-		
-		//WebProgress State-Flags
-		WEBPROGRESS_STATE_START: 1,
-		WEBPROGRESS_STATE_STOP: 16,
 		
 		/*
 		 * Loads Script from url
@@ -59,6 +66,8 @@
 			this.loadScript(this.COMMON_CHROME_ULR+"namespace.js")
 			this.loadScript(this.COMMON_CHROME_ULR+"constants.js")
 			this.loadScript(this.COMMON_CHROME_ULR+"utils.js")
+			this.loadScript(this.COMMON_CHROME_ULR+"ControlUtils.js")
+			this.loadScript(this.COMMON_CHROME_ULR+"string_utils.js")
 			this.loadScript(this.COMMON_CHROME_ULR+"prefs.js")
 			this.loadScript(this.COMMON_CHROME_ULR+"xmlutils.js")
 			this.loadScript(this.COMMON_CHROME_ULR+"listbox.js")

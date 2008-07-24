@@ -23,6 +23,9 @@
         src="core/page_initialization.js">
     </script>
     <script type="application/x-javascript" 
+        src="preferences/version_manager.js">
+    </script>
+    <script type="application/x-javascript" 
         src="core/mlb_initialization.js">
     </script>
     <script type="application/x-javascript" 

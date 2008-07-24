@@ -20,28 +20,33 @@
 	}
 	
 	var MlbPrefs = {
+		DEBUG_PREF_ID: "mouselessbrowsing.debug", 
 		showIdsOnDemand: null,
-		exclusiveUseOfNumpad: null,
-		smartPositioning: null,
-		showTabIds: null,
-		showKeybufferInStatusbar: null,
+		enableCtrlPlusDigit: null,
 		executeAutomaticEnabled: null,
+		initOnDomContentLoaded: null,
 		delayForAutoExecute: null,
 		pixelsToScroll: null,
 		maxIdNumber: null,
-		useSelfDefinedCharsForIds: null,
+		idType: null,
+		exclusiveUseOfNumpad: null,
+		modifierForWritableElement: null,
+		modifierForOpenInNewTab: null,
 		idChars: null,
 		disableAllIds: null,
 		idsForLinksEnabled: null,
 		idsForImgLinksEnabled: null,
 		idsForFormElementsEnabled: null,
 		idsForFramesEnabled: null,
+		smartPositioning: null,
+		showKeybufferInStatusbar: null,
+		showMlbIconInStatusbar: null,
+//		showTabIds: null,
 		siteRules: null,
 		styleForIdSpan: null,
 		styleForFrameIdSpan: null,
 		//Not configurable via prefs dialog 
-		debugPerf: null,
-		initOnDomContentLoaded: false,
+		debug: null,
 		visibilityMode: null,
       
       //Backup of prefs in case of applying site rule
@@ -52,22 +57,27 @@
 				//Checking actual preference settings
 				this.showIdsOnDemand = Prefs.getBoolPref("mouselessbrowsing.showIdsOnDemand");
 		      this.exclusiveUseOfNumpad = Prefs.getBoolPref("mouselessbrowsing.exclusiveNumpad");
+		      this.initOnDomContentLoaded = Prefs.getBoolPref("mouselessbrowsing.initOnDomContentLoaded");
 				this.smartPositioning = Prefs.getBoolPref("mouselessbrowsing.smartPositioning");
-	      	this.initOnDomContentLoaded= Prefs.getBoolPref("mouselessbrowsing.initOnDomContentLoaded") 
-		      this.showTabIds = Prefs.getBoolPref("mouselessbrowsing.showTabIds");
+//		      this.showTabIds = Prefs.getBoolPref("mouselessbrowsing.showTabIds");
 		      this.showKeybufferInStatusbar = Prefs.getBoolPref("mouselessbrowsing.showKeybufferInStatusbar");
+		      this.showMlbIconInStatusbar= Prefs.getBoolPref("mouselessbrowsing.showMlbIconInStatusbar");
 		      this.executeAutomaticEnabled = Prefs.getBoolPref("mouselessbrowsing.executeAutomatic");
 		      this.delayForAutoExecute = Prefs.getCharPref("mouselessbrowsing.autoExecuteDelay");
 		      this.pixelsToScroll = Prefs.getCharPref("mouselessbrowsing.pixelsToScroll");
 		      this.maxIdNumber = Prefs.getCharPref("mouselessbrowsing.maxIdNumber");
-		      this.useSelfDefinedCharsForIds = Prefs.getBoolPref("mouselessbrowsing.useSelfDefinedCharsForIds");
-		      if(this.useSelfDefinedCharsForIds){
+		      this.idType = Prefs.getCharPref("mouselessbrowsing.idType");
+      		this.modifierForWritableElement = Prefs.getCharPref("mouselessbrowsing.modifierForWritableElement");
+      		this.modifierForOpenInNewTab = Prefs.getCharPref("mouselessbrowsing.modifierForOpenInNewTab");
+		      if(this.isCharIdType()){
 			      this.idChars = Prefs.getCharPref("mouselessbrowsing.idChars");
 		      }else{
 		      	this.idChars = "1234567890"
 		      }
 		      this.disableAllIds = Prefs.getBoolPref("mouselessbrowsing.disableAllIds");
-				this.initShowIdPrefs(MlbCommon.VisibilityModes.CONFIG);
+		      if(!this.disableAllIds){
+   				this.initShowIdPrefs(MlbCommon.VisibilityModes.CONFIG);
+		      }
 		      this.initSiteRules();
 		      this.styleForIdSpan = Prefs.getCharPref("mouselessbrowsing.styleForIdSpan");
 		      this.styleForFrameIdSpan = Prefs.getCharPref("mouselessbrowsing.styleForFrameIdSpan");
@@ -76,8 +86,8 @@
 		      this.prefsBackup = null;
 
 		      //Init optional Prefs
-		      if(Prefs.hasUserPref("mouselessbrowsing.debugPerf")){
-		      	this.debugPerf = Prefs.getBoolPref("mouselessbrowsing.debugPerf") 
+		      if(Prefs.hasUserPref(this.DEBUG_PREF_ID)){
+		      	this.debug = Prefs.getBoolPref(this.DEBUG_PREF_ID) 
 		      }
 		      
 		    }catch(e){
@@ -160,6 +170,15 @@
          }
          this.initVisibilityMode()
       },
+      
+      isNumericIdType: function(){
+      	return this.idType==MlbCommon.IdTypes.NUMERIC
+      },
+      
+      isCharIdType: function(){
+      	return this.idType==MlbCommon.IdTypes.CHAR
+      }
+      
 		
 	} 
    var NS = rno_common.Namespace
