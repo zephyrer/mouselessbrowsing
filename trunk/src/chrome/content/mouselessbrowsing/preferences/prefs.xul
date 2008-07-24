@@ -1,292 +1,358 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://browser/skin/"?>
 <?xml-stylesheet href="chrome://mouselessbrowsing/content/common/common.css" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://mouselessbrowsing/locale/prefs.dtd">
 
 <!-- 
- *
- * Mouseless Browsing 
- * Version 0.5
- * Created by Rudolf No�
- * 01.01.2008
- *
- * The "keyinputbox" is borrowed from Hit-a-Hint created by 
- * Pekka P. Sillanpaa (c) (THANKS!)
- * 
- * -->
+	 *
+	 * Mouseless Browsing 
+	 * Version 0.5
+	 * Created by Rudolf No�
+	 * 01.01.2008
+	 *
+	 * The "keyinputbox" is borrowed from Hit-a-Hint created by 
+	 * Pekka P. Sillanpaa (c) (THANKS!)
+	 * 
+	 * -->
 
 <dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        xmlns:html="http://www.w3.org/1999/xhtml"
-        id="pref-mouselessbrowsing"
-        title="Mouseless Browsing 0.5"
-        centerWindowOnScreen="true"
-        modal="true"
-        onload="doOnload()"
-        ondialogaccept="return saveUserPrefs()"
-        ondialoghelp="dialogHelp()"
-        buttons="help,accept,cancel"
-        >
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	id="pref-mouselessbrowsing"
+	title="Mouseless Browsing"
+	centerWindowOnScreen="true"
+	modal="true"
+	onload="doOnload()"
+	ondialogaccept="return saveUserPrefs()"
+	ondialoghelp="dialogHelp()"
+	buttons="help,accept,cancel"
+	>
 
-    <script type="application/x-javascript" src="../mlb_common.js"/>
-    <script type="application/x-javascript" src="prefs_dialog.js"/>
+	<script type="application/x-javascript" src="../mlb_common.js"/>
+	<script type="application/x-javascript" src="prefs_dialog.js"/>
+	<script type="application/x-javascript" src="prefs_dialog.js"/>
     
-    <tabbox>
-      <tabs>
-        <tab label="General"/>
-        <tab label="Visibilities"/>
-        <tab label="Site Rules" id="siteruletab"/>
-        <tab label="Styles"/>
-        <tab label="Keys"/>
-      </tabs>
-      <tabpanels>
-        <tabpanel>
+	<tabbox>
+		<tabs>
+			<tab label="&tab.handling.label;" />
+			<tab label="Layout" />
+			<tab label="Styles" />
+			<tab label="URL Rules" id="siteruletab" />
+			<tab label="Keys" />
+		</tabs>
+		<tabpanels>
+			<tabpanel>
+				<vbox flex="1">
+					<groupbox >
+						<caption label="General Options"></caption>
+						<grid >
+							<rows>
+								<row>
+									<checkbox id="onDemandFlag" label="Show ids only on demand" prefid="mouselessbrowsing.showIdsOnDemand"/>
+								</row>
+								<row>
+									<checkbox label="Show ids before all images are loaded (this can partly lead to misplaced ids)" prefid="mouselessbrowsing.initOnDomContentLoaded"/>
+								</row>
+								<row>
+									<checkbox id="executeAutomatic" label="Execute automatically without pressing Enter" prefid="mouselessbrowsing.executeAutomatic" defaultValue="false"/>
+								</row>
+								<row>
+									<grid>
+										<colums>
+											<colum flex="1"/>
+											<colum flex="1"/>
+										</colums>
+										<rows>
+											<row align="center">
+												<label value="Delay for automatic execution/clearing keybuffer (msec)"/>
+												<textbox prefid="mouselessbrowsing.autoExecuteDelay" maxlength="6" width="125px"/>
+											</row>
+											<row align="center">
+												<label value="Pixels to scroll when pressing shortcuts"/>
+												<textbox prefid="mouselessbrowsing.pixelsToScroll" maxlength="6" width="125px"/>
+											</row>
+											<row align="center">
+												<label value="Maximum number of ids"/>
+												<textbox prefid="mouselessbrowsing.maxIdNumber" maxlength="6" width="125px"/>
+											</row>
+										</rows>
+									</grid>
+								</row>
+							</rows>
+						</grid>
+					</groupbox>
+					<groupbox>
+						<caption label="Id Type"/>
+						<grid>
+							<columns>
+								<column></column>
+								<column></column>
+							</columns>
+							  <rows>
+      						<row>
+                           <radiogroup id="idtype" prefid="mouselessbrowsing.idType" oncommand="MLB_onCommandIdType()">
+      								<radio label="Use Numeric Ids" value="NUMERIC"/>
+                              <hbox>
+      									<spacer width="22px"/>
+                                 <grid>
+                                 	<columns>
+                                 		<column/>
+                                 		<column flex="1"/>
+                                 	</columns>
+                                 	<rows>
+                                 		<row>
+                                          <checkbox id="exclusiveNumpad" label="Use numpad exclusively for Mouseless Browsing" prefid="mouselessbrowsing.exclusiveNumpad" defaultValue="0"/>
+                                 		</row>
+                                 		<row align="center">
+               									<label value="Modifier for enabling ids within writable elements"/>
+               									<menulist id="modifierForWritableElement" width="125px" prefid="mouselessbrowsing.modifierForWritableElement">
+               										<menupopup>
+                                                <menuitem label="None" value="-1"/>
+                                                <menuitem label="Alt" value="1"/>
+                                                <menuitem label="Ctrl" value="2"/>
+                                                <menuitem label="Ctrl-Alt" value="3"/>
+               										</menupopup>
+               									</menulist>
+                                 		</row>
+                                 		<row align="center">
+               									<label value="Modifier for opening links in new tab"/>
+               									<menulist id="modifierForOpenInNewTab" width="125px" prefid="mouselessbrowsing.modifierForOpenInNewTab">
+               										<menupopup>
+                                                <menuitem label="None" value="-1"/>
+                                                <menuitem label="Alt" value="1"/>
+                                                <menuitem label="Ctrl" value="2"/>
+                                                <menuitem label="Ctrl-Alt" value="3"/>
+               										</menupopup>
+               									</menulist>
+                                 		</row>
+                                 	</rows>
+                                 </grid>
+                              </hbox>
+      								<hbox align="center">
+      								   <radio id="useSelfDefinedCharsCB" label="Use self-defined character set for generating ids" value="CHAR"/>
+      								   <spacer flex="1"/>
+      									<textbox id="idCharsTB" prefid="mouselessbrowsing.idChars" oninput="MLB_onInputIdCharsTB()" />
+      								</hbox>
+                           </radiogroup>
+      						</row>
+							</rows>
+						</grid>
+					</groupbox>
+				</vbox>
+			</tabpanel>
+			<tabpanel>
+				<vbox flex="1">
+					<groupbox >
+						<caption label="Visibility of ids"></caption>
+						<grid>
+							<rows >
+								<row>
+									<checkbox id="allIds" label="Hide all Ids" prefid="mouselessbrowsing.disableAllIds" defaultValue="0" oncommand="MLB_onTogglingVisibilityAllIds()"/>
+								</row>
+								<row align="center">
+									<checkbox id="links" style="margin-left:30px" label="Enable ids for text-links" prefid="mouselessbrowsing.enableLinkIds" defaultValue="1" visibilityFlag="true"/>
+								</row>
+								<row align="center">
+									<checkbox id="imglinks" style="margin-left:30px" label="Enable ids for image-links" prefid="mouselessbrowsing.enableImgLinkIds" defaultValue="1" visibilityFlag="true"/>
+								</row>
+								<row align="center">
+									<checkbox id="formelements" style="margin-left:30px" label="Enable ids for form elements" prefid="mouselessbrowsing.enableFormElementIds" defaultValue="1" visibilityFlag="true"/>
+								</row>
+								<row align="center">
+									<checkbox id="frames" style="margin-left:30px" label="Enable ids for frames" prefid="mouselessbrowsing.enableFrameIds" defaultValue="1" visibilityFlag="true"/>
+								</row>
+							</rows>
+						</grid>
+					</groupbox>
+               <groupbox>
+               	<caption label="Other Layout Configuration"/>
+                  <grid>
+                     <columns>
+                        <column flex="1"/>
+                     </columns>
+                     <rows flex="1">
+                        <row>
+                           <checkbox id="smartPositioning" label="Smart positioning of ids" prefid="mouselessbrowsing.smartPositioning" defaultValue="1"/>
+                        </row>
+                        <!-- row>
+                                 <checkbox id="tabIds" label="Show tab ids" prefid="mouselessbrowsing.showTabIds" defaultValue="1"/>
+                             </row-->
+                        <row>
+                           <checkbox id="status" label="Show keybuffer in statusbar" prefid="mouselessbrowsing.showKeybufferInStatusbar" defaultValue="1"/>
+                        </row>
+                        <row>
+                           <checkbox id="status" label="Show MLB Icon in statusbar" prefid="mouselessbrowsing.showMlbIconInStatusbar" defaultValue="1"/>
+                        </row>
+                     </rows>
+                  </grid>
+   					<spacer flex="1"/>
+               </groupbox>
+					<spacer flex="1"/>
+				</vbox>
+			</tabpanel>
+			<tabpanel>
             <vbox flex="1">
-           <groupbox >
-           <caption label="General Options"></caption>
-           <grid >
-                <rows>
-                    <row>
-                        <checkbox id="onDemandFlag" label="Show ids only on demand" prefid="mouselessbrowsing.showIdsOnDemand" defaultValue="0"/>
-                    </row>
-                    <row>
-                        <checkbox id="exclusiveNumpad" label="Use numpad exclusively for Mouseless Browsing" prefid="mouselessbrowsing.exclusiveNumpad" defaultValue="0"/>
-                    </row>
-                    <row>
-                        <checkbox label="Show Ids before all images are loaded (could lead to missing and misplaced ids)" prefid="mouselessbrowsing.initOnDomContentLoaded" />
-                    </row>
-                    <row>
-                        <checkbox id="smartPositioning" label="Smart positioning of ids" prefid="mouselessbrowsing.smartPositioning" defaultValue="1"/>
-                    </row>
-                    <!-- row>
-                        <checkbox id="tabIds" label="Show tab ids" prefid="mouselessbrowsing.showTabIds" defaultValue="1"/>
-                    </row-->
-                    <row>
-                        <checkbox id="status" label="Show keybuffer in statusbar" prefid="mouselessbrowsing.showKeybufferInStatusbar" defaultValue="1"/>
-                    </row>
-                    <row>
-                        <checkbox id="executeAutomatic" label="Execute automatically without pressing Enter" prefid="mouselessbrowsing.executeAutomatic" defaultValue="false"/>
-                    </row>
-                    <row>
-                        <grid>
-                            <colums>
-                                <colum flex="1"/>
-                                <colum flex="1"/>
-                            </colums>
-                            <rows>
-                                <row align="center">
-                                    <label value="Delay for automatic execution/clearing keybuffer (msec)"/>
-                                    <textbox prefid="mouselessbrowsing.autoExecuteDelay" maxlength="6"/>
-                                </row>
-                                <row align="center">
-                                     <label value="Pixels to scroll when pressing shortcuts"/>
-                                     <textbox prefid="mouselessbrowsing.pixelsToScroll" maxlength="6" />
-                                </row>
-                                <row align="center">
-                                     <label value="Maximum number of ids"/>
-                                     <textbox prefid="mouselessbrowsing.maxIdNumber" maxlength="6" />
-                                </row>
-                                <row>
-                                     <checkbox id="useSelfDefinedCharsCB" label="Use self-defined character set for generating ids" prefid="mouselessbrowsing.useSelfDefinedCharsForIds" oncommand="MLB_onCommandUseSelfDefinedChars(event)"/>
-                                     <textbox id="idCharsTB" prefid="mouselessbrowsing.idChars" oninput="MLB_onInputIdCharsTB()"/>                                    
-                                </row>
-                            </rows>
-                        </grid>
-                    </row>                    
-                </rows>
-            </grid>
-            </groupbox>
-            </vbox>
-        </tabpanel>
-        <tabpanel>
-            <vbox flex="1">
-            <groupbox >
-            <caption label="Visibility of ids"></caption>
-            <grid>
-                <rows >
-                    <row>
-                        <checkbox id="allIds" label="Hide all Ids" prefid="mouselessbrowsing.disableAllIds" defaultValue="0" oncommand="MLB_onTogglingVisibilityAllIds()"/>
-                    </row>
-                    <row align="center">
-                        <checkbox id="links" style="margin-left:30px" label="Enable ids for text-links" prefid="mouselessbrowsing.enableLinkIds" defaultValue="1" visibilityFlag="true"/>
-                    </row>
-                    <row align="center">
-                        <checkbox id="imglinks" style="margin-left:30px" label="Enable ids for image-links" prefid="mouselessbrowsing.enableImgLinkIds" defaultValue="1" visibilityFlag="true"/>
-                    </row>
-                    <row align="center">
-                        <checkbox id="formelements" style="margin-left:30px" label="Enable ids for form elements" prefid="mouselessbrowsing.enableFormElementIds" defaultValue="1" visibilityFlag="true"/>
-                    </row>
-                    <row align="center">
-                        <checkbox id="frames" style="margin-left:30px" label="Enable ids for frames" prefid="mouselessbrowsing.enableFrameIds" defaultValue="1" visibilityFlag="true"/>
-                    </row>
-                 </rows>
-           </grid>
-           </groupbox>
-           <!-- spacer flex="1"/-->
-           </vbox>
-        </tabpanel>
-         <tabpanel >
-            <vbox flex="1">
-               <grid>
-                  <columns flex="1">
-                     <column></column>
-                     <column flex="1"></column>
-                  </columns>
-                  <rows >
-                     <row align="center">
-                        <label value="URL Pattern" control="urlPatterTB" accesskey="p"/>
-                        <textbox id="urlPatterTB" flex="1"/>
-                     </row>
-                     <row align="center">
-                        <label value="Visibility Mode"/>
-                        <menulist id="visibilityModeML" persist="value">
-                           <menupopup>
-                              <menuitem label="Hide Ids" value="NONE"/>
-                              <menuitem label="Show Ids as configured" value="CONFIG"/>
-                              <menuitem label="Show all Ids" value="ALL"/>
-                           </menupopup>
-                        </menulist>
-                     </row>
-                  </rows>
-               </grid>
-               <checkbox id="siteRuleExclusiveNumpadCB" label="Use numpad exclusively for Mouseless Browsing" persist="checked"/>
-               <checkbox id="siteRuleOnDemandFlagCB" label="Show Ids only on demand" persist="checked"/>
-               <hbox pack="center">
-                  <button label="Add" oncommand="MLB_addSiteRule()" accesskey="a"/>
-                  <button id="updateBtn" label="Update" oncommand="MLB_updateSiteRule()" accesskey="u" disabled="true"/>
-                  <button id="removeBtn" label="Remove" oncommand="MLB_removeSiteRule()" accesskey="r" disabled="true"/>
-               </hbox>
-               <listbox id="siteRulesLB" prefid="mouselessbrowsing.siteRules" flex="1" disabled="false">
-                  <listhead>
-                     <listheader label="URL Pattern"/>
-                     <listheader align="center" style="display:none"/>
-                     <listheader style="display:none" />
-                     <listheader style="display:none" />
-                  </listhead>
-                  <listcols>
-                     <listcol flex="1"/>
-                     <listcol style="display:none"/>
-                     <listcol style="display:none"/>
-                     <listcol style="display:none"/>
-                  </listcols>
-               </listbox>
+               <groupbox flex="1">
+                  <grid flex="1">
+                     <columns>
+                        <column flex="1"/>
+                     </columns>
+                     <rows flex="1">
+                        <row>
+                           <label value="Style for id span"/>&#160;
+                        </row>
+                        <row flex="1">
+                           <textbox id="styleForIdSpan" prefid="mouselessbrowsing.styleForIdSpan" flex="1" multiline="true" rows="6"
+                              previewSpanId="previewIdSpan" oninput="MLB_setPreviewForIds('styleForIdSpan')"/>
+                        </row>
+                        <row>
+                           <hbox align="center">
+                              <spacer width="5px"/>
+                              <html:div>Preview:</html:div>
+                              <html:div>
+                                 <html:span id="previewIdSpan">42</html:span>
+                              </html:div>
+                              <spacer flex="1"/>
+                              <button label="Restore Default" oncommand="MLB_setStyleDefault('styleForIdSpan')"/>
+                           </hbox>
+                        </row>
+                        <row>
+                           <label value="Style for frame id span"/>&#160;
+                        </row>
+                        <row flex="1">
+                           <textbox id="styleForFrameIdSpan" prefid="mouselessbrowsing.styleForFrameIdSpan" flex="1" multiline="true" rows="5"
+                              previewSpanId="previewFrameIdSpan" oninput="MLB_setPreviewForIds('styleForFrameIdSpan')"/>
+                        </row>
+                        <row>
+                           <hbox align="center">
+                              <spacer width="5px"/>
+                              <html:div>Preview:</html:div>
+                              <html:div>
+                                 <html:span id="previewFrameIdSpan">42</html:span>
+                              </html:div>
+                              <spacer flex="1"/>
+                              <button label="Restore Default" oncommand="MLB_setStyleDefault('styleForFrameIdSpan')"/>
+                           </hbox>
+                         </row>
+                     </rows>
+                  </grid>
+               </groupbox>
+               <spacer flex="1"/>
             </vbox>
          </tabpanel>
-        <tabpanel>
-            <vbox flex="1">
-            <groupbox flex="1">
-            <grid flex="1">
-                <columns>
-                  <column flex="1"/>
-                </columns>
-                <rows flex="1">
-                    <row>
-                        <label value="Style for id span"/>&#160;
-                    </row>
-                    <row flex="1">
-                        <textbox id="styleForIdSpan" prefid="mouselessbrowsing.styleForIdSpan" flex="1" multiline="true" rows="5"
-                           previewSpanId="previewIdSpan" oninput="MLB_setPreviewForIds('styleForIdSpan')"/>
-                    </row>
-                    <row>
-                        <hbox align="center">
-                           <spacer width="5px"/>
-                           <html:div>Preview:</html:div>
-                           <html:div>
-                               <html:span id="previewIdSpan">42</html:span>
-                           </html:div>
-	                        <spacer flex="1"/>
-	                        <button label="Restore Default" oncommand="MLB_setStyleDefault('styleForIdSpan')"/>
-                        </hbox>
-                    </row>
-                    <row>
-                        <label value="Style for frame id span"/>&#160;
-                    </row>
-                    <row flex="1">
-                        <textbox id="styleForFrameIdSpan" prefid="mouselessbrowsing.styleForFrameIdSpan" flex="1" multiline="true" rows="5"
-                        previewSpanId="previewFrameIdSpan" oninput="MLB_setPreviewForIds('styleForFrameIdSpan')"/>
-                    </row>
-                    <row>
-                        <hbox align="center">
-                           <spacer width="5px"/>
-                           <html:div>Preview:</html:div>
-                           <html:div>
-                                <html:span id="previewFrameIdSpan">42</html:span>
-                           </html:div>
-                           <spacer flex="1"/>
-                           <button label="Restore Default" oncommand="MLB_setStyleDefault('styleForFrameIdSpan')"/>
-                        </hbox>
-                    </row>
-                </rows>
-            </grid>
-            </groupbox>
-            <spacer flex="1"/>
-            </vbox>
-        </tabpanel>
-        <tabpanel >
-            <vbox flex="1">
-                <groupbox>
-                <grid>
-                    <colums>
-                        <colum flex="1"/>
-                        <colum flex="1"/>
-                    </colums>
-                    <rows>
-                        <row align="center">
-                            <label value="Toggling visibility of ids on/off"/>
-                            <keyinputbox prefid="mouselessbrowsing.keys.toggleMLB" maxlength="1" size="20" allowmodifiers="true"/>
-                        </row>
-                        <row align="center">
-                            <label value="Toggling visibility of ids for all/only configured elements"/>
-                            <keyinputbox prefid="mouselessbrowsing.keys.toggleAllIds" maxlength="1" size="20" allowmodifiers="true"/>
-                        </row>
-                        <row align="center">
-                            <label value="Toggling exclusive use of numpad"/>
-                            <keyinputbox prefid="mouselessbrowsing.keys.toggleExlusiveUseOfNumpad" maxlength="1" size="20" allowmodifiers="true"/>
-                        </row>
-                        <row>
-                             <label value="Clearing keybuffer"/>
-                             <keyinputbox prefid="mouselessbrowsing.keys.clearKeybuffer" maxlength="1" size="20" allowmodifiers="true"/>
-                        </row>
-                        <row>
-                             <label value="Postfix-key to open link in new tab"/>
-                             <keyinputbox prefid="mouselessbrowsing.keys.openInNewTabPostfixKey" maxlength="1" size="20" allowmodifiers="true"/>
-                        </row>
-                        <row>
-                             <label value="Postfix-key to select a link"/>
-                             <keyinputbox prefid="mouselessbrowsing.keys.selectLink" maxlength="1" size="20" allowmodifiers="true"/>
-                        </row>
-                        <row>
-                             <label value="History back"/>
-                             <keyinputbox prefid="mouselessbrowsing.keys.historyBack" maxlength="1" size="20" allowmodifiers="true"/>
-                        </row>
-                        <row>
-                             <label value="History forward"/> 
-                             <keyinputbox prefid="mouselessbrowsing.keys.historyForward" maxlength="1" size="20" allowmodifiers="true"/>
-                        </row>
-                        <row>
-                             <label value="Scroll down"/> 
-                             <keyinputbox prefid="mouselessbrowsing.keys.scrollDown" maxlength="1" size="20" allowmodifiers="true"/>
-                        </row>
-                        <row>
-                             <label value="Scroll up"/> 
-                             <keyinputbox prefid="mouselessbrowsing.keys.scrollUp" maxlength="1" size="20" allowmodifiers="true"/>
-                        </row>
-                        <row>
-                             <label value="Blur active element"/> 
-                             <keyinputbox prefid="mouselessbrowsing.keys.blurActiveElement" maxlength="1" size="20" allowmodifiers="true"/>
-                        </row>
-                        <row>
-                             <label value="Open Configuration"/> 
-                             <keyinputbox prefid="mouselessbrowsing.keys.openConfig" maxlength="1" size="20" allowmodifiers="true"/>
-                        </row>
-                        <row>
-                             <label value="Add Site Rule"/> 
-                             <keyinputbox prefid="mouselessbrowsing.keys.addSiteRule" maxlength="1" size="20" allowmodifiers="true"/>
-                        </row>
-                  </rows>
-                </grid>
-                </groupbox>
-                <spacer flex="1"/>
-            </vbox>
-        </tabpanel>
-      </tabpanels>
-    </tabbox>
+			<tabpanel >
+				<vbox flex="1">
+					<grid>
+						<columns flex="1">
+							<column></column>
+							<column flex="1"></column>
+						</columns>
+						<rows >
+							<row align="center">
+								<label value="URL Pattern" control="urlPatterTB" accesskey="p"/>
+								<textbox id="urlPatterTB" flex="1"/>
+							</row>
+							<row align="center">
+								<label value="Visibility Mode"/>
+								<menulist id="visibilityModeML" persist="value">
+									<menupopup>
+										<menuitem label="Hide Ids" value="NONE"/>
+										<menuitem label="Show Ids as configured" value="CONFIG"/>
+										<menuitem label="Show all Ids" value="ALL"/>
+									</menupopup>
+								</menulist>
+							</row>
+						</rows>
+					</grid>
+					<checkbox id="siteRuleExclusiveNumpadCB" label="Use numpad exclusively for Mouseless Browsing" persist="checked"/>
+					<checkbox id="siteRuleOnDemandFlagCB" label="Show Ids only on demand" persist="checked"/>
+					<hbox pack="center">
+						<button label="Add" oncommand="MLB_addSiteRule()" accesskey="a"/>
+						<button id="updateBtn" label="Update" oncommand="MLB_updateSiteRule()" accesskey="u" disabled="true"/>
+						<button id="removeBtn" label="Remove" oncommand="MLB_removeSiteRule()" accesskey="r" disabled="true"/>
+					</hbox>
+					<listbox id="siteRulesLB" prefid="mouselessbrowsing.siteRules" flex="1" disabled="false">
+						<listhead>
+							<listheader label="URL Pattern"/>
+							<listheader align="center" style="display:none"/>
+							<listheader style="display:none" />
+							<listheader style="display:none" />
+						</listhead>
+						<listcols>
+							<listcol flex="1"/>
+							<listcol style="display:none"/>
+							<listcol style="display:none"/>
+							<listcol style="display:none"/>
+						</listcols>
+					</listbox>
+				</vbox>
+			</tabpanel>
+			<tabpanel >
+				<vbox flex="1">
+					<groupbox>
+						<grid>
+							<colums>
+								<colum flex="1"/>
+								<colum flex="1"/>
+							</colums>
+							<rows>
+								<row align="center">
+									<label value="Toggling visibility of ids on/off"/>
+									<keyinputbox prefid="mouselessbrowsing.keys.toggleMLB" maxlength="1" size="20" allowmodifiers="true"/>
+								</row>
+								<row align="center">
+									<label value="Toggling visibility of ids for all/only configured elements"/>
+									<keyinputbox prefid="mouselessbrowsing.keys.toggleAllIds" maxlength="1" size="20" allowmodifiers="true"/>
+								</row>
+								<row align="center">
+									<label value="Toggling exclusive use of numpad"/>
+									<keyinputbox prefid="mouselessbrowsing.keys.toggleExlusiveUseOfNumpad" maxlength="1" size="20" allowmodifiers="true"/>
+								</row>
+								<row>
+									<label value="Clearing keybuffer"/>
+									<keyinputbox prefid="mouselessbrowsing.keys.clearKeybuffer" maxlength="1" size="20" allowmodifiers="true"/>
+								</row>
+								<row>
+									<label value="Postfix-key to open link in new tab"/>
+									<keyinputbox prefid="mouselessbrowsing.keys.openInNewTabPostfixKey" maxlength="1" size="20" allowmodifiers="true"/>
+								</row>
+								<row>
+									<label value="Postfix-key to select a link"/>
+									<keyinputbox prefid="mouselessbrowsing.keys.selectLink" maxlength="1" size="20" allowmodifiers="true"/>
+								</row>
+								<row>
+									<label value="History back"/>
+									<keyinputbox prefid="mouselessbrowsing.keys.historyBack" maxlength="1" size="20" allowmodifiers="true"/>
+								</row>
+								<row>
+									<label value="History forward"/> 
+									<keyinputbox prefid="mouselessbrowsing.keys.historyForward" maxlength="1" size="20" allowmodifiers="true"/>
+								</row>
+								<row>
+									<label value="Scroll down"/> 
+									<keyinputbox prefid="mouselessbrowsing.keys.scrollDown" maxlength="1" size="20" allowmodifiers="true"/>
+								</row>
+								<row>
+									<label value="Scroll up"/> 
+									<keyinputbox prefid="mouselessbrowsing.keys.scrollUp" maxlength="1" size="20" allowmodifiers="true"/>
+								</row>
+								<row>
+									<label value="Blur active element"/> 
+									<keyinputbox prefid="mouselessbrowsing.keys.blurActiveElement" maxlength="1" size="20" allowmodifiers="true"/>
+								</row>
+								<row>
+									<label value="Open Configuration"/> 
+									<keyinputbox prefid="mouselessbrowsing.keys.openConfig" maxlength="1" size="20" allowmodifiers="true"/>
+								</row>
+								<row>
+									<label value="Add URL Rule"/> 
+									<keyinputbox prefid="mouselessbrowsing.keys.addSiteRule" maxlength="1" size="20" allowmodifiers="true"/>
+								</row>
+							</rows>
+						</grid>
+					</groupbox>
+					<spacer flex="1"/>
+				</vbox>
+			</tabpanel>
+		</tabpanels>
+	</tabbox>
 </dialog>

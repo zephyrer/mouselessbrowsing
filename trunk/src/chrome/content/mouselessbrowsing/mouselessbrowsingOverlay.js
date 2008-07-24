@@ -33,7 +33,7 @@
 		if(appcontent){
 			appcontent.addEventListener("DOMContentLoaded", {handleEvent: function(event){PageInitializer.onDOMContentLoaded(event)}}, true);
 			appcontent.addEventListener("pageshow", {handleEvent: function(event){PageInitializer.onPageShow(event)}}, true);
-//			appcontent.addEventListener("mousedown", showOffsets, true);
+			appcontent.addEventListener("mousedown", showOffsets, true);
          //Todo
 //			appcontent.addEventListener("pageshow", {handleEvent: function(event){EventHandler.renumberTab(event)}}, true);
 		}
@@ -57,7 +57,9 @@
 	function showOffsets(event){
 		if(event.ctrlKey && event.button==2){
 		  var target = event.originalTarget
-	     rno_common.Utils.logMessage("MLB: TagName: " + target.tagName + " OffsetParent: " + target.offsetParent.tagName + " OffsetLeft: " + target.offsetLeft + " OffsetTop: " + target.offsetTop)
+		  var offsetTop = mouselessbrowsing.MlbUtils.getOffsetTopToBody(target)
+		  var offsetLeft = mouselessbrowsing.MlbUtils.getOffsetLeftToBody(target)
+	     rno_common.Utils.logMessage("MLB: TagName: " + target.tagName + " OffsetLeft (Body): " + offsetLeft + " OffsetTop (Body): " + offsetTop)
 	     event.stopPropagation()
 	     event.preventDefault()
 		}

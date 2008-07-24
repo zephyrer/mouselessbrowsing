@@ -16,15 +16,37 @@
 	var PageData = mouselessbrowsing.PageData
 	var EventHandler = mouselessbrowsing.EventHandler
 	
-	//Data Containter for holding
-	//all data needed for init process
-	function PageInitData(currentTopWin, currentWin, currentDoc, pageData, event){
+	/*
+	 *Data Containter for holding all data needed for init process
+	 *@param currentWin: current content win
+	 *@param pageData: PageData object holding the data for the page which will be initialized 
+	 *@param onpageshow2ndCall: Flag inidicating that this second cycle of initializing, the first is onDomContentLoaded
+	 *@param keepExistingIds: Flag indicating that exisitng id spans should not be changed.
+	 */
+	function PageInitData(currentWin, pageData, onpageshow2ndCall, keepExistingIds){
       //
-      this.currentTopWin = currentTopWin;
       this.currentWin = currentWin;
-      this.currentDoc = currentDoc;
       this.pageData = pageData;
-      this.onpageshow2ndCall = event!=null&&event.type=="pageshow"&&!event.persisted
+      this.onpageshow2ndCall = onpageshow2ndCall
+      this.keepExistingIds = keepExistingIds
+	}
+	
+	PageInitData.prototype = {
+		getCurrentWin: function(){
+			return this.currentWin
+		},
+
+		setCurrentWin: function(win){
+			this.currentWin = win
+		},
+
+		getCurrentTopWin: function(){
+			return this.currentWin.top
+		},
+		
+		getCurrentDoc: function(){
+			return this.currentWin.document
+		}
 	}
 	
 	var PageInitializer = {
@@ -35,87 +57,96 @@
 		//RegEx for checking if an link is empty
 		regexWhitespace: /\s/g,
 		
-		STYLE_CLASS_NAME: "mlbIdSpan",
-		
 		//Called after update of Prefs
 		init: function(){
          this.spanPrototype = null;
 		},
 		
+		//Function called on pageShow event
 		onPageShow: function(event){
-			this.startInitilizing(event.originalTarget.defaultView, event);
+			var onpageshow2ndCall = event.type=="pageshow" && !event.persisted && MlbPrefs.initOnDomContentLoaded
+			this.startInitalizing(event.originalTarget.defaultView, event, onpageshow2ndCall, onpageshow2ndCall);
 		},
 		
+		//Function called on DOMContentLoaded event
 		onDOMContentLoaded: function(event){
-			this.startInitilizing(event.originalTarget.defaultView, event);
+			if(MlbPrefs.initOnDomContentLoaded){
+			   this.startInitalizing(event.originalTarget.defaultView, event, false, false);
+			}
 		},
 		
-		startInitilizing: function(win, event){
-		   var pageInitData = new PageInitData(win.top, win, win.document, 
-            this.getPageData(win), event)  
+		//Main entry method for initializing 
+		startInitalizing: function(win, event, onpageshow2ndCall, keepExistingIds){
+			Utils.logDebugMessage('startInitilizing win: "' + win.name + '" event: ' + event.type + ' topwin: ' + (win==win.top), MlbPrefs.DEBUG_PREF_ID)
+		   var pageInitData = new PageInitData(win, this.getPageData(win), onpageshow2ndCall, keepExistingIds)  
 		   
+		   //Apply URL exceptions
 		   MlbPrefs.applySiteRules(win)
 		   
 		   //Is MLB activated?
 		   if(MlbPrefs.disableAllIds==true || MlbPrefs.showIdsOnDemand==true ){
+		   	//Set the visibility modes so that with toggeling the ids will become visible
 		      MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.NONE;
             GlobalData.previousVisibilityMode=MlbCommon.VisibilityModes.CONFIG
 		   	//If history back was pressed after toggling of the ids 
 		   	//the alreay generated ids must be hidden
-		   	if(this.hasIdSpans(pageInitData.currentWin)){
-					EventHandler.hideIdSpans(pageInitData.currentTopWin);
+		   	if(this.hasIdSpans(pageInitData.getCurrentWin())){
+					EventHandler.hideIdSpans(pageInitData.getCurrentTopWin());
 		   	}
 		   	return;
 		   }
-		
-		   if(win==win.top){
-		   	//Topwin is loaded
-		   	//Create new page data
-		   	if(pageInitData.onpageshow2ndCall){
-		   		pageInitData.pageData = this.getPageData(win)
-		   	}else{
-			   	var pageData = this.createPageData()
-	            this.setPageData(win, pageData)
-	            pageInitData.pageData = pageData
-		   	}
-		      this.initAll(pageInitData);
-		   }else if(this.getPageData(win) && 
-		            this.getPageData(win).initialized){
-		   	//Subframe was reloaded
-		      this.reloadFrame(pageInitData);
+		   
+		   var pageData = this.getPageData(win)
+		   if(event.type=="DOMContentLoaded" ||
+		       event.type=="pageshow" && win==win.top && pageData==null){
+		      pageData = this.createPageData()
 		   }else{
-		   	//Subframe was loaded but topwin isn't fully loaded
-			   //Frames will be initialized starting at the top
 		   	return
 		   }
+	   	pageInitData.pageData = pageData 
+	      this.setPageData(win, pageData)
+	      this.initAll(pageInitData);
+//		   if(win==win.top){
+//		   	//Topwin is loaded
+//		   	if(pageInitData.onpageshow2ndCall && pageData!=null){
+//		   		//When moving fast through the history the pagedata could be null
+//		   		//2nd call --> use existing pageData created on 1st call
+//		   		pageInitData.pageData = pageData
+//		   	}else{
+//		   		//Create new pageData and set it
+//			   	pageData = this.createPageData()
+//	            this.setPageData(win, pageData)
+//	            pageInitData.pageData = pageData
+//		   	}
+//		   }else if(pageData){
+////          Todo remove
+////		      this.reloadFrame(pageInitData);
+//		      this.initAll(pageInitData);
+//		   }
 		},
 		
-		initAfterToggling: function(win){
+		initAfterPrefChange: function(){
+			var win = MlbUtils.getCurrentContentWin();
 			var pageData = this.createPageData();
-         var pageInitData = new PageInitData(win.top, win, win.document, pageData);
+         var pageInitData = new PageInitData(win, pageData, false, false);
          this.setPageData(win.top, pageData)
          this.initAll(pageInitData)  
 		},
 		
 		initAll: function (pageInitData){
-			if(MlbPrefs.debugPerf){
+			if(MlbPrefs.debug){
 				var perfTimer = new PerfTimer()
 			}
 			
 		    //Initilize Page-Data
 		   if(pageInitData.pageData==null){
-			   this.setPageData(pageInitData.currentTopWin, this.createPageData())
+			   this.setPageData(pageInitData.getCurrentTopWin(), this.createPageData())
 		   }
 
 		    //Init-Frames
-		   this.initFrame(pageInitData, pageInitData.currentTopWin);
+		   this.initFrame(pageInitData, pageInitData.getCurrentTopWin());
 			
-		   //Set init-Flag
-		   if(pageInitData.onpageshow2ndCall){
-			   pageInitData.pageData.initialized=true;
-		   }
-
-		   if(MlbPrefs.debugPerf){
+		   if(MlbPrefs.debug){
             var timeConsumed = perfTimer.stop()
             Utils.logMessage("MLB Time for loading " + (pageInitData.onpageshow2ndCall?"2st":"1nd") + " call :" + timeConsumed)
          }
@@ -131,27 +162,28 @@
 			 if(win.document.designMode=="on"){
 			 	return
 			 }
-		    pageInitData.currentWin = win;
-		    pageInitData.currentDoc = win.document;
+		    pageInitData.setCurrentWin(win);
 		
 		    //Saving start Id
 		    var startId = pageInitData.pageData.counter;   
 		    
 		    //Init ids for frames
-		    if(MlbPrefs.idsForFramesEnabled && pageInitData.currentDoc){
+		    if(MlbPrefs.idsForFramesEnabled && pageInitData.getCurrentDoc()){
 		        this.initFramesIds(pageInitData);
 		    }
 		    
 		    //Init ids for form elements
-		    if(MlbPrefs.idsForFormElementsEnabled && pageInitData.currentDoc){
+		    if(MlbPrefs.idsForFormElementsEnabled && pageInitData.getCurrentDoc()){
 		        this.initFormElements(pageInitData)
 		    }    
 		
 			//Init ids for links
 		    if((MlbPrefs.idsForLinksEnabled || MlbPrefs.idsForImgLinksEnabled) 
-		        && pageInitData.currentDoc){
+		        && pageInitData.getCurrentDoc()){
 		        this.initLinks(pageInitData)
 		    }
+		    
+		    this.smartAbsoluteFormElementPositiioning(pageInitData)
 		    
 		    //Recursive call for all subframes
 		    for(var i = 0; i<win.frames.length; i++){
@@ -164,30 +196,39 @@
 		    pageInitData.pageData.startIdMap[win.name]=startId;
 		},
 		
+		//Todo remove as no longer needed
 		reloadFrame: function (pageInitData){
-		    var oldNumberOfIds = pageInitData.pageData.numberOfIdsMap[pageInitData.currentWin.name];
+         if(MlbPrefs.debug){
+            var perfTimer = new PerfTimer()
+         }
+		    var oldNumberOfIds = pageInitData.pageData.numberOfIdsMap[pageInitData.getCurrentWin().name];
 		    var startId = pageInitData.pageData.counter = 
-		             pageInitData.pageData.startIdMap[pageInitData.currentWin.name];
-		    this.initFrame(pageInitData, pageInitData.currentWin);
+		             pageInitData.pageData.startIdMap[pageInitData.getCurrentWin().name];
+		    this.initFrame(pageInitData, pageInitData.getCurrentWin());
 		    var actNumberOfIds = pageInitData.pageData.counter - startId;
 		    if(actNumberOfIds>oldNumberOfIds){
-		        this.initAll(null, true);
+		    	  pageInitData.pageData = this.createPageData()
+		        this.initAll(pageInitData);
 		    }
+         if(MlbPrefs.debug){
+            var timeConsumed = perfTimer.stop()
+            Utils.logMessage("MLB Time for reloading frame" + (pageInitData.onpageshow2ndCall?"2st":"1nd") + " call :" + timeConsumed)
+         }
 		},
 		
 		/*
 		 * Init Frame-Ids
 		 */
 		initFramesIds: function(pageInitData){
-         for(var i = 0; i<pageInitData.currentWin.frames.length; i++){
-            var frame = pageInitData.currentWin.frames[i];
+         for(var i = 0; i<pageInitData.getCurrentWin().frames.length; i++){
+            var frame = pageInitData.getCurrentWin().frames[i];
 			   var doc = frame.document
 			   if(doc.designMode=="on" || doc.body==null){
 			   	//do not mark editable IFrames; these are used as rich text fields
-			   	//onDomContentLoaded the body of frames are partly not available
+			   	//initOnDomContentLoaded the body of frames are partly not available
 			   	continue
 			   }else if(frame.idSpan!=null){
-			   	if(pageInitData.onpageshow2ndCall){
+			   	if(pageInitData.keepExistingIds){
 			   		continue
 			   	}else{
 	               this.updateSpan(pageInitData, MlbPrefs.idsForFramesEnabled, frame.idSpan);
@@ -214,7 +255,7 @@
 		*/
 		initLinks: function (pageInitData){
 		    //Iteration over links
-		    var links = pageInitData.currentDoc.getElementsByTagName("A");
+		    var links = pageInitData.getCurrentDoc().getElementsByTagName("A");
 		    
 		    //Limit max. number of links
 		    var maxIdNumber = MlbPrefs.maxIdNumber
@@ -235,22 +276,24 @@
 //		       var isImageLink = this.hasOnlyImgChilds(link);
 		       var isImageLink = this.isImageLink(link);
 		       
+		       var idSpan = this.getAndResetIdSpan(link, link, pageInitData);
+		       
 		       //Check against preferences
-		       if(link.idSpan==null &&
+		       if(idSpan==null &&
 		         ((isImageLink && !MlbPrefs.idsForImgLinksEnabled) ||
 		          (!isImageLink && !MlbPrefs.idsForLinksEnabled))){
 		            continue;
 		       }
 		
-
+             
 		       //Is there already a span with the id
-             if(link.idSpan!=null){
-   		       if(pageInitData.onpageshow2ndCall){
+             if(idSpan!=null){  
+   		       if(pageInitData.keepExistingIds){
 		       	    continue
 		       	 }else{
 		             var showIdSpan = isImageLink && MlbPrefs.idsForImgLinksEnabled ||
 		       					      !isImageLink && MlbPrefs.idsForLinksEnabled;
-		             this.updateSpan(pageInitData, showIdSpan, link.idSpan);
+		             this.updateSpan(pageInitData, showIdSpan, idSpan);
 		       	 }
 		       }else{
 		          //Insert new Span
@@ -295,11 +338,13 @@
 			   var imgElementOffsetTop = MlbUtils.getOffsetTopToBody(imgElement)
 			   
 	      	//Set link position relative
+			   //Todo check if can be left out
+			   //It could be that there are already elements positioned absolute within the link which would then be not possitioned corrctly any more
 	      	var linkStyle = getComputedStyle(link, null)
 	      	if(linkStyle.position=="static"){
 	      		link.style.position="relative"
 	      	}
-			   //Insert Link with absolute Positioning // Todo has to be changed for small pictures
+			   //Insert Link with absolute Positioning
 	         newSpan.style.position="absolute"
 	         newSpan.style.left="0px"
 	         newSpan.style.top="0px"
@@ -329,6 +374,7 @@
 		
 		/*
 		 * Remove, replaced by insertSpan for image link
+		 * Todo Remove
 		 */
 		smartImageLinkPositioning: function(img, idSpan){
 			var offsets = this.calculateOffsets(img, idSpan)
@@ -385,19 +431,19 @@
 		    Idea: switch to document.evaluate
 		*/
 		initFormElements: function (pageInitData){
-         var forms = pageInitData.currentDoc.forms
+         var forms = pageInitData.getCurrentDoc().forms
          if(forms!=null){
 	         for(var i=0; i<forms.length; i++ ){
 	            this.setIdsOnFormElements(pageInitData, forms[i].elements, false);
 			   }
          }
-		   var formelements = pageInitData.currentDoc.getElementsByTagName("input");
+		   var formelements = pageInitData.getCurrentDoc().getElementsByTagName("input");
          this.setIdsOnFormElements(pageInitData, formelements, true);
-		   formelements = pageInitData.currentDoc.getElementsByTagName("select");
+		   formelements = pageInitData.getCurrentDoc().getElementsByTagName("select");
          this.setIdsOnFormElements(pageInitData, formelements, true);
-		   formelements = pageInitData.currentDoc.getElementsByTagName("button");
+		   formelements = pageInitData.getCurrentDoc().getElementsByTagName("button");
          this.setIdsOnFormElements(pageInitData, formelements, true);
-		   formelements = pageInitData.currentDoc.getElementsByTagName("textarea");
+		   formelements = pageInitData.getCurrentDoc().getElementsByTagName("textarea");
          this.setIdsOnFormElements(pageInitData, formelements, true);
 		},
 		
@@ -410,16 +456,27 @@
 			
 			   //Hidden input-fields and fieldsets do not get ids ;-)
 			   if(element.type=="hidden" ||
-			      MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.FIELDSET)){
+			      MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.FIELDSET) ||
+			      //File fields are not clickable and focusable via JS
+			      MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.FILE)){
 			      continue;
 			   }
 			
 			   var parent = element.parentNode;
-            if(element.idSpan!=null){
-            	if(excludeElementsWithIdSpan || pageInitData.onpageshow2ndCall){
+			   var idSpan = this.getAndResetIdSpan(element, parent, pageInitData);
+            if(idSpan!=null){
+//            	if(excludeElementsWithIdSpan || pageInitData.keepExistingIds){
+            	if(excludeElementsWithIdSpan || pageInitData.keepExistingIds){
+//            		if(!this.isAbsolutePositionedFormElement(element)){
+            		 this.doOverlayPosioning(element)
+//            	  }
             		continue
+            	//Todo
+//            	}else if(MlbPrefs.smartPositioning && pageInitData.keepExistingIds){
+//            	  //this.smartAbsoulteFormElementPositiioning(element)
+//            	  continue
             	}else {
-				      this.updateSpan(pageInitData, MlbPrefs.idsForFormElementsEnabled, element.idSpan);
+				      this.updateSpan(pageInitData, MlbPrefs.idsForFormElementsEnabled, idSpan);
 				      this.setElementStyle(element, MlbPrefs.idsForFormElementsEnabled)
             	}
 			   }else{
@@ -436,6 +493,19 @@
 			      }else{
 			      	var widthAdjusted = false
 			      }
+//					 if (MlbPrefs.smartPositioning
+//					 && this.isAbsolutePositionedFormElement(element)) {
+//					 	newSpan.style.display = "none"
+//						// Make absolute
+////						var parentStyle = getComputedStyle(parent, null)
+////						if (parentStyle.position == "static") {
+////							parent.style.position = "relative"
+////						}
+//						newSpan.style.position = "absolute"
+//						newSpan.style.top = "0px"
+//						newSpan.style.left = "0px"
+//						newSpan.style.borderColor = "#7F9DB9"
+//					}
 			      if(element.nextSibling!=null){
 			         newSpan = parent.insertBefore(newSpan, element.nextSibling);
 			      }else{
@@ -451,12 +521,25 @@
 			      MlbUtils.setElementForIdSpan(newSpan, element)
 			      
 				    if(MlbPrefs.smartPositioning){
-				       //var adjusted = this.adjustWidthOfFormElement(element, newSpan)
-		             this.smartFormelementPositioning(element)
+				    	//Todo remove?
+//				    	if (this.isAbsolutePositionedFormElement(element)){
+////				    		this.smartAbsoulteFormElementPositiioning(element)
+//				    		pageInitData.pageData.addToAbsolutePosFormElements(element)
+//				    	}else{
+				        // var adjusted = this.adjustWidthOfFormElement(element, newSpan)
+		                this.smartFormelementPositioning(element)
+//				      }
 				    } 
 			    }
 			    pageInitData.pageData.addElementWithId(element)
 			}
+		},
+		
+		isAbsolutePositionedFormElement: function(element){
+			return  MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXT) ||
+                  MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.PASSWORD) ||
+                  MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT) ||
+                  MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXTAREA)
 		},
 		
 		smartFormelementPositioning:function(element){
@@ -474,7 +557,7 @@
          	element.style.marginBottom = newMarginBottom
          	elemStylesIdOn.push({style:"marginBottom", value:newMarginBottom})
          }else{
-	         style.marginLeft = (-idSpan.offsetWidth)+"px"
+	         idSpan.style.marginLeft = (-idSpan.offsetWidth)+"px"
          }
          if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT)){
             //Pos in middle of button
@@ -493,54 +576,93 @@
          if(elemStylesIdOn.length>0){
             element.elemStylesIdOn=elemStylesIdOn
          }
+         this.doOverlayPosioning(element)
          
-         //Calculate offsets
+		},
+		
+		doOverlayPosioning: function(element){
+			var idSpan = element.idSpan
+			var style = idSpan.style
+			//Calculate offsets
          var offsets = this.calculateOffsets(element, idSpan)
          
-		   var left = null;
-		   var top = null;
-		   
-		   //Calculate left and top
-		   if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXT) || 
-		      MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.PASSWORD) ||
-		      MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXTAREA)){
-		      //Pos in upper right corner
-	         var positions = this.calculateOverlayPosition(element, idSpan, offsets)
-	         left = positions.left
-	         top = positions.top
-		      style.borderColor="#7F9DB9"
-		      var compStyle = getComputedStyle(element, "")
-		      style.color = compStyle.color
-		   }else if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT)){
-		   	//Pos in middle of button
-		   	var widthOfSelectButton = 18
-		      left = offsets.elemOffsetLeft-offsets.spanOffsetLeft + (element.offsetWidth-widthOfSelectButton) + 
-		             (widthOfSelectButton-idSpan.offsetWidth)/2
-         		      top = offsets.elemOffsetTop-offsets.spanOffsetTop + (element.offsetHeight-idSpan.offsetHeight)/2
-		      style.backgroundColor="#B4C7EB"
-		   }else if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.BUTTON) ||
-		             MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.RADIO) ||
-		             MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.CHECKBOX)){
+         var left = null;
+         var top = null;
+         
+         //Calculate left and top
+         if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXT) || 
+            MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.PASSWORD) ||
+            MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXTAREA)){
+            //Pos in upper right corner
+            var positions = this.calculateOverlayPosition(element, idSpan, offsets)
+            left = positions.left
+            top = positions.top
+            style.borderColor="#7F9DB9"
+            var compStyle = getComputedStyle(element, "")
+            style.color = compStyle.color
+            style.backgroundColor = compStyle.backgroundColor
+         }else if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT)){
+            //Pos in middle of button
+            var widthOfSelectButton = 18
+            left = offsets.elemOffsetLeft-offsets.spanOffsetLeft + (element.offsetWidth-widthOfSelectButton) + 
+                   (widthOfSelectButton-idSpan.offsetWidth)/2
+                     top = offsets.elemOffsetTop-offsets.spanOffsetTop+3// + (element.offsetHeight-idSpan.offsetHeight)/2
+            style.backgroundColor="#B4C7EB"
+         }else if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.BUTTON) ||
+                   MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.RADIO) ||
+                   MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.CHECKBOX)){
             //Pos in middle next to button
             left = offsets.elemOffsetLeft-offsets.spanOffsetLeft + element.offsetWidth
             top = offsets.elemOffsetTop-offsets.spanOffsetTop + (element.offsetHeight-idSpan.offsetHeight)/2
-           	element.style.marginRight=(idSpan.offsetWidth)+"px"
+            element.style.marginRight=(idSpan.offsetWidth)+"px"
          }
-		  
-		   //Set top and left
-		   if(top!=null){
-		      style.top = top+"px"
-		   }
-		   if(left!=null){
-   	      style.left = left+"px"
-		   }
+        
+         //Set top and left
+         if(top!=null){
+         	var currentTop = style.top!=""?parseInt(style.top, 10):0
+            style.top = (currentTop+top)+"px"
+         }
+         if(left!=null){
+         	var currentLeft = style.left!=""?parseInt(style.left, 10):0
+            style.left = (currentLeft+left)+"px"
+         }
 		},
 		
+		smartAbsoluteFormElementPositiioning: function(pageInitData) {
+			var absolutePosFormElements = pageInitData.pageData.absolutePositionedFormElements
+			for (var i = 0; i < absolutePosFormElements.length; i++) {
+   			var element = absolutePosFormElements[i]
+   			var idSpan = element.idSpan
+				idSpan.style.position = "absolute"
+				idSpan.style.top = "0px"
+				idSpan.style.left = "0px"
+				idSpan.style.borderColor = "#7F9DB9"
+
+				var offsets = this.calculateOffsets(element, idSpan)
+				// Offsets for img Element
+				if (MlbUtils.isElementOfType(element,MlbUtils.ElementTypes.SELECT)) {
+//					// Pos in middle of button
+//					var widthOfSelectButton = 18
+//					left = offsets.elemOffsetLeft - offsets.spanOffsetLeft
+//							+ (element.offsetWidth - widthOfSelectButton)
+//							+ (widthOfSelectButton - idSpan.offsetWidth) / 2
+//					top = offsets.elemOffsetTop - offsets.spanOffsetTop + 3// +
+																			// (element.offsetHeight-idSpan.offsetHeight)/2
+					idSpan.style.backgroundColor = "#B4C7EB"
+				}
+//				else {
+					var left = offsets.elemOffsetLeft - offsets.spanOffsetLeft
+							+ element.offsetWidth - idSpan.offsetWidth
+					var top = offsets.elemOffsetTop - offsets.spanOffsetTop
+//				}
+				idSpan.style.left = left + "px"
+				idSpan.style.top = top + "px"
+			}
+		},
 		
 		/*
-		 * Adjust the width of textfield and selectboxes, to minimize
-		 * the impact on the overall layout
-		 * @returns true if offsets have to recalculated
+		 * Adjust the width of textfield and selectboxes, to minimize the impact
+		 * on the overall layout @returns true if offsets have to recalculated
 		 */
 		adjustWidthOfFormElement: function(element, newSpan){
 		   if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXT) ||
@@ -581,9 +703,7 @@
 		createSpan: function(pageInitData){
 		    if(this.spanPrototype==null){
 		        //span
-		        var span = pageInitData.currentDoc.createElement("span");
-//		        Todo change
-//		        span.className = this.STYLE_CLASS_NAME
+		        var span = pageInitData.getCurrentDoc().createElement("span");
 		        span.style.cssText = MlbPrefs.styleForIdSpan
 		        
 		        //The span has to be hidden before inserting into the DOM
@@ -600,7 +720,7 @@
 //		    if(this.spanPrototype.style.cssText!=MlbPrefs.styleForIdSpan){
 //		        this.spanPrototype.style.cssText=MlbPrefs.styleForIdSpan;
 //		    }
-		    return pageInitData.currentDoc.importNode(this.spanPrototype, true);
+		    return pageInitData.getCurrentDoc().importNode(this.spanPrototype, true);
 		},
 		
 		/*
@@ -693,12 +813,28 @@
       },
       
       createPageData: function(){
-         if(MlbPrefs.useSelfDefinedCharsForIds){
+         if(MlbPrefs.isCharIdType()){
          	return new PageData(MlbPrefs.idChars)
          }else{
          	return new PageData(null)
          }
-      }      
+      },
+      
+      getAndResetIdSpan: function(element, parentOfIdSpan, pageInitData){
+          if(!pageInitData.onpageshow2ndCall || element.idSpan){
+          	return element.idSpan
+          }else{
+         	var spans = parentOfIdSpan.getElementsByTagName("span")
+         	for (var i = 0; i < spans.length; i++) {
+         		var span = spans[i]
+         		if(span.getAttribute(MlbCommon.ATTR_ID_SPAN_FLAG)=="true"){
+            	  element.idSpan = span
+            	  return span
+         		}
+         	}
+          }
+          return null
+      }
 	}
 	
    var NS = rno_common.Namespace

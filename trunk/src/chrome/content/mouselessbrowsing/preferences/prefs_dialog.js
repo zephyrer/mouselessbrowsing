@@ -5,9 +5,13 @@
   Created by Rudolf Noé
   01.01.2008
 */
+var MlbCommon = mouselessbrowsing.MlbCommon
+var Utils = rno_common.Utils
+
 function doOnload(){
    rno_common.Prefs.loadPrefs(document);
-   MLB_onCommandUseSelfDefinedChars();
+	document.title = "Mouseless Browsing " + MlbCommon.MLB_VERSION 
+   MLB_onCommandIdType();
 	MLB_onTogglingVisibilityAllIds();
 	MLB_setPreviewForIds("styleForIdSpan")
 	MLB_setPreviewForIds("styleForFrameIdSpan")
@@ -31,7 +35,7 @@ function saveUserPrefs(){
 		return false
 	}
    rno_common.Prefs.savePrefs(document);
-   rno_common.Utils.notifyObservers(mouselessbrowsing.MlbCommon.MLB_PREF_OBSERVER);
+   rno_common.Utils.notifyObservers(MlbCommon.MLB_PREF_OBSERVER);
 }
 
 function dialogHelp(){
@@ -42,16 +46,6 @@ function dialogHelp(){
    var browser = browserWin.getBrowser()
    browser.selectedTab = browser.addTab("http://mlb.rudolf-noe.de")
    browserWin.focus()      
-}
-
-function MLB_onCommandUseSelfDefinedChars(event){
-   var selfDefinedCharCB = byId('useSelfDefinedCharsCB')
-   var selfDefinedCharTB = byId('idCharsTB')
-   if(selfDefinedCharCB.checked){
-   	selfDefinedCharTB.disabled=false
-   }else{
-   	selfDefinedCharTB.disabled=true
-   }	
 }
 
 function MLB_onTogglingVisibilityAllIds(){
@@ -142,23 +136,40 @@ function MLB_onInputIdCharsTB(){
    }	
 }
 
-function MLB_validateUserInput(){
-   //No duplicate chars in self defined char set for ids
-   var useSelfDefinedCharSetCB = byId('useSelfDefinedCharsCB')
-   var idCharsTB = byId('idCharsTB')
-   if(useSelfDefinedCharSetCB.checked){
-	   var charMap = new Object()
-	   var selfDefindedCharSet = idCharsTB.value
-	   if(selfDefindedCharSet==""){
-	   	throw Error("No id char defined")
-	   }
-	   for(var i=0; i<selfDefindedCharSet.length; i++){
-	   	var singleChar = selfDefindedCharSet.charAt(i)
-	   	if(charMap[singleChar]!=null){
-	   		throw Error("The character '" + singleChar + "' is defined multiple times in the self-defined character set for ids")
-	   	}
-	   	charMap[singleChar] = ""
-	   }
+function MLB_validateUserInput() {
+	// No duplicate chars in self defined char set for ids
+	var useCharIds = byId('idtype').value == MlbCommon.IdTypes.CHAR
+	var idCharsTB = byId('idCharsTB')
+	if (useCharIds) {
+		var charMap = new Object()
+		var selfDefindedCharSet = idCharsTB.value
+		if (selfDefindedCharSet == "") {
+			throw Error("No id char defined")
+		}
+		for (var i = 0; i < selfDefindedCharSet.length; i++) {
+			var singleChar = selfDefindedCharSet.charAt(i)
+			if (charMap[singleChar] != null) {
+				throw Error("The character '"
+						+ singleChar
+						+ "' is defined multiple times in the self-defined character set for ids.")
+			}
+			charMap[singleChar] = ""
+		}
+	}
+}
+
+function MLB_onCommandIdType(){
+   var idTypeRG = byId('idtype')
+   if(idTypeRG.value==MlbCommon.IdTypes.NUMERIC){
+      byId('idCharsTB').disabled=true   
+      byId('exclusiveNumpad').disabled=false   
+      byId('modifierForWritableElement').disabled=false  
+      byId('modifierForOpenInNewTab').disabled=false
+   }else{
+      byId('idCharsTB').disabled=false   
+      byId('exclusiveNumpad').disabled=true   
+      byId('modifierForWritableElement').disabled=true  
+      byId('modifierForOpenInNewTab').disabled=true   
    }
 }
 

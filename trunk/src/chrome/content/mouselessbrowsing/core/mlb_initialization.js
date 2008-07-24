@@ -11,16 +11,22 @@
 	var Prefs = rno_common.Prefs
 	var MlbPrefs = mouselessbrowsing.MlbPrefs
 	var Utils = rno_common.Utils
+	var VersionManager = mouselessbrowsing.VersionManager
+	var PageInitializer = mouselessbrowsing.PageInitializer
    
    //Prefs observer
    var MLB_prefObserver = null;
    
 	InitManager = {
 		init: function (){
+		    if(VersionManager.hasVersionToBeMigrated()){
+		    	VersionManager.migrateVersion()
+		    }
 		    this.registerAsObserver();
 		    MlbPrefs.initPrefs();
 		    this.initShortCuts();
 		    this.initRemaining();
+		    this.updateCurrentPage();
 		},
 		
 		registerAsObserver: function(){
@@ -83,17 +89,33 @@
 		
 		initRemaining: function(){
 		    //Display keybuffer in statusbar?
-		    var statusbarpanel = document.getElementById("mlb-status-panel");
-		    if(MlbPrefs.showKeybufferInStatusbar){
-		        statusbarpanel.style.display="block";
-		        document.getElementById('mlb-status-image').tooltipText = "Mouseless Browsing " + MlbCommon.MLB_VERSION
+		    var statusPanel = document.getElementById("mlb-status-panel");
+		    if(MlbPrefs.showMlbIconInStatusbar || MlbPrefs.showKeybufferInStatusbar){
+		        statusPanel.style.display="block";
 		    }else{
-		        statusbarpanel.style.display="none";
+		        statusPanel.style.display="none";
 		    }
+		    var statusIcon = document.getElementById("mlb-status-image");
+		    if(MlbPrefs.showMlbIconInStatusbar){
+		        statusIcon.style.display="block";
+		    }else{
+		        statusIcon.style.display="none";
+		    }
+		    var statusLabel = document.getElementById("mlb-status");
+          if(MlbPrefs.showKeybufferInStatusbar){
+              statusLabel.style.display="block";
+          }else{
+              statusLabel.style.display="none";
+          }
+		    document.getElementById('mlb-status-image').tooltipText = "Mouseless Browsing " + MlbCommon.MLB_VERSION
 		    //Delete prototype span for updating css
 		    if(mouselessbrowsing.PageInitializer){
 	    	   mouselessbrowsing.PageInitializer.init()
 		    }
+		},
+		
+		updateCurrentPage : function() {
+			PageInitializer.initAfterPrefChange()
 		},
 		
 		observe: function(){

@@ -51,7 +51,8 @@
 			CHECKBOX: "CHECKBOX",
 			RADIO: "RADIO",
 			BUTTON: "BUTTON",
-			FIELDSET: "FIELDSET"
+			FIELDSET: "FIELDSET",
+			FILE: "FILE"
 		},
 		
 		isElementOfType: function(element, type){
@@ -76,6 +77,8 @@
             return XMLUtils.isTagName(element, "INPUT") && "radio"==element.type
          }else if(this.ElementTypes.FIELDSET==type){
             return XMLUtils.isTagName(element, "FIELDSET")
+         }else if(this.ElementTypes.FILE==type){
+         	return XMLUtils.isTagName(element, "INPUT") && "file"==element.type
          }
 		},
 		
@@ -95,6 +98,10 @@
             offsetTop += element.offsetTop
          }
          return offsetTop
+      },
+      
+      getCurrentContentWin: function(){
+      	return window.getBrowser().contentWindow;
       }
       
 	}
