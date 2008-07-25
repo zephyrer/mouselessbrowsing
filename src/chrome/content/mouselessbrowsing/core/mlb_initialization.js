@@ -26,7 +26,6 @@
 		    MlbPrefs.initPrefs();
 		    this.initShortCuts();
 		    this.initRemaining();
-		    this.updateCurrentPage();
 		},
 		
 		registerAsObserver: function(){
@@ -112,10 +111,6 @@
 		    if(mouselessbrowsing.PageInitializer){
 	    	   mouselessbrowsing.PageInitializer.init()
 		    }
-		},
-		
-		updateCurrentPage : function() {
-			PageInitializer.initAfterPrefChange()
 		},
 		
 		observe: function(){

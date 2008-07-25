@@ -60,23 +60,30 @@
 		//Called after update of Prefs
 		init: function(){
          this.spanPrototype = null;
+         this.initAfterPrefChange();
 		},
 		
 		//Function called on pageShow event
 		onPageShow: function(event){
 			var onpageshow2ndCall = event.type=="pageshow" && !event.persisted && MlbPrefs.initOnDomContentLoaded
-			this.startInitalizing(event.originalTarget.defaultView, event, onpageshow2ndCall, onpageshow2ndCall);
+			this.startInitalizing(event, onpageshow2ndCall, onpageshow2ndCall);
 		},
 		
 		//Function called on DOMContentLoaded event
 		onDOMContentLoaded: function(event){
 			if(MlbPrefs.initOnDomContentLoaded){
-			   this.startInitalizing(event.originalTarget.defaultView, event, false, false);
+			   this.startInitalizing(event, false, false);
 			}
 		},
 		
-		//Main entry method for initializing 
-		startInitalizing: function(win, event, onpageshow2ndCall, keepExistingIds){
+		/*
+		 * Main entry method for initializing
+		 * @param event: The event initiating the call
+		 * @param onpageshow2ndCall: Flag indicating wether this is the 2nd call for initializing the win
+		 * @param keepExistingIds: Flag indicating whether already existing ids should be left unchanged 
+		 */ 
+		startInitalizing: function(event, onpageshow2ndCall, keepExistingIds){
+			var win = event.originalTarget.defaultView
 			Utils.logDebugMessage('startInitilizing win: "' + win.name + '" event: ' + event.type + ' topwin: ' + (win==win.top), MlbPrefs.DEBUG_PREF_ID)
 		   var pageInitData = new PageInitData(win, this.getPageData(win), onpageshow2ndCall, keepExistingIds)  
 		   
@@ -96,35 +103,27 @@
 		   	return;
 		   }
 		   
-		   var pageData = this.getPageData(win)
-		   if(event.type=="DOMContentLoaded" ||
-		       event.type=="pageshow" && win==win.top && pageData==null){
-		      pageData = this.createPageData()
-		   }else{
+		   //Onpage show init starts from topwin
+		   //This is the last event
+		   if(event.type=="pageshow" && win!=win.top){
 		   	return
+		   }
+		   var pageData = null
+		   if(onpageshow2ndCall){
+   		   pageData = this.getPageData(win)
+		   }else{
+		   	pageData = this.createPageData()
 		   }
 	   	pageInitData.pageData = pageData 
 	      this.setPageData(win, pageData)
+	      //Even if only a frame is loaded everything is initialized
+	      //There is no performance issues as the already exisiting ids are only updated
 	      this.initAll(pageInitData);
-//		   if(win==win.top){
-//		   	//Topwin is loaded
-//		   	if(pageInitData.onpageshow2ndCall && pageData!=null){
-//		   		//When moving fast through the history the pagedata could be null
-//		   		//2nd call --> use existing pageData created on 1st call
-//		   		pageInitData.pageData = pageData
-//		   	}else{
-//		   		//Create new pageData and set it
-//			   	pageData = this.createPageData()
-//	            this.setPageData(win, pageData)
-//	            pageInitData.pageData = pageData
-//		   	}
-//		   }else if(pageData){
-////          Todo remove
-////		      this.reloadFrame(pageInitData);
-//		      this.initAll(pageInitData);
-//		   }
 		},
 		
+		/*
+		 * Updates the page after toggling of ids or if prefs has changed
+		 */
 		initAfterPrefChange: function(){
 			var win = MlbUtils.getCurrentContentWin();
 			var pageData = this.createPageData();
@@ -133,17 +132,15 @@
          this.initAll(pageInitData)  
 		},
 		
+		/*
+		 * Main init-method
+		 */
 		initAll: function (pageInitData){
 			if(MlbPrefs.debug){
 				var perfTimer = new PerfTimer()
 			}
 			
-		    //Initilize Page-Data
-		   if(pageInitData.pageData==null){
-			   this.setPageData(pageInitData.getCurrentTopWin(), this.createPageData())
-		   }
-
-		    //Init-Frames
+		    //Init-Frames starting with top-win
 		   this.initFrame(pageInitData, pageInitData.getCurrentTopWin());
 			
 		   if(MlbPrefs.debug){
@@ -156,64 +153,37 @@
 		/*
 		 * Initializes one Frame
 		 * Is called recursivly
+		 * @param pageInitData
+		 * @param win: current win to initialize
+		 * 
 		 */
 		initFrame: function(pageInitData, win){
-			 //If document of win is editable skip it, it is a "rich-text-field"
+			 //If document of win is editable skip it, it is a "rich-text-field", e.g. at Gmail
 			 if(win.document.designMode=="on"){
 			 	return
 			 }
 		    pageInitData.setCurrentWin(win);
 		
-		    //Saving start Id
-		    var startId = pageInitData.pageData.counter;   
-		    
 		    //Init ids for frames
-		    if(MlbPrefs.idsForFramesEnabled && pageInitData.getCurrentDoc()){
+		    if(MlbPrefs.isIdsForFramesEnabled() && pageInitData.getCurrentDoc()){
 		        this.initFramesIds(pageInitData);
 		    }
 		    
 		    //Init ids for form elements
-		    if(MlbPrefs.idsForFormElementsEnabled && pageInitData.getCurrentDoc()){
+		    if(MlbPrefs.isIdsForFormElementsEnabled() && pageInitData.getCurrentDoc()){
 		        this.initFormElements(pageInitData)
 		    }    
 		
 			//Init ids for links
-		    if((MlbPrefs.idsForLinksEnabled || MlbPrefs.idsForImgLinksEnabled) 
+		    if((MlbPrefs.isIdsForLinksEnabled() || MlbPrefs.isIdsForImgLinksEnabled()) 
 		        && pageInitData.getCurrentDoc()){
 		        this.initLinks(pageInitData)
 		    }
-		    
-		    this.smartAbsoluteFormElementPositiioning(pageInitData)
 		    
 		    //Recursive call for all subframes
 		    for(var i = 0; i<win.frames.length; i++){
 		        this.initFrame(pageInitData, win.frames[i]);
 		    }
-		    
-		    //Saving start and end ids of one frame
-		    var endId = pageInitData.pageData.counter;
-		    pageInitData.pageData.numberOfIdsMap[win.name]=endId-startId;
-		    pageInitData.pageData.startIdMap[win.name]=startId;
-		},
-		
-		//Todo remove as no longer needed
-		reloadFrame: function (pageInitData){
-         if(MlbPrefs.debug){
-            var perfTimer = new PerfTimer()
-         }
-		    var oldNumberOfIds = pageInitData.pageData.numberOfIdsMap[pageInitData.getCurrentWin().name];
-		    var startId = pageInitData.pageData.counter = 
-		             pageInitData.pageData.startIdMap[pageInitData.getCurrentWin().name];
-		    this.initFrame(pageInitData, pageInitData.getCurrentWin());
-		    var actNumberOfIds = pageInitData.pageData.counter - startId;
-		    if(actNumberOfIds>oldNumberOfIds){
-		    	  pageInitData.pageData = this.createPageData()
-		        this.initAll(pageInitData);
-		    }
-         if(MlbPrefs.debug){
-            var timeConsumed = perfTimer.stop()
-            Utils.logMessage("MLB Time for reloading frame" + (pageInitData.onpageshow2ndCall?"2st":"1nd") + " call :" + timeConsumed)
-         }
 		},
 		
 		/*
@@ -225,13 +195,13 @@
 			   var doc = frame.document
 			   if(doc.designMode=="on" || doc.body==null){
 			   	//do not mark editable IFrames; these are used as rich text fields
-			   	//initOnDomContentLoaded the body of frames are partly not available
+			   	//in case of onDomContentLoaded event the body of frames are partly not available
 			   	continue
 			   }else if(frame.idSpan!=null){
 			   	if(pageInitData.keepExistingIds){
 			   		continue
 			   	}else{
-	               this.updateSpan(pageInitData, MlbPrefs.idsForFramesEnabled, frame.idSpan);
+	               this.updateSpan(pageInitData, MlbPrefs.isIdsForFramesEnabled(), frame.idSpan);
 			   	}
 		      }else{
 			      var idSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.FRAME);
@@ -272,7 +242,7 @@
 		       }
 		       
 		       //Display image links?
-		       //Todo remove one of possibilities, no performance impact
+		       //TODO remove one of possibilities, no performance impact
 //		       var isImageLink = this.hasOnlyImgChilds(link);
 		       var isImageLink = this.isImageLink(link);
 		       
@@ -280,19 +250,18 @@
 		       
 		       //Check against preferences
 		       if(idSpan==null &&
-		         ((isImageLink && !MlbPrefs.idsForImgLinksEnabled) ||
-		          (!isImageLink && !MlbPrefs.idsForLinksEnabled))){
+		         ((isImageLink && !MlbPrefs.isIdsForImgLinksEnabled()) ||
+		          (!isImageLink && !MlbPrefs.isIdsForLinksEnabled()))){
 		            continue;
 		       }
 		
-             
 		       //Is there already a span with the id
              if(idSpan!=null){  
    		       if(pageInitData.keepExistingIds){
 		       	    continue
 		       	 }else{
-		             var showIdSpan = isImageLink && MlbPrefs.idsForImgLinksEnabled ||
-		       					      !isImageLink && MlbPrefs.idsForLinksEnabled;
+		             var showIdSpan = isImageLink && MlbPrefs.isIdsForImgLinksEnabled() ||
+		       					      !isImageLink && MlbPrefs.isIdsForLinksEnabled();
 		             this.updateSpan(pageInitData, showIdSpan, idSpan);
 		       	 }
 		       }else{
@@ -325,9 +294,7 @@
 		
 		insertSpanForImageLink: function(pageInitData, link){
 			var newSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.IMG);
-         if(!MlbPrefs.smartPositioning){
-         	return link.appendChild(newSpan)
-         }else{             
+         if(MlbPrefs.smartPositioning){
             var imgElement = link.getElementsByTagName("img")[0]
             if(imgElement==null){
             	//Case of background-image
@@ -338,13 +305,12 @@
 			   var imgElementOffsetTop = MlbUtils.getOffsetTopToBody(imgElement)
 			   
 	      	//Set link position relative
-			   //Todo check if can be left out
-			   //It could be that there are already elements positioned absolute within the link which would then be not possitioned corrctly any more
 	      	var linkStyle = getComputedStyle(link, null)
 	      	if(linkStyle.position=="static"){
 	      		link.style.position="relative"
 	      	}
-			   //Insert Link with absolute Positioning
+
+	      	//Insert Link with absolute Positioning
 	         newSpan.style.position="absolute"
 	         newSpan.style.left="0px"
 	         newSpan.style.top="0px"
@@ -368,33 +334,14 @@
 				newSpan.style.backgroundColor="#EEF3F9"
 				newSpan.style.color="black"
 				return newSpan
-         }
+         }else{
+         	return link.appendChild(newSpan)
+         }             
 		},
 		
-		
-		/*
-		 * Remove, replaced by insertSpan for image link
-		 * Todo Remove
-		 */
-		smartImageLinkPositioning: function(img, idSpan){
-			var offsets = this.calculateOffsets(img, idSpan)
-			var overlayPositions = this.calculateOverlayPosition(img, idSpan, offsets)
-			var factor = 0.25
-			var style = idSpan.style
-			if(img.offsetWidth*factor<idSpan.offsetWidth && 
-			   img.offsetHeight*factor<idSpan.offsetHeight){
-				overlayPositions.left=overlayPositions.left+idSpan.offsetWidth
-			}else{
-				style.backgroundColor="#EEF3F9"
-				style.color="black"
-			}
-			style.position="relative"
-			style.left = overlayPositions.left+"px"
-			style.top = overlayPositions.top+"px"
-		},
-
 		/*
 		 * Checks wether this link consists 
+		 * Remove in future version
 		 */
 		hasOnlyImgChilds: function(element){
 		    if(!element.hasChildNodes())
@@ -416,10 +363,13 @@
 		    return true;
 		},
 		
-		isImageLink: function(element){
-			if((element.getElementsByTagName('img').length>0 ||
-			   getComputedStyle(element, null).backgroundImage!="none") &&
-			   XMLUtils.containsNoText(element)){
+		/*
+		 * Checks whether the link is pure img link
+		 */
+		isImageLink: function(link){
+			if((link.getElementsByTagName('img').length>0 ||
+			   getComputedStyle(link, null).backgroundImage!="none") &&
+			   XMLUtils.containsNoText(link)){
 				return true
 			}else{
 				return false
@@ -427,130 +377,117 @@
 		},
 		
 		/*
-		    Init for form-elements
-		    Idea: switch to document.evaluate
+		 * Init for form-elements
+		 * TODO Idea: switch to document.evaluate
 		*/
 		initFormElements: function (pageInitData){
-         var forms = pageInitData.getCurrentDoc().forms
-         if(forms!=null){
-	         for(var i=0; i<forms.length; i++ ){
-	            this.setIdsOnFormElements(pageInitData, forms[i].elements, false);
-			   }
-         }
-		   var formelements = pageInitData.getCurrentDoc().getElementsByTagName("input");
-         this.setIdsOnFormElements(pageInitData, formelements, true);
-		   formelements = pageInitData.getCurrentDoc().getElementsByTagName("select");
-         this.setIdsOnFormElements(pageInitData, formelements, true);
-		   formelements = pageInitData.getCurrentDoc().getElementsByTagName("button");
-         this.setIdsOnFormElements(pageInitData, formelements, true);
-		   formelements = pageInitData.getCurrentDoc().getElementsByTagName("textarea");
-         this.setIdsOnFormElements(pageInitData, formelements, true);
+//         var forms = pageInitData.getCurrentDoc().forms
+//         if(forms!=null){
+//	         for(var i=0; i<forms.length; i++ ){
+//	            this.setIdsOnFormElements(pageInitData, forms[i].elements, false);
+//			   }
+//         }
+//		   var formelements = pageInitData.getCurrentDoc().getElementsByTagName("input");
+//         this.setIdsOnFormElements(pageInitData, formelements, true);
+//		   formelements = pageInitData.getCurrentDoc().getElementsByTagName("select");
+//         this.setIdsOnFormElements(pageInitData, formelements, true);
+//		   formelements = pageInitData.getCurrentDoc().getElementsByTagName("button");
+//         this.setIdsOnFormElements(pageInitData, formelements, true);
+//		   formelements = pageInitData.getCurrentDoc().getElementsByTagName("textarea");
+//         this.setIdsOnFormElements(pageInitData, formelements, true);
+         this.setIdsOnFormElements(pageInitData, null, false)
 		},
 		
 		/*
 		 * Inserts Ids for a list of form elements
+		 * @param pageInitData
+		 * @param formNodeList: List of formelements
+		 * @param excludeElementsWithIdSpan: Flag indicating that elements which 
+		 *                                   already have an id-span should not be updated
 		 */
-		setIdsOnFormElements : function(pageInitData, formNodeList, excludeElementsWithIdSpan){
-			for(var i=0; i<formNodeList.length; i++){
-			   var element = formNodeList.item(i)
-			
-			   //Hidden input-fields and fieldsets do not get ids ;-)
-			   if(element.type=="hidden" ||
-			      MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.FIELDSET) ||
-			      //File fields are not clickable and focusable via JS
-			      MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.FILE)){
-			      continue;
-			   }
-			
-			   var parent = element.parentNode;
-			   var idSpan = this.getAndResetIdSpan(element, parent, pageInitData);
-            if(idSpan!=null){
-//            	if(excludeElementsWithIdSpan || pageInitData.keepExistingIds){
-            	if(excludeElementsWithIdSpan || pageInitData.keepExistingIds){
-//            		if(!this.isAbsolutePositionedFormElement(element)){
-            		 this.doOverlayPosioning(element)
-//            	  }
-            		continue
-            	//Todo
-//            	}else if(MlbPrefs.smartPositioning && pageInitData.keepExistingIds){
-//            	  //this.smartAbsoulteFormElementPositiioning(element)
-//            	  continue
-            	}else {
-				      this.updateSpan(pageInitData, MlbPrefs.idsForFormElementsEnabled, idSpan);
-				      this.setElementStyle(element, MlbPrefs.idsForFormElementsEnabled)
-            	}
-			   }else{
-			      //Generate new span
-			      var newSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.FORMELEMENT);
+		setIdsOnFormElements : function(pageInitData, formNodeList,
+				excludeElementsWithIdSpan) {
+		   var doc = pageInitData.getCurrentDoc()
+			var snapshot = doc.evaluate("//input | //select | //textarea | //button", doc, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)
+//			for (var i = 0; i < formNodeList.length; i++) {
+			for (var i = 0; i < snapshot.snapshotLength; i++) {
+//				var element = formNodeList.item(i)
+				var element = snapshot.snapshotItem(i)
+
+				// Hidden input-fields and fieldsets do not get ids ;-)
+				if (element.type == "hidden" || MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.FIELDSET) ||
+						// File fields are not clickable and focusable via JS
+						// for security reasons
+						MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.FILE)) {
+					continue;
+				}
+
+				var parent = element.parentNode;
+				var idSpan = this.getAndResetIdSpan(element, parent,
+						pageInitData);
+				if (idSpan != null) {
+					if (excludeElementsWithIdSpan	|| pageInitData.keepExistingIds) {
+   					this.doOverlayPosioning(element)
+						continue
+					} else {
+						this.updateSpan(pageInitData, MlbPrefs.isIdsForFormElementsEnabled(), idSpan);
+						// TODO check this line
+						this.setElementStyle(element, MlbPrefs.isIdsForFormElementsEnabled())
+					}
+				} else {
+					// Generate new span
+					var newSpan = this.getNewSpan(pageInitData,MlbCommon.IdSpanTypes.FORMELEMENT);
 			      
-			      if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.BUTTON)||
-			         MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXT) ||
-			         MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.PASSWORD) ||
-			         MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT)){
-			      	var orgWidth = element.style.width
-		      	   element.style.width = "0px"
-			      	var widthAdjusted = true
-			      }else{
-			      	var widthAdjusted = false
-			      }
-//					 if (MlbPrefs.smartPositioning
-//					 && this.isAbsolutePositionedFormElement(element)) {
-//					 	newSpan.style.display = "none"
-//						// Make absolute
-////						var parentStyle = getComputedStyle(parent, null)
-////						if (parentStyle.position == "static") {
-////							parent.style.position = "relative"
-////						}
-//						newSpan.style.position = "absolute"
-//						newSpan.style.top = "0px"
-//						newSpan.style.left = "0px"
-//						newSpan.style.borderColor = "#7F9DB9"
-//					}
-			      if(element.nextSibling!=null){
-			         newSpan = parent.insertBefore(newSpan, element.nextSibling);
-			      }else{
-			         newSpan = parent.appendChild(newSpan);
-			      }
-			      //newSpan = parent.insertBefore(newSpan, element)
-			      
-			      if(widthAdjusted){
-			      	element.style.width = orgWidth
-			      }
-			      //Set cross reference 
-			      element.idSpan = newSpan
-			      MlbUtils.setElementForIdSpan(newSpan, element)
-			      
-				    if(MlbPrefs.smartPositioning){
-				    	//Todo remove?
-//				    	if (this.isAbsolutePositionedFormElement(element)){
-////				    		this.smartAbsoulteFormElementPositiioning(element)
-//				    		pageInitData.pageData.addToAbsolutePosFormElements(element)
-//				    	}else{
-				        // var adjusted = this.adjustWidthOfFormElement(element, newSpan)
-		                this.smartFormelementPositioning(element)
-//				      }
-				    } 
-			    }
-			    pageInitData.pageData.addElementWithId(element)
+			      // TODO: What is the reason for this if trick?
+			      //Commented out on 24.7.
+//			      if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.BUTTON)||
+//			         MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXT) ||
+//			         MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.PASSWORD) ||
+//			         MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT)){
+//			      	var orgWidth = element.style.width
+//		      	   element.style.width = "0px"
+//			      	var widthAdjusted = true
+//			      }else{
+//			      	var widthAdjusted = false
+//			      }
+			      if (element.nextSibling != null) {
+						newSpan = parent.insertBefore(newSpan,
+								element.nextSibling);
+					} else {
+						newSpan = parent.appendChild(newSpan);
+					}
+
+					// if(widthAdjusted){
+					// element.style.width = orgWidth
+					// }
+					// Set cross reference
+					element.idSpan = newSpan
+					MlbUtils.setElementForIdSpan(newSpan, element)
+
+					if (MlbPrefs.smartPositioning) {
+						this.smartFormelementPositioning(element)
+					}
+				}
+				pageInitData.pageData.addElementWithId(element)
 			}
 		},
 		
-		isAbsolutePositionedFormElement: function(element){
-			return  MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXT) ||
-                  MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.PASSWORD) ||
-                  MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT) ||
-                  MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXTAREA)
-		},
-		
+		/*
+		 * Do the preparation of smart/overlay positioning for form elements
+		 * @param element: element which id span should be smart/overlayed positioned
+		 */
 		smartFormelementPositioning:function(element){
+			//Array for backup element styles if id is off
 			var elemStylesIdOff = new Array()
+			//Array for backup element styles if id is on
 			var elemStylesIdOn = new Array()
 			
          var idSpan = element.idSpan
-          
          var style = idSpan.style
+
          style.position="relative"
-         //Do first everything what could change offsets
+         
+         //Do first everything what could change offsets of element
          if(this.isLineBreakInbetween(element, idSpan) && idSpan.nextSibling==null){
          	elemStylesIdOff.push({style:"marginBottom", value:element.style.marginBottom})
          	var newMarginBottom = (-idSpan.offsetHeight+5)+"px"
@@ -559,13 +496,10 @@
          }else{
 	         idSpan.style.marginLeft = (-idSpan.offsetWidth)+"px"
          }
-         if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT)){
-            //Pos in middle of button
-            style.borderStyle = "none";
-         }else if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.BUTTON) ||
+         if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.BUTTON) ||
                    MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.RADIO) ||
                    MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.CHECKBOX)){
-            //Pos in middle next to button
+            //Pos in middle next to button/checkbox/radio
          	elemStylesIdOff.push({style:"marginRight", value:element.style.marginRight})
             element.style.marginRight=(idSpan.offsetWidth)+"px"
             elemStylesIdOn.push({style:"marginRight", value:idSpan.offsetWidth+"px"})
@@ -580,11 +514,15 @@
          
 		},
 		
+		/*
+		 * Do the smart/overlay positioning of formelements
+		 * Separate method so it can be called twice in case of double initialization (see onpageshow2ndCall)
+		 */
 		doOverlayPosioning: function(element){
 			var idSpan = element.idSpan
 			var style = idSpan.style
 			//Calculate offsets
-         var offsets = this.calculateOffsets(element, idSpan)
+         var offsets = this.calculateOffsetsToBody(element, idSpan)
          
          var left = null;
          var top = null;
@@ -594,9 +532,8 @@
             MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.PASSWORD) ||
             MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXTAREA)){
             //Pos in upper right corner
-            var positions = this.calculateOverlayPosition(element, idSpan, offsets)
-            left = positions.left
-            top = positions.top
+            left = offsets.elemOffsetLeft-offsets.spanOffsetLeft + element.offsetWidth - idSpan.offsetWidth
+            top = offsets.elemOffsetTop-offsets.spanOffsetTop
             style.borderColor="#7F9DB9"
             var compStyle = getComputedStyle(element, "")
             style.color = compStyle.color
@@ -607,6 +544,7 @@
             left = offsets.elemOffsetLeft-offsets.spanOffsetLeft + (element.offsetWidth-widthOfSelectButton) + 
                    (widthOfSelectButton-idSpan.offsetWidth)/2
                      top = offsets.elemOffsetTop-offsets.spanOffsetTop+3// + (element.offsetHeight-idSpan.offsetHeight)/2
+            //TODO Make this configurable
             style.backgroundColor="#B4C7EB"
          }else if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.BUTTON) ||
                    MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.RADIO) ||
@@ -619,6 +557,7 @@
         
          //Set top and left
          if(top!=null){
+         	//Take already set value into acount
          	var currentTop = style.top!=""?parseInt(style.top, 10):0
             style.top = (currentTop+top)+"px"
          }
@@ -628,56 +567,9 @@
          }
 		},
 		
-		smartAbsoluteFormElementPositiioning: function(pageInitData) {
-			var absolutePosFormElements = pageInitData.pageData.absolutePositionedFormElements
-			for (var i = 0; i < absolutePosFormElements.length; i++) {
-   			var element = absolutePosFormElements[i]
-   			var idSpan = element.idSpan
-				idSpan.style.position = "absolute"
-				idSpan.style.top = "0px"
-				idSpan.style.left = "0px"
-				idSpan.style.borderColor = "#7F9DB9"
-
-				var offsets = this.calculateOffsets(element, idSpan)
-				// Offsets for img Element
-				if (MlbUtils.isElementOfType(element,MlbUtils.ElementTypes.SELECT)) {
-//					// Pos in middle of button
-//					var widthOfSelectButton = 18
-//					left = offsets.elemOffsetLeft - offsets.spanOffsetLeft
-//							+ (element.offsetWidth - widthOfSelectButton)
-//							+ (widthOfSelectButton - idSpan.offsetWidth) / 2
-//					top = offsets.elemOffsetTop - offsets.spanOffsetTop + 3// +
-																			// (element.offsetHeight-idSpan.offsetHeight)/2
-					idSpan.style.backgroundColor = "#B4C7EB"
-				}
-//				else {
-					var left = offsets.elemOffsetLeft - offsets.spanOffsetLeft
-							+ element.offsetWidth - idSpan.offsetWidth
-					var top = offsets.elemOffsetTop - offsets.spanOffsetTop
-//				}
-				idSpan.style.left = left + "px"
-				idSpan.style.top = top + "px"
-			}
-		},
-		
 		/*
-		 * Adjust the width of textfield and selectboxes, to minimize the impact
-		 * on the overall layout @returns true if offsets have to recalculated
+		 * Checks wether two elements is a line break
 		 */
-		adjustWidthOfFormElement: function(element, newSpan){
-		   if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXT) ||
-		      MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.PASSWORD) ||
-		      MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT)){
-               var isBiggerThan = element.offsetWidth && element.offsetWidth>=90;
-			      if(isBiggerThan && this.isLineBreakInbetween(newSpan, element)){
-			           element.style.width = (element.offsetWidth-newSpan.offsetWidth)+"px";
-			           //offsets has to be recalcualted
-			           return true
-	            }
-		   }
-		   return false
-		},
-		
 		isLineBreakInbetween: function(elem1, elem2){
          var elem1OffsetTop = MlbUtils.getOffsetTopToBody(elem1)
          var elem2OffsetTop = MlbUtils.getOffsetTopToBody(elem2)
@@ -706,9 +598,6 @@
 		        var span = pageInitData.getCurrentDoc().createElement("span");
 		        span.style.cssText = MlbPrefs.styleForIdSpan
 		        
-		        //The span has to be hidden before inserting into the DOM
-		        //otherwise the layout will not be correct.
-		        //span.style.display = "none";
 		        //Lets try it with the new version for FF
 		        span.style.display = "inline";
 		        
@@ -716,16 +605,12 @@
 		        span.setAttribute(MlbCommon.ATTR_ID_SPAN_FLAG, "true", true);
 		        this.spanPrototype = span;
 		    }
-		    //Removed on 01.01.2008, 13:16
-//		    if(this.spanPrototype.style.cssText!=MlbPrefs.styleForIdSpan){
-//		        this.spanPrototype.style.cssText=MlbPrefs.styleForIdSpan;
-//		    }
 		    return pageInitData.getCurrentDoc().importNode(this.spanPrototype, true);
 		},
 		
 		/*
 		 * Checks wether an id span should be appended to an link
-		 * ToDo: Check for performance issues
+		 * TODO: Check for performance issues
 		 */
 		isMarkableLink: function(link){
 		    //No real link
@@ -769,6 +654,8 @@
 		
 		/*
 		 * Set special/orignal styles according visibility of id span
+		 * @param element: Formelement for which the style should be set/reset
+		 * @param idSpanVisible: Flag indicating if the corresponding idSpan is visible
 		 */
 		setElementStyle: function(element, idSpanVisible){
 			var styleArray = null
@@ -786,13 +673,10 @@
          }
 		},
 		
-		calculateOverlayPosition:function(element, idSpan, offsets){
-         var left = offsets.elemOffsetLeft-offsets.spanOffsetLeft + element.offsetWidth - idSpan.offsetWidth
-         var top = offsets.elemOffsetTop-offsets.spanOffsetTop
-         return {left:left, top:top}
-		},
-		
-		calculateOffsets: function(element, idSpan){
+		/*
+		 * Calculates the offsets 
+		 */
+		calculateOffsetsToBody: function(element, idSpan){
          var offsets = {
             elemOffsetLeft:MlbUtils.getOffsetLeftToBody(element),
             elemOffsetTop: MlbUtils.getOffsetTopToBody(element),
@@ -802,16 +686,27 @@
          return offsets
       },
       
-      //gets the current page data
+      /*
+       * Gets the current page data
+       * @param win: arbitray content win
+       * @return the page data stored in the top win
+       */
       getPageData: function(win){
       	return win.top.mlbPageData
       },
       
-      //sets the current page data
+      /*
+       * Sets the current page data
+       * @param win: arbitray content win
+       * @param pageData
+       */
       setPageData: function(win, pageData){
       	win.top.mlbPageData = pageData
       },
       
+      /*
+       * Creates new page data
+       */
       createPageData: function(){
          if(MlbPrefs.isCharIdType()){
          	return new PageData(MlbPrefs.idChars)
@@ -820,6 +715,9 @@
          }
       },
       
+      /*
+       * TODO: Save IdToSpan map in page data for better performance
+       */
       getAndResetIdSpan: function(element, parentOfIdSpan, pageInitData){
           if(!pageInitData.onpageshow2ndCall || element.idSpan){
           	return element.idSpan
@@ -837,7 +735,7 @@
       }
 	}
 	
-   var NS = rno_common.Namespace
+   var NS    = rno_common.Namespace
    NS.bindToNamespace("mouselessbrowsing", "PageInitializer", PageInitializer)
    
 })()

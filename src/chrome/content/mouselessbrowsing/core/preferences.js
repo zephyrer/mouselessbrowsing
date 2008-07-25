@@ -75,6 +75,7 @@
 		      	this.idChars = "1234567890"
 		      }
 		      this.disableAllIds = Prefs.getBoolPref("mouselessbrowsing.disableAllIds");
+		      //Todo: Check if this is correct as already visible ids will not be hidden after pref change
 		      if(!this.disableAllIds){
    				this.initShowIdPrefs(MlbCommon.VisibilityModes.CONFIG);
 		      }
@@ -177,6 +178,22 @@
       
       isCharIdType: function(){
       	return this.idType==MlbCommon.IdTypes.CHAR
+      },
+      
+      isIdsForLinksEnabled: function(){
+      	return !this.disableAllIds && this.idsForLinksEnabled
+      },
+      
+      isIdsForImgLinksEnabled: function(){
+      	return !this.disableAllIds && this.idsForImgLinksEnabled
+      },
+      
+      isIdsForFormElementsEnabled: function(){
+      	return !this.disableAllIds && this.idsForFormElementsEnabled
+      },
+      
+      isIdsForFramesEnabled: function(){
+      	return !this.disableAllIds && this.idsForFramesEnabled
       }
       
 		
