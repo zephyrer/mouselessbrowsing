@@ -7,6 +7,8 @@
 	
 	//Imports
 	var MlbCommon = mouselessbrowsing.MlbCommon
+	var MlbPrefs = mouselessbrowsing.MlbPrefs
+	var Utils = rno_common.Utils
 	var XMLUtils = rno_common.XMLUtils 
 	
 	var MlbUtils = {
@@ -102,7 +104,12 @@
       
       getCurrentContentWin: function(){
       	return window.getBrowser().contentWindow;
+      },
+      
+      logDebugMessage: function(messageString){
+      	Utils.logDebugMessage("MLB: " + messageString, MlbPrefs.DEBUG_PREF_ID)
       }
+      
       
 	}
 	var NS = rno_common.Namespace

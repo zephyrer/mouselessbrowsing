@@ -172,6 +172,10 @@
          this.initVisibilityMode()
       },
       
+      toggleExclusiveUseOfNumpad: function(){
+      	this.exclusiveUseOfNumpad = !this.exclusiveUseOfNumpad
+      },
+      
       isNumericIdType: function(){
       	return this.idType==MlbCommon.IdTypes.NUMERIC
       },

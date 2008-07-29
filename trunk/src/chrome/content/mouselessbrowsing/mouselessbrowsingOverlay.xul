@@ -5,16 +5,16 @@
         src="mlb_common.js">
     </script>
     <script type="application/x-javascript" 
-        src="core/mlb_utils.js">
-    </script>
-    <script type="application/x-javascript" 
-        src="core/page_data.js">
-    </script>
-    <script type="application/x-javascript" 
         src="core/global_data.js">
     </script>
     <script type="application/x-javascript" 
         src="core/preferences.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="core/mlb_utils.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="core/page_data.js">
     </script>
     <script type="application/x-javascript" 
         src="core/eventhandling.js">

@@ -4,7 +4,7 @@
 
 		<em:id>{c0bcf963-624b-47fe-aa78-8cc02434cf32}</em:id>
 		<em:name>Mouseless Browsing</em:name>
-		<em:version>0.5beta6</em:version>
+		<em:version>0.5RC1</em:version>
 		<em:description>Mouseless Browsing</em:description>
 		<em:creator>Rudolf Noe</em:creator>
 		<em:homepageURL>www.mouseless.de</em:homepageURL>
@@ -21,7 +21,7 @@
 		<em:targetApplication>
 			<Description>
 				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-				<em:minVersion>1.5</em:minVersion>
+				<em:minVersion>3.0</em:minVersion>
 				<em:maxVersion>3.0.*</em:maxVersion>
 			</Description>
 		</em:targetApplication>
