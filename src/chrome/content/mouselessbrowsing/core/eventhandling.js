@@ -397,6 +397,7 @@
 		        return;
 		    Utils.openUrlInNewTab(element.href);
 		    this.resetVars();
+		    return ShortCutManager.SUPPRESS_KEY;
 		},
 		
 		/*

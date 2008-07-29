@@ -33,7 +33,8 @@
 		if(appcontent){
 			appcontent.addEventListener("DOMContentLoaded", {handleEvent: function(event){PageInitializer.onDOMContentLoaded(event)}}, true);
 			appcontent.addEventListener("pageshow", {handleEvent: function(event){PageInitializer.onPageShow(event)}}, true);
-			appcontent.addEventListener("mousedown", showOffsets, true);
+			//TODO Remove
+//			appcontent.addEventListener("mousedown", showOffsets, true);
          //Todo
 //			appcontent.addEventListener("pageshow", {handleEvent: function(event){EventHandler.renumberTab(event)}}, true);
 		}

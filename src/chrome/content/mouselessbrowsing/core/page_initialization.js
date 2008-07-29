@@ -85,7 +85,7 @@
 		startInitalizing: function(event, onpageshow2ndCall, keepExistingIds){
 			var win = event.originalTarget.defaultView
 			Utils.logDebugMessage('startInitilizing win: "' + win.name + '" event: ' + event.type + ' topwin: ' + (win==win.top), MlbPrefs.DEBUG_PREF_ID)
-		   var pageInitData = new PageInitData(win, this.getPageData(win), onpageshow2ndCall, keepExistingIds)  
+		   var pageInitData = new PageInitData(win, this.getPageData(win), onpageshow2ndCall, keepExistingIds)
 		   
 		   //Apply URL exceptions
 		   MlbPrefs.applySiteRules(win)
@@ -193,7 +193,12 @@
          for(var i = 0; i<pageInitData.getCurrentWin().frames.length; i++){
             var frame = pageInitData.getCurrentWin().frames[i];
 			   var doc = frame.document
-			   if(doc.designMode=="on" || doc.body==null){
+			   if(frame.document.designMode=="on" || doc.body==null){
+  			   	//Remove already exisiting id span as onDOMContentLoaded designMode attribute is not set correctly 
+		   		var idSpan = this.getAndResetIdSpan(frame, frame.document.documentElement, pageInitData)
+		   		if(idSpan!=null && idSpan.parentNode!=null){
+   		   		idSpan.parentNode.removeChild(idSpan)
+		   		}
 			   	//do not mark editable IFrames; these are used as rich text fields
 			   	//in case of onDomContentLoaded event the body of frames are partly not available
 			   	continue
