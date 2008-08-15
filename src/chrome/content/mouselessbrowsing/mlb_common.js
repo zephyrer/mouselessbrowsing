@@ -48,6 +48,12 @@
 			CHAR: "CHAR"
 		},
 		
+		OpenLinkLocations:{
+			TAB:"TAB",
+			WINDOW:"WINDOW",
+			COOLIRIS_PREVIEW:"COOLIRIS_PREVIEW"
+		},
+		
 		//ShortcutManager-ClientId
 		SCM_CLIENT_ID: "MLB",
 		
@@ -69,8 +75,10 @@
 			this.loadScript(this.COMMON_CHROME_ULR+"ControlUtils.js")
 			this.loadScript(this.COMMON_CHROME_ULR+"string_utils.js")
 			this.loadScript(this.COMMON_CHROME_ULR+"prefs.js")
+			this.loadScript(this.COMMON_CHROME_ULR+"pref_utils.js")
 			this.loadScript(this.COMMON_CHROME_ULR+"xmlutils.js")
 			this.loadScript(this.COMMON_CHROME_ULR+"listbox.js")
+			this.loadScript(this.COMMON_CHROME_ULR+"keyinputbox.js")
 			this.loadScript(this.COMMON_CHROME_ULR+"keyCodeMapper.js")
 			this.loadScript(this.COMMON_CHROME_ULR+"shortcutmanager.js")
 			this.loadScript(this.COMMON_CHROME_ULR+"perf_timer.js")

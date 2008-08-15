@@ -10,6 +10,7 @@ pref("mouselessbrowsing.smartPositioning", true);
 //pref("mouselessbrowsing.showTabIds", false);
 pref("mouselessbrowsing.showKeybufferInStatusbar", true);
 pref("mouselessbrowsing.showMlbIconInStatusbar", true);
+pref("mouselessbrowsing.showMlbMenu", true);
 pref("mouselessbrowsing.executeAutomatic", false);
 pref("mouselessbrowsing.autoExecuteDelay", "500");
 pref("mouselessbrowsing.pixelsToScroll", "150");
@@ -17,25 +18,32 @@ pref("mouselessbrowsing.maxIdNumber", "1000");
 pref("mouselessbrowsing.idType", "NUMERIC");
 pref("mouselessbrowsing.modifierForWritableElement", "2");
 pref("mouselessbrowsing.modifierForOpenInNewTab", "1");
+pref("mouselessbrowsing.modifierForOpenInNewWindow", "3");
+pref("mouselessbrowsing.modifierForOpenInCoolirisPreviews", "-1");
 pref("mouselessbrowsing.idChars", "");
 pref("mouselessbrowsing.disableAllIds", false);
 pref("mouselessbrowsing.enableFrameIds", true);
 pref("mouselessbrowsing.enableImgLinkIds", true);
 pref("mouselessbrowsing.enableLinkIds", true);
 pref("mouselessbrowsing.enableFormElementIds", true);
-pref("mouselessbrowsing.styleForIdSpan", "font-family:arial, sans-serif; font-size:xx-small !important; line-height:130% !important;\nborder-width:1px !important; border-style:solid !important;-moz-border-radius:2px !important;\npadding:0px 2px 0px 2px !important;\nvertical-align:center !important;\nmargin-left:2px; margin-right:1px !important;\nmax-width:20px; overflow:visible !important;float:none !important;\nz-index:500 !important;");
+pref("mouselessbrowsing.styleForIdSpan", "font-family:arial, sans-serif; font-size:xx-small !important; line-height:130% !important;\nborder-width:1px !important; border-style:solid !important;-moz-border-radius:2px !important;\npadding:0px 2px 0px 2px !important;\nvertical-align:center !important;\nmargin-left:2px; margin-right:1px !important;\nmax-width:20px; max-height:10px !important;\noverflow:visible !important;float:none !important;\nz-index:500 !important;");
 pref("mouselessbrowsing.styleForFrameIdSpan", "position:absolute !important; top:0 !important; left:0 !important;\nfont-size:xx-small !important;line-height:130%; !important;\nborder-color:black !important; border-width:1px !important;\nborder-style:solid !important;\n-moz-border-radius:2px !important;\npadding:0px 2px 0px 2px !important;\nz-index:500 !important;\nbackground-color:#D6E3FE !important;");
-pref("mouselessbrowsing.keys.clearKeybuffer", "432");
-pref("mouselessbrowsing.keys.historyBack", "1776");
-pref("mouselessbrowsing.keys.historyForward", "1696");
-pref("mouselessbrowsing.keys.openInNewTabPostfixKey", "1712");
-pref("mouselessbrowsing.keys.selectLink", "260");
-pref("mouselessbrowsing.keys.scrollDown", "1712");
-pref("mouselessbrowsing.keys.scrollUp", "1744");
-pref("mouselessbrowsing.keys.blurActiveElement", "432");
-pref("mouselessbrowsing.keys.toggleAllIds", "1762");
-pref("mouselessbrowsing.keys.toggleMLB", "1760");
-pref("mouselessbrowsing.keys.toggleExlusiveUseOfNumpad", "2304");
-pref("mouselessbrowsing.keys.openConfig", "1239");
-pref("mouselessbrowsing.keys.addSiteRule", "1319");
+pref("mouselessbrowsing.keys.clearKeybuffer", "432"); //Esc
+pref("mouselessbrowsing.keys.historyBack", "1776");   //Divide
+pref("mouselessbrowsing.keys.historyForward", "1696"); //Multiply
+pref("mouselessbrowsing.keys.openInNewTabPostfixKey", "1712"); //Plus
+pref("mouselessbrowsing.keys.openInNewWindowPostfixKey", "1776"); //Divide
+pref("mouselessbrowsing.keys.openInCoolirisPreviewsPostfixKey", "1696"); //Subtract
+pref("mouselessbrowsing.keys.selectLink", "260"); //Shift
+pref("mouselessbrowsing.keys.scrollDown", "1712"); //Plus
+pref("mouselessbrowsing.keys.scrollUp", "1744");   //Subtract
+pref("mouselessbrowsing.keys.blurActiveElement", "0"); //Esc
+pref("mouselessbrowsing.keys.blockKeyboardInputForMlb", "0"); //None
+pref("mouselessbrowsing.keys.toggleAllIds", "1762"); //Crtl+Decimal
+pref("mouselessbrowsing.keys.toggleMLB", "1760"); //Decimal
+pref("mouselessbrowsing.keys.toggleExlusiveUseOfNumpad", "2304"); //Numkey
+pref("mouselessbrowsing.keys.openConfig", "1239"); //Ctrl+Alt+Shift+M
+pref("mouselessbrowsing.keys.addSiteRule", "1319");//Ctrl+Alt+Shift+R
 pref("mouselessbrowsing.version", "");
+pref("mouselessbrowsing.debug", false);
+pref("mouselessbrowsing.debug.perf", false);

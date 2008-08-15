@@ -6,16 +6,25 @@
   01.01.2008
 */
 var MlbCommon = mouselessbrowsing.MlbCommon
+var MlbUtils = mouselessbrowsing.MlbUtils
 var Utils = rno_common.Utils
+var Prefs = rno_common.Prefs
+var PrefUtils = rno_common.PrefUtils
+var Listbox = rno_common.Listbox
+var COMBINED_KEY_CODE_ATTR = "COMBINED_KEY_CODE_ATTR"
+var keyInputBox 
 
 function doOnload(){
+   keyInputBox = byId('keyInputBox')
    rno_common.Prefs.loadPrefs(document);
 	document.title = "Mouseless Browsing " + MlbCommon.MLB_VERSION 
    MLB_onCommandIdType();
 	MLB_onTogglingVisibilityAllIds();
 	MLB_setPreviewForIds("styleForIdSpan")
 	MLB_setPreviewForIds("styleForFrameIdSpan")
+	MLB_initForCoolirisPreview()
 	byId('siteRulesLB').addEventListener("select", MLB_onSelectSiteRule, false)
+	PrefUtils.initElementHelp('jsStrings', 'helpDescriptionTB')
 	if(window.arguments){
 		//Case of adding site rule
 		MLB_initForAddingSiteRule(window.arguments[0])
@@ -27,6 +36,15 @@ function MLB_initForAddingSiteRule(url){
    byId('urlPatterTB').value=url	
 }
 
+function MLB_initForCoolirisPreview(){
+	if(!MlbUtils.isCoolirisPreviewsInstalled()){
+		byId('coolirisPreviewsModifierRow').style.display="none"
+		var keyListBox = byId('keyListBox')
+		var indexOfCoolirisPreviewKey = keyListBox.getIndexOfItem(byId('keys.openInCoolirisPreviewsPostfixKey'))
+		keyListBox.removeItemAt(indexOfCoolirisPreviewKey)
+	}
+}
+
 function saveUserPrefs(){
 	try{
 		MLB_validateUserInput()
@@ -35,17 +53,11 @@ function saveUserPrefs(){
 		return false
 	}
    rno_common.Prefs.savePrefs(document);
-   rno_common.Utils.notifyObservers(MlbCommon.MLB_PREF_OBSERVER);
+   Utils.notifyObservers(MlbCommon.MLB_PREF_OBSERVER);
 }
 
 function dialogHelp(){
-   var browserWin = rno_common.Utils.getMostRecentBrowserWin()
-   if(browserWin==null){
-      return
-   }
-   var browser = browserWin.getBrowser()
-   browser.selectedTab = browser.addTab("http://mlb.rudolf-noe.de")
-   browserWin.focus()      
+	MlbUtils.showMlbHelp();
 }
 
 function MLB_onTogglingVisibilityAllIds(){
@@ -57,7 +69,7 @@ function MLB_onTogglingVisibilityAllIds(){
 }
 
 function MLB_setStyleDefault(styleTextboxId){
-	var Prefs = rno_common.Prefs 
+	var Prefs = Prefs 
 	var textbox = document.getElementById(styleTextboxId)
 	var prefId = textbox.getAttribute("prefid")
 	if(Prefs.hasUserPref(prefId)){
@@ -74,7 +86,6 @@ function MLB_setPreviewForIds(styleTextboxId){
 }
 
 function MLB_addSiteRule(){
-   var Listbox = rno_common.Listbox;
    var urlPattern = byId("urlPatterTB").value
    var visibilityModeML = byId("visibilityModeML")
    var siteRuleExclusiveNumpadCB = byId("siteRuleExclusiveNumpadCB")
@@ -96,7 +107,7 @@ function MLB_updateSiteRule(){
       alert('No item to update selected!')
       return
    }
-   rno_common.Listbox.updateSelectedRow(siteRulesLB, [urlPattern, visibilityModeML.label, siteRuleExclusiveNumpadCB.checked, siteRuleOnDemandFlagCB.checked], 
+   Listbox.updateSelectedRow(siteRulesLB, [urlPattern, visibilityModeML.label, siteRuleExclusiveNumpadCB.checked, siteRuleOnDemandFlagCB.checked], 
          [urlPattern, visibilityModeML.value, siteRuleExclusiveNumpadCB.checked, siteRuleOnDemandFlagCB.checked])
 }
 
@@ -121,7 +132,7 @@ function MLB_onSelectSiteRule(){
    }else{
       updateBtn.disabled=false
       removeBtn.disabled=false
-      var listcells = rno_common.Listbox.getSelectedListCells(siteRulesLB)
+      var listcells = Listbox.getSelectedListCells(siteRulesLB)
       byId('urlPatterTB').setAttribute("value", listcells[0].getAttribute('value'))
       byId('visibilityModeML').value=listcells[1].getAttribute('value')
       byId('siteRuleExclusiveNumpadCB').checked=(listcells[2].getAttribute('value')=='true')
@@ -165,12 +176,72 @@ function MLB_onCommandIdType(){
       byId('exclusiveNumpad').disabled=false   
       byId('modifierForWritableElement').disabled=false  
       byId('modifierForOpenInNewTab').disabled=false
+      byId('modifierForOpenInCoolirisPreviews').disabled=false
    }else{
       byId('idCharsTB').disabled=false   
       byId('exclusiveNumpad').disabled=true   
       byId('modifierForWritableElement').disabled=true  
       byId('modifierForOpenInNewTab').disabled=true   
+      byId('modifierForOpenInCoolirisPreviews').disabled=true   
    }
+}
+
+function MLB_onCommandAssignShortcut(){
+	var keyListBox = byId('keyListBox')
+	Listbox.updateSelectedRow(keyListBox, [null, keyInputBox.getKeyString()], [null, null])
+	keyListBox.selectedItem.setAttribute(COMBINED_KEY_CODE_ATTR, keyInputBox.getCombinedValue())
+	keyListBox.focus()
+}
+
+function MLB_onCommandRemoveShortcut(){
+	var keyListBox = byId('keyListBox')
+	Listbox.updateSelectedRow(keyListBox, [null, "None"], [null, null])
+	keyListBox.selectedItem.setAttribute(COMBINED_KEY_CODE_ATTR, "0")
+	keyListBox.focus()
+}
+
+function MLB_onCommandRestoreDefault(){
+	var keyListBox = byId('keyListBox')
+	var selItem = keyListBox.selectedItem
+	var prefid = selItem.getAttribute("prefid")
+	if(Prefs.hasUserPref(prefid)){
+   	Prefs.clearUserPref(prefid)
+	}
+	var defaultKey = Prefs.getCharPref(prefid)
+	Listbox.updateSelectedRow(keyListBox, [null, keyInputBox.getStringForCombinedKeyCode(defaultKey)], [null, null])
+   keyListBox.selectedItem.setAttribute(COMBINED_KEY_CODE_ATTR, defaultKey)
+   keyListBox.focus()
+}
+
+function MLB_loadKeyListbox(){
+	var keyListBox = byId('keyListBox')
+   var keyItems = Listbox.getItems(keyListBox)
+   for (var i = 0; i < keyItems.length; i++) {
+   	var keyItem = keyItems[i]
+   	var prefId = keyItem.getAttribute('prefid')
+   	var combinedKeyCode = Prefs.getCharPref(prefId)
+   	var keyString = keyInputBox.getStringForCombinedKeyCode(combinedKeyCode)
+   	keyItem.setAttribute(COMBINED_KEY_CODE_ATTR, combinedKeyCode)
+   	Listbox.updateRow(keyListBox, keyItem, [null, keyString!=null?keyString:"None"], new Array(2))
+   }
+}
+
+function MLB_saveKeyListbox(){
+	var keyListBox = byId('keyListBox')
+   var keyItems = Listbox.getItems(keyListBox)
+   for (var i = 0; i < keyItems.length; i++) {
+      var keyItem = keyItems[i]
+      var prefId = keyItem.getAttribute('prefid')
+   	Prefs.setCharPref(prefId, keyItem.getAttribute(COMBINED_KEY_CODE_ATTR))
+   }
+}
+
+function MLB_setKeyboxFromKeyboxMenu(keyCombId){
+	if(keyCombId=="TAB"){
+	  keyInputBox.setCombinedValue(9<<4)
+	}else if(keyCombId=="SHIFT_TAB"){
+	  keyInputBox.setCombinedValue(9<<4|Event.SHIFT_MASK)
+	}
 }
 
 function byId(elementId){

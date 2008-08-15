@@ -20,7 +20,10 @@
 	}
 	
 	var MlbPrefs = {
-		DEBUG_PREF_ID: "mouselessbrowsing.debug", 
+		DEBUG_PREF_ID: "mouselessbrowsing.debug",
+		DEBUG_PERF_PREF_ID: "mouselessbrowsing.debug.perf",
+		BLUR_ACTIVE_ELEMENT_KEY_PREF_ID: "mouselessbrowsing.keys.blurActiveElement",
+		BLOCK_KEYBOARD_INDPUT_PREF_ID: "mouselessbrowsing.keys.blockKeyboardInputForMlb",
 		showIdsOnDemand: null,
 		enableCtrlPlusDigit: null,
 		executeAutomaticEnabled: null,
@@ -32,6 +35,8 @@
 		exclusiveUseOfNumpad: null,
 		modifierForWritableElement: null,
 		modifierForOpenInNewTab: null,
+		modifierForOpenInNewWindow: null,
+		modifierForOpenInCoolirisPreviews: null,
 		idChars: null,
 		disableAllIds: null,
 		idsForLinksEnabled: null,
@@ -41,6 +46,7 @@
 		smartPositioning: null,
 		showKeybufferInStatusbar: null,
 		showMlbIconInStatusbar: null,
+		showMlbMenu: null,
 //		showTabIds: null,
 		siteRules: null,
 		styleForIdSpan: null,
@@ -62,6 +68,7 @@
 //		      this.showTabIds = Prefs.getBoolPref("mouselessbrowsing.showTabIds");
 		      this.showKeybufferInStatusbar = Prefs.getBoolPref("mouselessbrowsing.showKeybufferInStatusbar");
 		      this.showMlbIconInStatusbar= Prefs.getBoolPref("mouselessbrowsing.showMlbIconInStatusbar");
+		      this.showMlbMenu= Prefs.getBoolPref("mouselessbrowsing.showMlbMenu");
 		      this.executeAutomaticEnabled = Prefs.getBoolPref("mouselessbrowsing.executeAutomatic");
 		      this.delayForAutoExecute = Prefs.getCharPref("mouselessbrowsing.autoExecuteDelay");
 		      this.pixelsToScroll = Prefs.getCharPref("mouselessbrowsing.pixelsToScroll");
@@ -69,6 +76,8 @@
 		      this.idType = Prefs.getCharPref("mouselessbrowsing.idType");
       		this.modifierForWritableElement = Prefs.getCharPref("mouselessbrowsing.modifierForWritableElement");
       		this.modifierForOpenInNewTab = Prefs.getCharPref("mouselessbrowsing.modifierForOpenInNewTab");
+      		this.modifierForOpenInNewWindow = Prefs.getCharPref("mouselessbrowsing.modifierForOpenInNewWindow");
+      		this.modifierForOpenInCoolirisPreviews = Prefs.getCharPref("mouselessbrowsing.modifierForOpenInCoolirisPreviews");
 		      if(this.isCharIdType()){
 			      this.idChars = Prefs.getCharPref("mouselessbrowsing.idChars");
 		      }else{
@@ -86,10 +95,9 @@
 		      
 		      this.prefsBackup = null;
 
-		      //Init optional Prefs
-		      if(Prefs.hasUserPref(this.DEBUG_PREF_ID)){
-		      	this.debug = Prefs.getBoolPref(this.DEBUG_PREF_ID) 
-		      }
+		      //Init debug prefs
+		      this.debug = Prefs.getBoolPref(this.DEBUG_PREF_ID) 
+		      this.debugPerf = Prefs.getBoolPref(this.DEBUG_PERF_PREF_ID) 
 		      
 		    }catch(e){
 		    	 alert(e)
@@ -170,6 +178,7 @@
             }         
          }
          this.initVisibilityMode()
+         mouselessbrowsing.InitManager.initStatusbar()
       },
       
       toggleExclusiveUseOfNumpad: function(){
@@ -198,9 +207,24 @@
       
       isIdsForFramesEnabled: function(){
       	return !this.disableAllIds && this.idsForFramesEnabled
-      }
+      },
       
-		
+      setShowMlbMenuFlag: function(show){
+      	this.showMlbMenu=show
+         Prefs.setBoolPref("mouselessbrowsing.showMlbMenu", show)	
+      },
+      
+      setShowMlbStatusbarFlag: function(show){
+         this.showMlbIconInStatusbar=show
+         Prefs.setBoolPref("mouselessbrowsing.showMlbIconInStatusbar", show)
+         this.showKeybufferInStatusbar=show
+         Prefs.setBoolPref("mouselessbrowsing.showKeybufferInStatusbar", show) 
+      },
+      
+      isEscKey: function(prefKey){
+      	return Prefs.getCharPref(prefKey)==27<<4
+      }
+
 	} 
    var NS = rno_common.Namespace
    NS.bindToNamespace("mouselessbrowsing", "MlbPrefs", MlbPrefs)

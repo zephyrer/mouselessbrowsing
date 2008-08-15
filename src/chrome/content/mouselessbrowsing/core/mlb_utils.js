@@ -10,6 +10,7 @@
 	var MlbPrefs = mouselessbrowsing.MlbPrefs
 	var Utils = rno_common.Utils
 	var XMLUtils = rno_common.XMLUtils 
+	var COOLIRIS_PREVIEWS_GUI_ID = "{CE6E6E3B-84DD-4cac-9F63-8D2AE4F30A4B}"
 	
 	var MlbUtils = {
 		/*
@@ -54,7 +55,8 @@
 			RADIO: "RADIO",
 			BUTTON: "BUTTON",
 			FIELDSET: "FIELDSET",
-			FILE: "FILE"
+			FILE: "FILE",
+			IFRAME: "IFRAME"
 		},
 		
 		isElementOfType: function(element, type){
@@ -81,7 +83,10 @@
             return XMLUtils.isTagName(element, "FIELDSET")
          }else if(this.ElementTypes.FILE==type){
          	return XMLUtils.isTagName(element, "INPUT") && "file"==element.type
+         }else if(this.ElementTypes.IFRAME==type){
+            return XMLUtils.isTagName(element, "IFRAME")	
          }
+         return false
 		},
 		
 		getOffsetLeftToBody: function(element){
@@ -108,9 +113,24 @@
       
       logDebugMessage: function(messageString){
       	Utils.logDebugMessage("MLB: " + messageString, MlbPrefs.DEBUG_PREF_ID)
-      }
+      },
       
+      isEditableIFrame: function(element){
+      	if((element instanceof HTMLDocument && element.designMode=="on") ||
+      	  (element.tagName && element.tagName.toUpperCase()=="IFRAME" && element.contentDocument.designMode=="on")){
+      	  return true
+         }else{
+         	return false
+         }
+      },
       
+      showMlbHelp: function() {
+			Utils.openUrlInNewTab("http://mlb.rudolf-noe.de", true)
+		},
+		
+		isCoolirisPreviewsInstalled: function(){
+			return Utils.isExtensionInstalledAndEnabled(COOLIRIS_PREVIEWS_GUI_ID)
+		}
 	}
 	var NS = rno_common.Namespace
 	NS.bindToNamespace("mouselessbrowsing", "MlbUtils", MlbUtils)
