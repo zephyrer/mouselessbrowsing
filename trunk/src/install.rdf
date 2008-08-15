@@ -4,11 +4,11 @@
 
 		<em:id>{c0bcf963-624b-47fe-aa78-8cc02434cf32}</em:id>
 		<em:name>Mouseless Browsing</em:name>
-		<em:version>0.5RC1</em:version>
-		<em:description>Mouseless Browsing</em:description>
+		<em:version>0.5RC2</em:version>
+		<em:description>Browse the web without the mouse :-)</em:description>
 		<em:creator>Rudolf Noe</em:creator>
 		<em:homepageURL>www.mouseless.de</em:homepageURL>
-		<em:iconURL/>
+		<em:iconURL>chrome://mouselessbrowsing/skin/MLB.ico</em:iconURL>
 		<em:aboutURL/>
 		<em:updateURL/>
         <em:optionsURL>chrome://mouselessbrowsing/content/mouselessbrowsing/preferences/prefs.xul</em:optionsURL>		

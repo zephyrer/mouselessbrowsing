@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<!DOCTYPE window SYSTEM "chrome://mouselessbrowsing/locale/mouselessbrowsingOverlay.dtd">
 <overlay id="mouselessbrowsing" 
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
     <script type="application/x-javascript" 
@@ -35,11 +36,54 @@
         src="mouselessbrowsingOverlay.js">
     </script>
 
+    <broadcasterset>
+    	<broadcaster id="mlb_openConfig_bc" acceltext=""/>
+    	<broadcaster id="mlb_addUrlRule_bc" acceltext=""/>
+    </broadcasterset>
+    <commandset>
+    	<command id="mlb_openConfig_cmd" label="&openConfiguration.label;" oncommand="mouselessbrowsing.EventHandler.openConfiguration()" accesskey="c" />
+    	<command id="mlb_addUrlRule_cmd" label="&addUrlRule.label;" oncommand="mouselessbrowsing.EventHandler.addSiteRule()" accesskey="a"/>
+    	<command id="mlb_mlbHelp_cmd" label="&help.label;" oncommand="mouselessbrowsing.MlbUtils.showMlbHelp()" accesskey="h"/>
+    	<command id="mlb_reportBug_cmd" label="&reportBug.label;" oncommand="mouselessbrowsing.EventHandler.reportBug()" accesskey="b"/>
+    	<command id="mlb_giveFeedback_cmd" label="&giveFeedback.label;" oncommand="mouselessbrowsing.EventHandler.giveFeedback()" accesskey="f"/>
+    	<command id="mlb_hideMenu_cmd" label="&hideMLBMenu.label;" oncommand="mouselessbrowsing.EventHandler.hideMlbMenu()" accesskey="m"/>
+    	<command id="mlb_hideMlbStatusBar_cmd" label="&hideMLBStatusIcon.label;" oncommand="mouselessbrowsing.EventHandler.hideMlbStatusbar()" accesskey="m"/>
+    </commandset>
+
+    <menupopup id="menu_ToolsPopup">
+    	<menu id="mlb_tools_menu" label="Mouseless Browsing" insertbefore="sanitizeSeparator" accesskey="m" >
+         <menupopup>
+            <menuitem command="mlb_openConfig_cmd" observes="mlb_openConfig_bc"/>
+            <menuitem command="mlb_addUrlRule_cmd" observes="mlb_addUrlRule_bc"/>
+            <menuseparator/>
+            <menuitem command="mlb_mlbHelp_cmd"/>
+            <menuitem command="mlb_reportBug_cmd"/>
+            <menuitem command="mlb_giveFeedback_cmd"/>
+            <menuseparator/>
+            <menuitem command="mlb_hideMenu_cmd"/>
+         </menupopup>      
+    	</menu>
+    </menupopup>
+
+    <popupset>
+    	<menupopup id="mlb_status_context">
+    		<menuitem command="mlb_openConfig_cmd" observes="mlb_openConfig_bc"/>
+    		<menuitem command="mlb_addUrlRule_cmd" observes="mlb_addUrlRule_bc"/>
+    		<menuseparator/>
+    		<menuitem command="mlb_mlbHelp_cmd"/>
+    		<menuitem command="mlb_reportBug_cmd"/>
+    		<menuitem command="mlb_giveFeedback_cmd"/>
+    		<menuseparator/>
+    		<menuitem command="mlb_hideMlbStatusBar_cmd"/>
+    	</menupopup>    	
+    </popupset>
+
     <statusbar id="status-bar">
-         <statusbarpanel id="mlb-status-panel" style="width:70px; overflow:hidden" onclick="mouselessbrowsing.EventHandler.openConfiguration()">
+         <statusbarpanel id="mlb-status-panel" onclick="mouselessbrowsing.EventHandler.openConfiguration(event)" >
            <hbox crop="end">
-			    <image id="mlb-status-image" src="chrome://mouselessbrowsing/content/mouselessbrowsing/MLB.ico"/>
-			    <label id="mlb-status" crop="end" />
+      	    <image id="mlb-status-image" src="chrome://mouselessbrowsing/skin/MLB.ico" context="mlb_status_context" style="width:16px"/>
+   	       <image id="mlb-status-exl-numpad-image" src="chrome://mouselessbrowsing/skin/MLB_ExlNumpad.ico" style="width:16px"/>
+			    <label id="mlb-status" crop="end" style="width:50px; overflow:hidden"/>
            </hbox>
 		</statusbarpanel>
 	</statusbar> 

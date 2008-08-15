@@ -32,7 +32,7 @@
 		var appcontent = document.getElementById("appcontent");   // browser
 		if(appcontent){
 			appcontent.addEventListener("DOMContentLoaded", {handleEvent: function(event){PageInitializer.onDOMContentLoaded(event)}}, true);
-			appcontent.addEventListener("pageshow", {handleEvent: function(event){PageInitializer.onPageShow(event)}}, true);
+			appcontent.addEventListener("pageshow", {handleEvent: function(event){PageInitializer.onPageShow(event)}}, false);
 			//TODO Remove
 //			appcontent.addEventListener("mousedown", showOffsets, true);
          //Todo
@@ -40,8 +40,8 @@
 		}
 		
 		//Focus Listener
-		getBrowser().addEventListener("focus",{handleEvent: function(event){EventHandler.elementFocused(event)}},true);
-      getBrowser().addEventListener("blur",{handleEvent: function(event){EventHandler.elementFocusLost(event)}},true);
+		getBrowser().addEventListener("focus",{handleEvent: function(event){EventHandler.onElementFocusEvent(event)}},true);
+      getBrowser().addEventListener("blur",{handleEvent: function(event){EventHandler.onElementFocusEvent(event)}},true);
 		
 		//Tab Listener
 		//Todo
