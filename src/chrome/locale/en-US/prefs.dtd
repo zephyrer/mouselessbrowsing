@@ -57,3 +57,26 @@
 <!ENTITY keys.assignBU.label "Assign">
 <!ENTITY keys.removeBU.label "Remove">
 <!ENTITY keys.restore_defaultBU.label "Restore Default">
+<!ENTITY autoExecuteDelay.label "Delay for automatic execution/clearing keybuffer (msec)">
+<!ENTITY pixelsToScroll.label "Pixels to scroll when pressing shortcuts">
+<!ENTITY maxIdNumber.label "Maximum number of ids">
+<!ENTITY modifierForWritableElement.label "Modifier for enabling ids within editable elements">
+<!ENTITY modifierForWritableElement.label "-1">
+<!ENTITY modifierForOpenInNewTab.label "Modifier for opening links in new tab">
+<!ENTITY modifierForOpenInNewWindow.label "Modifier for opening links in new window">
+<!ENTITY modifierForOpenInCooirisPreview.label "Modifier for opening links in Cooliris Preview">
+<!ENTITY styleForIdSpan.label "Style for id span">
+<!ENTITY styleForFrameIdSpan.label "Style for frame id span">
+<!ENTITY urlPattern.label "URL Pattern">
+<!ENTITY visibilityMode.label "Visibility Mode">
+<!ENTITY shortcutKeybox.label "Shortcut">
+<!ENTITY description.label "Description">
+<!ENTITY restoreDefaultsBU.label "Restore Defaults">
+<!ENTITY restoreDefaultsBU.accesskey "d">
+<!ENTITY urlPattern.accesskey.label "p">
+<!ENTITY urlRule.addBU.accesskey.label "a">
+<!ENTITY urlRule.updateBU.accesskey.label "u">
+<!ENTITY urlRule.removeBU.accesskey.label "r">
+<!ENTITY keys.assignBU.accesskey.label "g">
+<!ENTITY keys.removeBU.accesskey.label "r">
+<!ENTITY keys.restore_defaultBU.accesskey.label "d">

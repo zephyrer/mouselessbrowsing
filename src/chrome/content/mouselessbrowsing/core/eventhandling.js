@@ -109,7 +109,8 @@
          //Suppress event if exclusive use
          //Todo make it properly as in case of alphanummeric ids it makes no sense
          if((this.isCaseOfExclusivlyUseOfNumpad(event)) 
-            || (MlbPrefs.isNumericIdType() && this.isDigitPressed(event) && this.isOneOfConfiguredModifierCombination(event))
+            || (MlbPrefs.isNumericIdType() && this.isDigitPressed(event) && this.isOneOfConfiguredModifierCombination(event) 
+               && !this.isAltCtrlInEditableField(event))
             || this.blockKeyboardInputForMLBActive){
                this.stopEvent(event)
                this.eventStopped=true
@@ -132,6 +133,10 @@
 			} else {
 				return false
 			}
+		},
+		
+		isAltCtrlInEditableField: function(event){
+			return MlbUtils.isWritableElement(event.originalTarget) &&  ShortCutManager.isModifierCombination(event, ShortCutManager.CTRL_ALT)
 		},
 		
 		isDigitPressed: function(event){

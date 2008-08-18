@@ -13,6 +13,7 @@ var PrefUtils = rno_common.PrefUtils
 var Listbox = rno_common.Listbox
 var COMBINED_KEY_CODE_ATTR = "COMBINED_KEY_CODE_ATTR"
 var keyInputBox 
+var STRINGBUNDLE_ID = "jsStrings"
 
 function doOnload(){
    keyInputBox = byId('keyInputBox')
@@ -54,6 +55,16 @@ function saveUserPrefs(){
 	}
    rno_common.Prefs.savePrefs(document);
    Utils.notifyObservers(MlbCommon.MLB_PREF_OBSERVER);
+}
+
+function MLB_restoreDefaults(){
+	if(!confirm(Utils.getString(STRINGBUNDLE_ID, "mouselessbrowsing.confirmRestoreDefault"))){
+		return
+	}
+	var mlb = "mouselessbrowsing."
+	var prefsNotToReset = [mlb+"version", mlb+"siteRules"]
+	Prefs.clearUserPrefForBranch(mlb, prefsNotToReset)
+	rno_common.Prefs.loadPrefs(document);
 }
 
 function dialogHelp(){

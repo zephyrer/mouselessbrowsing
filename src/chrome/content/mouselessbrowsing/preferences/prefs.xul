@@ -25,8 +25,10 @@
 	onload="doOnload()"
 	ondialogaccept="return saveUserPrefs()"
 	ondialoghelp="dialogHelp()"
-	buttons="help,accept,cancel"
-	>
+	ondialogextra1="MLB_restoreDefaults()"
+	buttons="help,accept,extra1,cancel"
+	buttonlabelextra1="&restoreDefaultsBU.label;"
+	buttonaccesskeyextra1="&restoreDefaultsBU.accesskey;">
 
 	<script type="application/x-javascript" src="../mlb_common.js"/>
 	<script type="application/x-javascript" src="../core/mlb_utils.js"/>
@@ -70,7 +72,7 @@
 									<checkbox label="&initOnDomContentLoaded.label;" prefid="mouselessbrowsing.initOnDomContentLoaded"/>
 								</row>
 								<row>
-									<checkbox id="executeAutomatic" label="&executeAutomatice.label;" prefid="mouselessbrowsing.executeAutomatic" defaultValue="false"/>
+									<checkbox id="executeAutomatic" label="&executeAutomatice.label;" prefid="mouselessbrowsing.executeAutomatic" />
 								</row>
 								<row>
 									<grid>
@@ -80,15 +82,15 @@
 										</colums>
 										<rows>
 											<row align="center">
-												<label value="Delay for automatic execution/clearing keybuffer (msec)"/>
+												<label value="&autoExecuteDelay.label;"/>
 												<textbox prefid="mouselessbrowsing.autoExecuteDelay" maxlength="6" width="125px"/>
 											</row>
 											<row align="center">
-												<label value="Pixels to scroll when pressing shortcuts"/>
+												<label value="&pixelsToScroll.label;"/>
 												<textbox prefid="mouselessbrowsing.pixelsToScroll" maxlength="6" width="125px"/>
 											</row>
 											<row align="center">
-												<label value="Maximum number of ids"/>
+												<label value="&maxIdNumber.label;"/>
 												<textbox prefid="mouselessbrowsing.maxIdNumber" maxlength="6" width="125px"/>
 											</row>
 										</rows>
@@ -117,10 +119,10 @@
                                  	</columns>
                                  	<rows>
                                  		<row>
-                                          <checkbox id="exclusiveNumpad" label="&exlusiveUseOfNumpad.label;" prefid="mouselessbrowsing.exclusiveNumpad" defaultValue="0"/>
+                                          <checkbox id="exclusiveNumpad" label="&exlusiveUseOfNumpad.label;" prefid="mouselessbrowsing.exclusiveNumpad" />
                                  		</row>
                                  		<row align="center">
-               									<label value="Modifier for enabling ids within editable elements"/>
+               									<label value="&modifierForWritableElement.label;"/>
                									<menulist id="modifierForWritableElement" width="125px" prefid="mouselessbrowsing.modifierForWritableElement">
                										<menupopup>
                                                 <menuitem label="&modifierML.menuitem.none.label;" value="-1"/>
@@ -131,7 +133,7 @@
                									</menulist>
                                  		</row>
                                  		<row align="center">
-               									<label value="Modifier for opening links in new tab"/>
+               									<label value="&modifierForOpenInNewTab.label;"/>
                									<menulist id="modifierForOpenInNewTab" width="125px" prefid="mouselessbrowsing.modifierForOpenInNewTab" popup="">
                										<menupopup>
                                                 <menuitem label="&modifierML.menuitem.none.label;" value="-1"/>
@@ -142,7 +144,7 @@
                									</menulist>
                                  		</row>
                                  		<row align="center">
-               									<label value="Modifier for opening links in new window"/>
+               									<label value="&modifierForOpenInNewWindow.label;"/>
                									<menulist id="modifierForOpenInNewTab" width="125px" prefid="mouselessbrowsing.modifierForOpenInNewWindow" popup="">
                										<menupopup>
                                                 <menuitem label="&modifierML.menuitem.none.label;" value="-1"/>
@@ -153,7 +155,7 @@
                									</menulist>
                                  		</row>
                                  		<row align="center" id="coolirisPreviewsModifierRow">
-               									<label value="Modifier for opening links in Cooliris Preview"/>
+               									<label value="&modifierForOpenInCooirisPreview.label;"/>
                									<menulist id="modifierForOpenInCoolirisPreviews" width="125px" prefid="mouselessbrowsing.modifierForOpenInCoolirisPreviews">
                										<menupopup>
                                                 <menuitem label="&modifierML.menuitem.none.label;" value="-1"/>
@@ -185,19 +187,19 @@
 						<grid>
 							<rows >
 								<row>
-									<checkbox id="allIds" label="&disableAllIds.label;" prefid="mouselessbrowsing.disableAllIds" defaultValue="0" oncommand="MLB_onTogglingVisibilityAllIds()"/>
+									<checkbox id="allIds" label="&disableAllIds.label;" prefid="mouselessbrowsing.disableAllIds"  oncommand="MLB_onTogglingVisibilityAllIds()"/>
 								</row>
 								<row align="center">
-									<checkbox id="links" style="margin-left:30px" label="&enableLinkIds.label;" prefid="mouselessbrowsing.enableLinkIds" defaultValue="1" visibilityFlag="true"/>
+									<checkbox id="links" style="margin-left:30px" label="&enableLinkIds.label;" prefid="mouselessbrowsing.enableLinkIds"  visibilityFlag="true"/>
 								</row>
 								<row align="center">
-									<checkbox id="imglinks" style="margin-left:30px" label="&enableImgLinkIds.label;" prefid="mouselessbrowsing.enableImgLinkIds" defaultValue="1" visibilityFlag="true"/>
+									<checkbox id="imglinks" style="margin-left:30px" label="&enableImgLinkIds.label;" prefid="mouselessbrowsing.enableImgLinkIds"  visibilityFlag="true"/>
 								</row>
 								<row align="center">
-									<checkbox id="formelements" style="margin-left:30px" label="&enableImgFormElementIds.label;" prefid="mouselessbrowsing.enableFormElementIds" defaultValue="1" visibilityFlag="true"/>
+									<checkbox id="formelements" style="margin-left:30px" label="&enableImgFormElementIds.label;" prefid="mouselessbrowsing.enableFormElementIds"  visibilityFlag="true"/>
 								</row>
 								<row align="center">
-									<checkbox id="frames" style="margin-left:30px" label="&enableImgFrameIds.label;" prefid="mouselessbrowsing.enableFrameIds" defaultValue="1" visibilityFlag="true"/>
+									<checkbox id="frames" style="margin-left:30px" label="&enableImgFrameIds.label;" prefid="mouselessbrowsing.enableFrameIds"  visibilityFlag="true"/>
 								</row>
 							</rows>
 						</grid>
@@ -210,13 +212,13 @@
                      </columns>
                      <rows flex="1">
                         <row>
-                           <checkbox id="smartPositioning" label="&smartPositioning.label;" prefid="mouselessbrowsing.smartPositioning" defaultValue="1"/>
+                           <checkbox id="smartPositioning" label="&smartPositioning.label;" prefid="mouselessbrowsing.smartPositioning" />
                         </row>
                         <row>
-                           <checkbox id="status" label="&showKeybufferInStatusbar.label;" prefid="mouselessbrowsing.showKeybufferInStatusbar" defaultValue="1"/>
+                           <checkbox id="status" label="&showKeybufferInStatusbar.label;" prefid="mouselessbrowsing.showKeybufferInStatusbar" />
                         </row>
                         <row>
-                           <checkbox id="status" label="&showMlbIconInStatusbar.label;" prefid="mouselessbrowsing.showMlbIconInStatusbar" defaultValue="1"/>
+                           <checkbox id="status" label="&showMlbIconInStatusbar.label;" prefid="mouselessbrowsing.showMlbIconInStatusbar" />
                         </row>
                         <row>
                            <checkbox id="status" label="&showMlbMenu.label;" prefid="mouselessbrowsing.showMlbMenu" />
@@ -237,7 +239,7 @@
                      </columns>
                      <rows flex="1">
                         <row>
-                           <label value="Style for id span"/>&#160;
+                           <label value="&styleForIdSpan.label;"/>&#160;
                         </row>
                         <row flex="1">
                            <textbox id="styleForIdSpan" prefid="mouselessbrowsing.styleForIdSpan" flex="1" multiline="true" rows="6"
@@ -255,7 +257,7 @@
                            </hbox>
                         </row>
                         <row>
-                           <label value="Style for frame id span"/>&#160;
+                           <label value="&styleForFrameIdSpan.label;"/>&#160;
                         </row>
                         <row flex="1">
                            <textbox id="styleForFrameIdSpan" prefid="mouselessbrowsing.styleForFrameIdSpan" flex="1" multiline="true" rows="5"
@@ -287,11 +289,11 @@
 						</columns>
 						<rows >
 							<row align="center">
-								<label value="URL Pattern" control="urlPatterTB" accesskey="p"/>
-								<textbox id="urlPatterTB" flex="1"/>
+								<label value="&urlPattern.label;" control="urlPatterTB" accesskey="&urlPattern.accesskey.label;"/>
+								<textbox id="urlPatterTB" flex="1" helpid="mouselessbrowsing.urlPattern.help"/>
 							</row>
 							<row align="center">
-								<label value="Visibility Mode"/>
+								<label value="&visibilityMode.label;"/>
 								<menulist id="visibilityModeML" persist="value">
 									<menupopup>
 										<menuitem label="&visibilityModeML.menuitem.hide_ids.label;" value="NONE"/>
@@ -302,12 +304,12 @@
 							</row>
 						</rows>
 					</grid>
-					<checkbox id="siteRuleExclusiveNumpadCB" label="&exlusiveUseOfNumpad.label;" persist="checked"/>
-					<checkbox id="siteRuleOnDemandFlagCB" label="&showIdsOnDemand.label;" persist="checked"/>
+					<checkbox id="siteRuleExclusiveNumpadCB" label="&exlusiveUseOfNumpad.label;" persist="checked" helpid="mouselessbrowsing.exclusiveNumpad.help"/>
+					<checkbox id="siteRuleOnDemandFlagCB" label="&showIdsOnDemand.label;" persist="checked" helpid="mouselessbrowsing.showIdsOnDemand.help"/>
 					<hbox pack="center">
-						<button label="&urlRule.addBU.label;" oncommand="MLB_addSiteRule()" accesskey="a"/>
-						<button id="updateBtn" label="&urlRule.updateBU.label;" oncommand="MLB_updateSiteRule()" accesskey="u" disabled="true"/>
-						<button id="removeBtn" label="&urlRule.removeBU.label;" oncommand="MLB_removeSiteRule()" accesskey="r" disabled="true"/>
+						<button label="&urlRule.addBU.label;" oncommand="MLB_addSiteRule()" accesskey="&urlRule.addBU.accesskey.label;"/>
+						<button id="updateBtn" label="&urlRule.updateBU.label;" oncommand="MLB_updateSiteRule()" accesskey="&urlRule.updateBU.accesskey.label;" disabled="true"/>
+						<button id="removeBtn" label="&urlRule.removeBU.label;" oncommand="MLB_removeSiteRule()" accesskey="&urlRule.removeBU.accesskey.label;" disabled="true"/>
 					</hbox>
 					<listbox id="siteRulesLB" prefid="mouselessbrowsing.siteRules" flex="1" disabled="false">
 						<listhead>
@@ -402,17 +404,17 @@
                   </listitem>
                </listbox>
                <hbox align="center" style="margin-top:5px">
-                  <label value="Shortcut"/>
+                  <label value="&shortcutKeybox.label;"/>
                   <keyinputbox id="keyInputBox" maxlength="1" allowmodifiers="true" flex="1" context="keyboxKeysPU"/>
-                  <button label="&keys.assignBU.label;" accesskey="g" oncommand="MLB_onCommandAssignShortcut()" observes="keyListboxBC"></button>
-                  <button label="&keys.removeBU.label;" accesskey="r" oncommand="MLB_onCommandRemoveShortcut()" observes="keyListboxBC"></button>
-                  <button label="&keys.restore_defaultBU.label;" accesskey="d" oncommand="MLB_onCommandRestoreDefault()" observes="keyListboxBC"></button>
+                  <button label="&keys.assignBU.label;" accesskey="&keys.assignBU.accesskey.label;" oncommand="MLB_onCommandAssignShortcut()" observes="keyListboxBC"></button>
+                  <button label="&keys.removeBU.label;" accesskey="&keys.removeBU.accesskey.label;" oncommand="MLB_onCommandRemoveShortcut()" observes="keyListboxBC"></button>
+                  <button label="&keys.restore_defaultBU.label;" accesskey="&keys.restore_defaultBU.accesskey.label;" oncommand="MLB_onCommandRestoreDefault()" observes="keyListboxBC"></button>
                </hbox>              
             </vbox>
          </tabpanel>
 		</tabpanels>
 	</tabbox>
-   <label value="Description" style="margin-top:5px"/>
-   <textbox id="helpDescriptionTB" multiline="true" rows="6" readonly="true" tabindex="-1"/>
+   <label value="&description.label;" style="margin-top:5px"/>
+   <textbox id="helpDescriptionTB" multiline="true" rows="4" readonly="true" tabindex="-1"/>
 	</vbox>
 </dialog>
