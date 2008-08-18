@@ -1,6 +1,13 @@
-
 <html>
-<body>
+<head>
+   <script type="text/javascript">
+      function doOnload(){
+         setTimeout("window.editframe.document.designMode= 'On'", 1000)
+      }
+   </script>
+</head>
+<body onload="doOnload()">
+
 <form name="f1" action="">
 <table>
 	<tr>
@@ -10,7 +17,7 @@
 	</tr>
 	<tr>
 		<td>Select</td>
-		<td><select>
+		<td><select >
 			<option>1 Test</option>
 			<option>2 Test</option>
 			<option>3 Test</option>
@@ -39,14 +46,23 @@
 	     Textarea
 	  </td>
 	  <td>
-	     <textarea cols="10" rows="3"></textarea>
+	     <textarea cols="10" rows="2">Line1\nLine2\nLine3\nLine4\nLine3\nLine4</textarea>
 	  </td>
 	</tr>
-	
-	
+	<tr>
+	  <td>
+	     <a id="mouselesslink" href="http://www.mouseless.de"><span><span><span><strong>Zu Firefox  hinzufügen</strong></span></span></span></a>
+	   </td>
+	</tr>
+	<tr>
+	  <td>
+	     Editable Iframe
+	   </td>
+	   <td>
+	     <iframe name="editframe" id="editframe" style="width:200px; height:150px" src="EditorFrame.html"></iframe>
+	   </td>
+	</tr>
 </table>
-
-
 </form>
 </body>
 </html>

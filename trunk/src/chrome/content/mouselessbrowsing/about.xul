@@ -4,15 +4,17 @@
 	title="Mouseless Browsing! - About"
 	orient="vertical"
 	autostretch="always"
-	onload="sizeToContent()"
+	onload="sizeToContent(); document.getElementById('version').value=mouselessbrowsing.MlbCommon.MLB_VERSION"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
+
 <!-- Original template by Jed Brown -->
+<script type="application/x-javascript" src="../mlb_common.js"/>
 
 <groupbox align="center" orient="horizontal">
 <vbox>
   <text value="Mousless Browsing!" style="font-weight: bold; font-size: x-large;"/>
-  <text value="ver. 0.4.1"/>
+  <text id="version" value=""/>
   <separator class="thin"/>
   <text value="Created By:" style="font-weight: bold;"/>
   <text value="Rudolf Noé""/>

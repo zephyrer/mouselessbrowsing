@@ -1,0 +1,7 @@
+<!ENTITY openConfiguration.label "Open Configuration">
+<!ENTITY addUrlRule.label "Add URL Rule">
+<!ENTITY help.label "Help">
+<!ENTITY reportBug.label "Report Bug">
+<!ENTITY giveFeedback.label "Give Feedback">
+<!ENTITY hideMLBMenu.label "Hide MLB Menu from Tools Menu">
+<!ENTITY hideMLBStatusIcon.label "Hide MLB Statusbar">
