@@ -40,6 +40,7 @@
    
 	<broadcasterset>
 		<broadcaster id="keyListboxBC" disabled="true"/>
+		<broadcaster id="idTypeNumericBC" disabled="true"/>
 	</broadcasterset>
 	
 	<popupset>
@@ -119,11 +120,11 @@
                                  	</columns>
                                  	<rows>
                                  		<row>
-                                          <checkbox id="exclusiveNumpad" label="&exlusiveUseOfNumpad.label;" prefid="mouselessbrowsing.exclusiveNumpad" />
+                                          <checkbox id="exclusiveNumpad" label="&exlusiveUseOfNumpad.label;" prefid="mouselessbrowsing.exclusiveNumpad" observes="idTypeNumericBC"/>
                                  		</row>
                                  		<row align="center">
                									<label value="&modifierForWritableElement.label;"/>
-               									<menulist id="modifierForWritableElement" width="125px" prefid="mouselessbrowsing.modifierForWritableElement">
+               									<menulist id="modifierForWritableElement" width="125px" prefid="mouselessbrowsing.modifierForWritableElement" observes="idTypeNumericBC">
                										<menupopup>
                                                 <menuitem label="&modifierML.menuitem.none.label;" value="-1"/>
                                                 <menuitem label="&modifierML.menuitem.alt.label;" value="1"/>
@@ -134,7 +135,7 @@
                                  		</row>
                                  		<row align="center">
                									<label value="&modifierForOpenInNewTab.label;"/>
-               									<menulist id="modifierForOpenInNewTab" width="125px" prefid="mouselessbrowsing.modifierForOpenInNewTab" popup="">
+               									<menulist id="modifierForOpenInNewTab" width="125px" prefid="mouselessbrowsing.modifierForOpenInNewTab" observes="idTypeNumericBC">
                										<menupopup>
                                                 <menuitem label="&modifierML.menuitem.none.label;" value="-1"/>
                                                 <menuitem label="&modifierML.menuitem.alt.label;" value="1"/>
@@ -145,7 +146,7 @@
                                  		</row>
                                  		<row align="center">
                									<label value="&modifierForOpenInNewWindow.label;"/>
-               									<menulist id="modifierForOpenInNewTab" width="125px" prefid="mouselessbrowsing.modifierForOpenInNewWindow" popup="">
+               									<menulist id="modifierForOpenInNewTab" width="125px" prefid="mouselessbrowsing.modifierForOpenInNewWindow" observes="idTypeNumericBC">
                										<menupopup>
                                                 <menuitem label="&modifierML.menuitem.none.label;" value="-1"/>
                                                 <menuitem label="&modifierML.menuitem.alt.label;" value="1"/>
@@ -156,7 +157,7 @@
                                  		</row>
                                  		<row align="center" id="coolirisPreviewsModifierRow">
                									<label value="&modifierForOpenInCooirisPreview.label;"/>
-               									<menulist id="modifierForOpenInCoolirisPreviews" width="125px" prefid="mouselessbrowsing.modifierForOpenInCoolirisPreviews">
+               									<menulist id="modifierForOpenInCoolirisPreviews" width="125px" prefid="mouselessbrowsing.modifierForOpenInCoolirisPreviews" observes="idTypeNumericBC">
                										<menupopup>
                                                 <menuitem label="&modifierML.menuitem.none.label;" value="-1"/>
                                                 <menuitem label="&modifierML.menuitem.alt.label;" value="1"/>
@@ -249,7 +250,7 @@
                            <hbox align="center">
                               <spacer width="5px"/>
                               <html:div>Preview:</html:div>
-                              <html:div>
+                              <html:div >
                                  <html:span id="previewIdSpan">42</html:span>
                               </html:div>
                               <spacer flex="1"/>
@@ -289,12 +290,12 @@
 						</columns>
 						<rows >
 							<row align="center">
-								<label value="&urlPattern.label;" control="urlPatterTB" accesskey="&urlPattern.accesskey.label;"/>
+								<label value="&urlPattern.label;" control="urlPatterTB" accesskey="&urlPattern.accesskey;"/>
 								<textbox id="urlPatterTB" flex="1" helpid="mouselessbrowsing.urlPattern.help"/>
 							</row>
 							<row align="center">
 								<label value="&visibilityMode.label;"/>
-								<menulist id="visibilityModeML" persist="value">
+								<menulist id="visibilityModeML" persist="value" helpid="mouselessbrowsing.visibilityMode.help">
 									<menupopup>
 										<menuitem label="&visibilityModeML.menuitem.hide_ids.label;" value="NONE"/>
 										<menuitem label="&visibilityModeML.menuitem.show_ids_as_configured.label;" value="CONFIG"/>
@@ -307,9 +308,9 @@
 					<checkbox id="siteRuleExclusiveNumpadCB" label="&exlusiveUseOfNumpad.label;" persist="checked" helpid="mouselessbrowsing.exclusiveNumpad.help"/>
 					<checkbox id="siteRuleOnDemandFlagCB" label="&showIdsOnDemand.label;" persist="checked" helpid="mouselessbrowsing.showIdsOnDemand.help"/>
 					<hbox pack="center">
-						<button label="&urlRule.addBU.label;" oncommand="MLB_addSiteRule()" accesskey="&urlRule.addBU.accesskey.label;"/>
-						<button id="updateBtn" label="&urlRule.updateBU.label;" oncommand="MLB_updateSiteRule()" accesskey="&urlRule.updateBU.accesskey.label;" disabled="true"/>
-						<button id="removeBtn" label="&urlRule.removeBU.label;" oncommand="MLB_removeSiteRule()" accesskey="&urlRule.removeBU.accesskey.label;" disabled="true"/>
+						<button label="&urlRule.addBU.label;" oncommand="MLB_addSiteRule()" accesskey="&urlRule.addBU.accesskey;"/>
+						<button id="updateBtn" label="&urlRule.updateBU.label;" oncommand="MLB_updateSiteRule()" accesskey="&urlRule.updateBU.accesskey;" disabled="true"/>
+						<button id="removeBtn" label="&urlRule.removeBU.label;" oncommand="MLB_removeSiteRule()" accesskey="&urlRule.removeBU.accesskey;" disabled="true"/>
 					</hbox>
 					<listbox id="siteRulesLB" prefid="mouselessbrowsing.siteRules" flex="1" disabled="false">
 						<listhead>
@@ -406,9 +407,9 @@
                <hbox align="center" style="margin-top:5px">
                   <label value="&shortcutKeybox.label;"/>
                   <keyinputbox id="keyInputBox" maxlength="1" allowmodifiers="true" flex="1" context="keyboxKeysPU"/>
-                  <button label="&keys.assignBU.label;" accesskey="&keys.assignBU.accesskey.label;" oncommand="MLB_onCommandAssignShortcut()" observes="keyListboxBC"></button>
-                  <button label="&keys.removeBU.label;" accesskey="&keys.removeBU.accesskey.label;" oncommand="MLB_onCommandRemoveShortcut()" observes="keyListboxBC"></button>
-                  <button label="&keys.restore_defaultBU.label;" accesskey="&keys.restore_defaultBU.accesskey.label;" oncommand="MLB_onCommandRestoreDefault()" observes="keyListboxBC"></button>
+                  <button label="&keys.assignBU.label;" accesskey="&keys.assignBU.accesskey;" oncommand="MLB_onCommandAssignShortcut()" observes="keyListboxBC"></button>
+                  <button label="&keys.removeBU.label;" accesskey="&keys.removeBU.accesskey;" oncommand="MLB_onCommandRemoveShortcut()" observes="keyListboxBC"></button>
+                  <button label="&keys.restore_defaultBU.label;" accesskey="&keys.restore_defaultBU.accesskey;" oncommand="MLB_onCommandRestoreDefault()" observes="keyListboxBC"></button>
                </hbox>              
             </vbox>
          </tabpanel>

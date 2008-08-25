@@ -12,10 +12,12 @@
    	currentVersion: null,
    	
    	hasVersionToBeMigrated: function(){
-   		var mlbExtension = Utils.getExtension(MlbCommon.MLB_GUI_ID)
+   		var newInstalledVersion = Utils.getExtension(MlbCommon.MLB_GUI_ID).version
    		this.currentVersion = Prefs.getCharPref(this.VERSION_PREF)
-   		if(mlbExtension.version>this.currentVersion){
-   			this.currentVersion = mlbExtension.version
+   		var versionComparator = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
+                   .getService(Components.interfaces.nsIVersionComparator)
+   		if(versionComparator.compare(newInstalledVersion, this.currentVersion)>0){
+   			this.currentVersion = newInstalledVersion
    			return true
    		}else{
    			return false

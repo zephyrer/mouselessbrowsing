@@ -36,18 +36,21 @@
         src="mouselessbrowsingOverlay.js">
     </script>
 
+    <stringbundleset>
+    	<stringbundle id="mouselessbrowsingOverlaySB" src="chrome://mouselessbrowsing/locale/mouselessbrowsingOverlay.properties"/>
+    </stringbundleset>
     <broadcasterset>
     	<broadcaster id="mlb_openConfig_bc" acceltext=""/>
     	<broadcaster id="mlb_addUrlRule_bc" acceltext=""/>
     </broadcasterset>
     <commandset>
-    	<command id="mlb_openConfig_cmd" label="&openConfiguration.label;" oncommand="mouselessbrowsing.EventHandler.openConfiguration()" accesskey="c" />
-    	<command id="mlb_addUrlRule_cmd" label="&addUrlRule.label;" oncommand="mouselessbrowsing.EventHandler.addSiteRule()" accesskey="a"/>
-    	<command id="mlb_mlbHelp_cmd" label="&help.label;" oncommand="mouselessbrowsing.MlbUtils.showMlbHelp()" accesskey="h"/>
-    	<command id="mlb_reportBug_cmd" label="&reportBug.label;" oncommand="mouselessbrowsing.EventHandler.reportBug()" accesskey="b"/>
-    	<command id="mlb_giveFeedback_cmd" label="&giveFeedback.label;" oncommand="mouselessbrowsing.EventHandler.giveFeedback()" accesskey="f"/>
-    	<command id="mlb_hideMenu_cmd" label="&hideMLBMenu.label;" oncommand="mouselessbrowsing.EventHandler.hideMlbMenu()" accesskey="m"/>
-    	<command id="mlb_hideMlbStatusBar_cmd" label="&hideMLBStatusIcon.label;" oncommand="mouselessbrowsing.EventHandler.hideMlbStatusbar()" accesskey="m"/>
+    	<command id="mlb_openConfig_cmd" label="&openConfiguration.label;" oncommand="mouselessbrowsing.EventHandler.openConfiguration()" accesskey="&openConfiguration.accesskey;" />
+    	<command id="mlb_addUrlRule_cmd" label="&addUrlRule.label;" oncommand="mouselessbrowsing.EventHandler.addSiteRule()" accesskey="&addUrlRule.accesskey;"/>
+    	<command id="mlb_mlbHelp_cmd" label="&help.label;" oncommand="mouselessbrowsing.MlbUtils.showMlbHelp()" accesskey="&help.accesskey;"/>
+    	<command id="mlb_reportBug_cmd" label="&reportBug.label;" oncommand="mouselessbrowsing.EventHandler.reportBug()" accesskey="&reportBug.accesskey;"/>
+    	<command id="mlb_giveFeedback_cmd" label="&giveFeedback.label;" oncommand="mouselessbrowsing.EventHandler.giveFeedback()" accesskey="&giveFeedback.accesskey;"/>
+    	<command id="mlb_hideMenu_cmd" label="&hideMLBMenu.label;" oncommand="mouselessbrowsing.EventHandler.hideMlbMenu()" accesskey="&hideMLBMenu.accesskey;"/>
+    	<command id="mlb_hideMlbStatusBar_cmd" label="&hideMLBStatusIcon.label;" oncommand="mouselessbrowsing.EventHandler.hideMlbStatusbar()" accesskey="&hideMLBStatusIcon.accesskey;"/>
     </commandset>
 
     <menupopup id="menu_ToolsPopup">

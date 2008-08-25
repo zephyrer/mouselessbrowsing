@@ -90,7 +90,7 @@
 
 			//Update statusbar
 			if(MlbPrefs.showKeybufferInStatusbar){
-			   this.updateStatuspanel(this.keybuffer);
+			   this.updateStatuspanel(this.keybuffer.toUpperCase());
 			}
 			
 			//Set flag whether link should be opened in new tab or in cooliris preview
@@ -239,7 +239,8 @@
 		    //If its an anchor check different possibilities
 		    else if (tagName == "a") {
 				if (this.openInNewTab) {
-					Utils.openUrlInNewTab(element.href);
+					var loadInBackground = Prefs.getBoolPref("browser.tabs.loadInBackground")
+					Utils.openUrlInNewTab(element.href, !loadInBackground);
 					return;
 				} else if (this.openInNewWindow) {
 					Utils.openInNewWindow(element.href, true)
@@ -258,7 +259,8 @@
 		    
 
 		    var targetBlank = false
-		    if(tagName=="a" && (element.target=="_blank" || element.target=="_new")){
+		    var target = element.target
+		    if(tagName=="a" && (target=="_blank" || /new$/.test(target))){
 		    	targetBlank = true
 		    }
 		    
@@ -313,7 +315,7 @@
 		 * Initiates the update of the id spans after toggling the ids
 		 */
 		updateIdsAfterToggling: function(visibilityMode){
-	       MlbPrefs.initShowIdPrefs(visibilityMode);
+	       MlbPrefs.initShowIdPrefs(visibilityMode, true);
          //Set visibility flags		    
 			if(visibilityMode==MlbCommon.VisibilityModes.NONE){
 		       this.hideIdSpans(MlbUtils.getCurrentContentWin());
@@ -461,7 +463,7 @@
 		    }else{
 		        MlbPrefs.exclusiveUseOfNumpad = !MlbPrefs.exclusiveUseOfNumpad;
 		    }
-		    mouselessbrowsing.InitManager.initStatusbar()
+		    return ShortCutManager.SUPPRESS_KEY
 		},
 		
 		updateStatuspanel: function(status){

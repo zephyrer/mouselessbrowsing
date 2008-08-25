@@ -73,10 +73,10 @@
 <!ENTITY description.label "Description">
 <!ENTITY restoreDefaultsBU.label "Restore Defaults">
 <!ENTITY restoreDefaultsBU.accesskey "d">
-<!ENTITY urlPattern.accesskey.label "p">
-<!ENTITY urlRule.addBU.accesskey.label "a">
-<!ENTITY urlRule.updateBU.accesskey.label "u">
-<!ENTITY urlRule.removeBU.accesskey.label "r">
-<!ENTITY keys.assignBU.accesskey.label "g">
-<!ENTITY keys.removeBU.accesskey.label "r">
-<!ENTITY keys.restore_defaultBU.accesskey.label "d">
+<!ENTITY urlPattern.accesskey "p">
+<!ENTITY urlRule.addBU.accesskey "a">
+<!ENTITY urlRule.updateBU.accesskey "u">
+<!ENTITY urlRule.removeBU.accesskey "r">
+<!ENTITY keys.assignBU.accesskey "g">
+<!ENTITY keys.removeBU.accesskey "r">
+<!ENTITY keys.restore_defaultBU.accesskey "f">

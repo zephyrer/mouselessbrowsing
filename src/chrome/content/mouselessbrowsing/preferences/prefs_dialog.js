@@ -105,6 +105,7 @@ function MLB_addSiteRule(){
    var items = Listbox.getItems(siteRulesLB);
    var newListitem = Listbox.appendMultiColumnItem(siteRulesLB, [urlPattern, visibilityModeML.label, siteRuleExclusiveNumpadCB.checked, siteRuleOnDemandFlagCB.checked], 
          [urlPattern, visibilityModeML.value, siteRuleExclusiveNumpadCB.checked, siteRuleOnDemandFlagCB.checked], null, [null, "display:none", "display:none", "display:none"])
+   byId("urlPatterTB").select()
 }
 
 function MLB_updateSiteRule(){
@@ -120,6 +121,7 @@ function MLB_updateSiteRule(){
    }
    Listbox.updateSelectedRow(siteRulesLB, [urlPattern, visibilityModeML.label, siteRuleExclusiveNumpadCB.checked, siteRuleOnDemandFlagCB.checked], 
          [urlPattern, visibilityModeML.value, siteRuleExclusiveNumpadCB.checked, siteRuleOnDemandFlagCB.checked])
+   siteRulesLB.focus()
 }
 
 function MLB_removeSiteRule(){
@@ -144,7 +146,7 @@ function MLB_onSelectSiteRule(){
       updateBtn.disabled=false
       removeBtn.disabled=false
       var listcells = Listbox.getSelectedListCells(siteRulesLB)
-      byId('urlPatterTB').setAttribute("value", listcells[0].getAttribute('value'))
+      byId('urlPatterTB').value = listcells[0].getAttribute('value')
       byId('visibilityModeML').value=listcells[1].getAttribute('value')
       byId('siteRuleExclusiveNumpadCB').checked=(listcells[2].getAttribute('value')=='true')
       byId('siteRuleOnDemandFlagCB').checked=(listcells[3].getAttribute('value')=='true')
@@ -166,14 +168,12 @@ function MLB_validateUserInput() {
 		var charMap = new Object()
 		var selfDefindedCharSet = idCharsTB.value
 		if (selfDefindedCharSet == "") {
-			throw Error("No id char defined")
+			throw Error(Utils.getString(STRINGBUNDLE_ID, "mouselessbrowsing.noCharSetDefined"))
 		}
 		for (var i = 0; i < selfDefindedCharSet.length; i++) {
 			var singleChar = selfDefindedCharSet.charAt(i)
 			if (charMap[singleChar] != null) {
-				throw Error("The character '"
-						+ singleChar
-						+ "' is defined multiple times in the self-defined character set for ids.")
+				throw Error(Utils.getString(STRINGBUNDLE_ID, "mouselessbrowsing.duplicateCharInCharSet", [singleChar]))
 			}
 			charMap[singleChar] = ""
 		}
@@ -183,17 +183,11 @@ function MLB_validateUserInput() {
 function MLB_onCommandIdType(){
    var idTypeRG = byId('idtype')
    if(idTypeRG.value==MlbCommon.IdTypes.NUMERIC){
-      byId('idCharsTB').disabled=true   
-      byId('exclusiveNumpad').disabled=false   
-      byId('modifierForWritableElement').disabled=false  
-      byId('modifierForOpenInNewTab').disabled=false
-      byId('modifierForOpenInCoolirisPreviews').disabled=false
+      byId('idCharsTB').disabled=true
+      byId('idTypeNumericBC').setAttribute("disabled",false)   
    }else{
       byId('idCharsTB').disabled=false   
-      byId('exclusiveNumpad').disabled=true   
-      byId('modifierForWritableElement').disabled=true  
-      byId('modifierForOpenInNewTab').disabled=true   
-      byId('modifierForOpenInCoolirisPreviews').disabled=true   
+      byId('idTypeNumericBC').setAttribute("disabled",true)
    }
 }
 
