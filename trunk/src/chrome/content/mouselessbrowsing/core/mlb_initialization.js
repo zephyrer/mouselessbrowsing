@@ -14,6 +14,7 @@
 	var KeyInputbox = rno_common.KeyInputbox
 	var VersionManager = mouselessbrowsing.VersionManager
 	var PageInitializer = mouselessbrowsing.PageInitializer
+	var STRINGBUNDLE_ID = "mouselessbrowsingOverlaySB"
    
    //Prefs observer
    var MLB_prefObserver = null;
@@ -37,6 +38,7 @@
 			//Add preferences-observer
 	      MLB_prefObserver = Utils.createObserverForInterface(InitManager)
 	      Utils.registerObserver(MlbCommon.MLB_PREF_OBSERVER, MLB_prefObserver)
+	      Utils.observeObject(MlbPrefs, "exclusiveUseOfNumpad", "mouselessbrowsing.InitManager.initStatusbar()")
 		},
 		
 		initShortCuts: function (){
@@ -96,11 +98,11 @@
 			 addUrlRuleBC.setAttribute('acceltext', KeyInputbox.getStringForCombinedKeyCode(combinedKeyCode))
 
 		    //Toggling exclusive use with double stroke of numpad-key
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(2304, "mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpad()", MlbCommon.SCM_CLIENT_ID);
+		    ShortCutManager.addJsShortCutWithCombinedKeyCode(2304, "mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpad();", MlbCommon.SCM_CLIENT_ID);
 		
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.toggleExlusiveUseOfNumpad");
-		    if(combinedKeyCode!=2304)
-			    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.MlbPrefs.toggleExclusiveUseOfNumpad()", MlbCommon.SCM_CLIENT_ID);
+		    if(combinedKeyCode!="2304")
+			    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.MlbPrefs.toggleExclusiveUseOfNumpad();", MlbCommon.SCM_CLIENT_ID);
 		
 		},
 		
@@ -142,7 +144,7 @@
           }
           var tooltiptext = "Mouseless Browsing " + MlbCommon.MLB_VERSION
           if(MlbPrefs.exclusiveUseOfNumpad){
-          	tooltiptext += "\n\nExlusive use of numpad"
+          	tooltiptext += "\n\n" + Utils.getString(STRINGBUNDLE_ID, "exclusiveUseOfNumpadActive")
           }
           statusPanel.tooltipText = tooltiptext
 		},

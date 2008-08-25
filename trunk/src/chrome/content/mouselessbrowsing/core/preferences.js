@@ -8,8 +8,8 @@
 (function(){
 	//Imports
    var Prefs = rno_common.Prefs
-   var MlbCommon = mouselessbrowsing.MlbCommon
    var Utils = rno_common.Utils
+   var MlbCommon = mouselessbrowsing.MlbCommon
    var GlobalData = mouselessbrowsing.GlobalData
    
 	function SiteRule (urlRegEx, visibilityMode, exclusiveUseOfNumpad, showIdsOnDemand){
@@ -47,7 +47,6 @@
 		showKeybufferInStatusbar: null,
 		showMlbIconInStatusbar: null,
 		showMlbMenu: null,
-//		showTabIds: null,
 		siteRules: null,
 		styleForIdSpan: null,
 		styleForFrameIdSpan: null,
@@ -65,7 +64,6 @@
 		      this.exclusiveUseOfNumpad = Prefs.getBoolPref("mouselessbrowsing.exclusiveNumpad");
 		      this.initOnDomContentLoaded = Prefs.getBoolPref("mouselessbrowsing.initOnDomContentLoaded");
 				this.smartPositioning = Prefs.getBoolPref("mouselessbrowsing.smartPositioning");
-//		      this.showTabIds = Prefs.getBoolPref("mouselessbrowsing.showTabIds");
 		      this.showKeybufferInStatusbar = Prefs.getBoolPref("mouselessbrowsing.showKeybufferInStatusbar");
 		      this.showMlbIconInStatusbar= Prefs.getBoolPref("mouselessbrowsing.showMlbIconInStatusbar");
 		      this.showMlbMenu= Prefs.getBoolPref("mouselessbrowsing.showMlbMenu");
@@ -86,11 +84,10 @@
 		      this.disableAllIds = Prefs.getBoolPref("mouselessbrowsing.disableAllIds");
 		      //Todo: Check if this is correct as already visible ids will not be hidden after pref change
 		      if(!this.disableAllIds){
-   				this.initShowIdPrefs(MlbCommon.VisibilityModes.CONFIG);
+   				this.initShowIdPrefs(MlbCommon.VisibilityModes.CONFIG, false);
 		      }
-		      this.initSiteRules();
-		      this.styleForIdSpan = Prefs.getCharPref("mouselessbrowsing.styleForIdSpan");
-		      this.styleForFrameIdSpan = Prefs.getCharPref("mouselessbrowsing.styleForFrameIdSpan");
+		      this.initSiteRules()
+		      this.initStylePrefs()
 		      this.initVisibilityMode()      
 		      
 		      this.prefsBackup = null;
@@ -105,6 +102,36 @@
 		    }
 		},
 		
+		initStylePrefs: function(){
+			var importantExceptions = {"font-family":"", "margin-left":"", "max-width":""}
+		   this.styleForIdSpan = this.addImportantToStyles(Prefs.getCharPref("mouselessbrowsing.styleForIdSpan"), importantExceptions);
+		   //For Frame id spans all styles are set to !important 
+		   this.styleForFrameIdSpan = this.addImportantToStyles(Prefs.getCharPref("mouselessbrowsing.styleForFrameIdSpan"), {});
+		},
+		
+		/*
+		 * Adds !important to styles as styles should not be overruled by page styles
+		 */
+		addImportantToStyles: function(styleString, exceptions){
+		    var styleEntries = styleString.split(";")
+		    var newStyleArray = new Array()
+		    var styleKeyRegEx = /(\s|:)/
+		    for (var i = 0; i < styleEntries.length; i++) {
+		       var styleEntry = styleEntries[i]
+		       //remove spaces and "\n" at beginning
+		       styleEntry = styleEntry.replace(/^[\\n\s]*/,"")
+		       if(styleEntry.length==0){
+		       	continue
+		       }
+		       var styleKey = styleEntry.substring(0, styleEntry.search(/[\s:]/))
+		       if(styleEntry.indexOf("!important")==-1 && exceptions[styleKey]==null){
+		       	styleEntry +=" !important"
+		       }
+		       newStyleArray.push(styleEntry)
+		    }
+		    return newStyleArray.join(";")
+		},
+		
 		initVisibilityMode: function(){
 			this.visibilityMode = this.disableAllIds==false?
 			  MlbCommon.VisibilityModes.CONFIG:MlbCommon.VisibilityModes.NONE;
@@ -113,7 +140,7 @@
 		/*
 		 * Seperate function for reuse when toggling visibility of spans
 		 */
-		initShowIdPrefs: function (visibilityMode){
+		initShowIdPrefs: function (visibilityMode, makeDisableAllFlagPersistent){
 			this.visibilityMode = visibilityMode
 			switch (this.visibilityMode) {
 				case MlbCommon.VisibilityModes.NONE:
@@ -134,8 +161,10 @@
 					this.idsForFramesEnabled = true
 					break;
 			}
-			//Make flag for all ids persistent	
-		   Prefs.setBoolPref("mouselessbrowsing.disableAllIds", this.disableAllIds);
+			if(makeDisableAllFlagPersistent){
+			   // Make flag for all ids persistent	
+		      Prefs.setBoolPref("mouselessbrowsing.disableAllIds", this.disableAllIds);
+			}
 		},
 		
 		initSiteRules: function(){
@@ -165,24 +194,24 @@
                if(this.prefsBackup==null){
                   this.prefsBackup = new SiteRule(null, this.visibilityMode, this.exclusiveUseOfNumpad, this.showIdsOnDemand)
                }
-            	this.initShowIdPrefs(siteRule.visibilityMode)
+            	this.initShowIdPrefs(siteRule.visibilityMode, false)
             	this.exclusiveUseOfNumpad = siteRule.exclusiveUseOfNumpad 
             	this.showIdsOnDemand = siteRule.showIdsOnDemand
             	break; 
             }else if(this.prefsBackup!=null){
             	//reset prefs
-            	this.initShowIdPrefs(this.prefsBackup.visibilityMode)
+            	this.initShowIdPrefs(this.prefsBackup.visibilityMode, false)
             	this.exclusiveUseOfNumpad = this.prefsBackup.exclusiveUseOfNumpad 
             	this.showIdsOnDemand = this.prefsBackup.showIdsOnDemand
             	this.prefsBackup = null
             }         
          }
          this.initVisibilityMode()
-         mouselessbrowsing.InitManager.initStatusbar()
       },
       
       toggleExclusiveUseOfNumpad: function(){
       	this.exclusiveUseOfNumpad = !this.exclusiveUseOfNumpad
+      	return ShortCutManager.SUPPRESS_KEY
       },
       
       isNumericIdType: function(){

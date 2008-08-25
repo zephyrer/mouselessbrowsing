@@ -60,6 +60,8 @@
 		//Called after update of Prefs
 		init: function(){
          this.spanPrototype = null;
+         mouselessbrowsing.EventHandler.hideIdSpans(content)
+         MlbPrefs.applySiteRules(content)
          this.updatePage();
 		},
 		
