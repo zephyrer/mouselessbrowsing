@@ -21,7 +21,6 @@
 	function MLB_initOnStartup() {
 		//ShortcutManager must be initialized first, that it processes the
 		//key-down-events first ;-)
-		//ToDo: Why that?
 		ShortCutManager.getInstance();
 		
 		//Add Main-Key-Listener

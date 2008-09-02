@@ -13,7 +13,7 @@
 		
 		//Attribute of the id-span that flags the span as an id-span
 		ATTR_ID_SPAN_FLAG: "MLB_idSpanFlag",
-		
+
 		//Attribute of the id-span identifying the type element the id is for
 		//see Tyes for id-Spans
 		//Used for toggling the visibility of the id-spans

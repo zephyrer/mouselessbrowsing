@@ -18,17 +18,15 @@
 	
 	/*
 	 *Data Containter for holding all data needed for init process
-	 *@param currentWin: current content win
-	 *@param pageData: PageData object holding the data for the page which will be initialized 
+	 *@param currentWin: Current win-object for which init should take place
 	 *@param onpageshow2ndCall: Flag inidicating that this second cycle of initializing, the first is onDomContentLoaded
-	 *@param keepExistingIds: Flag indicating that exisitng id spans should not be changed.
+	 *@param keepExsitingIds: Flag indicating that exisitng id spans should not be changed.
 	 */
-	function PageInitData(currentWin, pageData, onpageshow2ndCall, keepExistingIds){
-      //
+	function PageInitData(currentWin, onpageshow2ndCall, keepExsitingIds, eventType){
       this.currentWin = currentWin;
-      this.pageData = pageData;
       this.onpageshow2ndCall = onpageshow2ndCall
-      this.keepExistingIds = keepExistingIds
+      this.keepExsitingIds = keepExsitingIds
+      this.eventType = eventType
 	}
 	
 	PageInitData.prototype = {
@@ -46,6 +44,15 @@
 		
 		getCurrentDoc: function(){
 			return this.currentWin.document
+		},
+		setPageData: function(pageData){
+			this.pageData = pageData
+		}, 
+		
+		EventTypes: {
+		    DOM_CONTENT_LOADED: "DOMContentLoaded",
+		    ON_PAGE_SHOW:"onpageshow",
+		    TOGGLING_IDS:"togglinids"	    
 		}
 	}
 	
@@ -57,6 +64,7 @@
 		//RegEx for checking if an link is empty
 		regexWhitespace: /\s/g,
 		
+		
 		//Called after update of Prefs
 		init: function(){
          this.spanPrototype = null;
@@ -67,82 +75,104 @@
 		
 		//Function called on pageShow event
 		onPageShow: function(event){
-			var onpageshow2ndCall = event.type=="pageshow" && !event.persisted && MlbPrefs.initOnDomContentLoaded
-			this.startInitalizing(event, onpageshow2ndCall, onpageshow2ndCall);
+			var onpageshow2ndCall = !event.persisted && MlbPrefs.initOnDomContentLoaded
+
+			var win = event.originalTarget.defaultView
+			//Onpage show init starts from topwin if already initialized after DOMCOntentLoaded
+         //It is not enough to load when topwin is loaded as subframes could trigger XmlHttpRequests
+         //e.g. Gmail
+			var topWinIsInitialized = win.top.mlb_initialized==true
+         if(!topWinIsInitialized && win!=win.top && MlbPrefs.initOnDomContentLoaded){
+            return
+         }
+         //After topwin is initialized ids has always to be regenerated entirely as with frameset no top win will be loaded any more
+         //The && onpageshow2ndCall is necessary in the case where a page is loaded from the cache
+         var keepExsitingIds = !topWinIsInitialized
+			this.prepareInitialization(event, onpageshow2ndCall, keepExsitingIds);
+         if(win==win.top){
+            win.mlb_initialized=true
+         }
 		},
 		
 		//Function called on DOMContentLoaded event
 		onDOMContentLoaded: function(event){
 			if(MlbPrefs.initOnDomContentLoaded){
-			   this.startInitalizing(event, false, false);
+				var keepExsitingIds = !this.isFrameset(event.originalTarget.defaultView.top)
+			   this.prepareInitialization(event, false, keepExsitingIds);
 			}
+		},
+		
+		isFrameset: function(win){
+			try{
+			   return win.document.body.tagName.toUpperCase()=="FRAMESET"
+			}catch(e){
+				return false
+			}
+		}, 
+		
+		prepareInitialization: function(event, onpageshow2ndCall, keepExsitingIds){
+         var win = event.originalTarget.defaultView
+         MlbUtils.logDebugMessage('init win: "' + win.name + '"| event: ' + event.type + '| topwin: ' + (win==win.top) + '| keepexistingIds: ' + keepExsitingIds)
+         var pageInitData = new PageInitData(win, onpageshow2ndCall, keepExsitingIds, event.type)
+         
+         //Apply URL exceptions
+         //Could not be in initPage as it should not be executed on toggleing
+         MlbPrefs.applySiteRules(win)
+         
+         //Is MLB activated?
+         if(MlbPrefs.showIdsOnDemand==true ){
+            //Set the visibility modes so that with toggeling the ids will become visible
+            MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.NONE;
+            GlobalData.previousVisibilityMode=MlbCommon.VisibilityModes.CONFIG
+            //If history back was pressed after toggling of the ids 
+            //the alreay generated ids must be hidden
+            var topWin = pageInitData.getCurrentTopWin()
+            if(this.hasIdSpans(topWin)){
+               EventHandler.hideIdSpans(topWin);
+            }
+            return;
+         }
+
+         this.initPage(pageInitData)
+		},
+
+		/*
+		 * Updates the page after toggling of ids or if prefs has changed
+		 */
+		updatePage: function(){
+         var pageInitData = new PageInitData(content, false, false);
+         this.initPage(pageInitData)  
 		},
 		
 		/*
 		 * Main entry method for initializing
-		 * @param event: The event initiating the call
-		 * @param onpageshow2ndCall: Flag indicating wether this is the 2nd call for initializing the win
-		 * @param keepExistingIds: Flag indicating whether already existing ids should be left unchanged 
+		 * @param pageInitData:
 		 */ 
-		startInitalizing: function(event, onpageshow2ndCall, keepExistingIds){
-			var win = event.originalTarget.defaultView
-			MlbUtils.logDebugMessage('startInitilizing win: "' + win.name + '" event: ' + event.type + ' topwin: ' + (win==win.top))
-		   var pageInitData = new PageInitData(win, this.getPageData(win), onpageshow2ndCall, keepExistingIds)
+		initPage: function(pageInitData){
+         
+			if(MlbPrefs.disableAllIds==true){
+				return
+			}
+			
+			var win = pageInitData.getCurrentTopWin()
 		   
-		   //Apply URL exceptions
-		   MlbPrefs.applySiteRules(win)
-		   
-		   //Is MLB activated?
-		   if(MlbPrefs.disableAllIds==true || MlbPrefs.showIdsOnDemand==true ){
-		   	//Set the visibility modes so that with toggeling the ids will become visible
-		      MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.NONE;
-            GlobalData.previousVisibilityMode=MlbCommon.VisibilityModes.CONFIG
-		   	//If history back was pressed after toggling of the ids 
-		   	//the alreay generated ids must be hidden
-		   	if(this.hasIdSpans(pageInitData.getCurrentWin())){
-					EventHandler.hideIdSpans(pageInitData.getCurrentTopWin());
-		   	}
-		   	return;
+		   var pageData = this.getPageData(win)
+		   if(pageData==null){
+		   	pageInitData.keepExsitingIds = false
 		   }
-		   
-		   //Onpage show init starts from topwin
-		   //This is the last event
-		   if(event.type=="pageshow" && win!=win.top){
-		   	return
-		   }
-		   var pageData = null
-		   if(onpageshow2ndCall){
-   		   pageData = this.getPageData(win)
-		   }else{
+		   if(!pageInitData.keepExsitingIds){
 		   	pageData = this.createPageData()
 		   }
 	   	pageInitData.pageData = pageData 
 	      this.setPageData(win, pageData)
 	      //Even if only a frame is loaded everything is initialized
 	      //There is no performance issues as the already exisiting ids are only updated
-	      this.initAll(pageInitData);
-		},
-		
-		/*
-		 * Updates the page after toggling of ids or if prefs has changed
-		 */
-		updatePage: function(){
-			var win = MlbUtils.getCurrentContentWin();
-			var pageData = this.createPageData();
-         var pageInitData = new PageInitData(win, pageData, false, false);
-         this.setPageData(win.top, pageData)
-         this.initAll(pageInitData)  
-		},
-		
-		/*
-		 * Main init-method
-		 */
-		initAll: function (pageInitData){
-			if(MlbPrefs.debugPerf){
+
+	      if(MlbPrefs.debugPerf){
 				var perfTimer = new PerfTimer()
 			}
 			
-		    //Init-Frames starting with top-win
+		   //Init-Frames starting with top-win
 		   this.initFrame(pageInitData, pageInitData.getCurrentTopWin());
 			
 		   if(MlbPrefs.debugPerf){
@@ -210,7 +240,7 @@
 			   	//in case of onDomContentLoaded event the body of frames are partly not available
 			   	continue
 			   }else if(frame.idSpan!=null){
-			   	if(pageInitData.keepExistingIds){
+			   	if(pageInitData.keepExsitingIds){
 			   		continue
 			   	}else{
 	               this.updateSpan(pageInitData, MlbPrefs.isIdsForFramesEnabled(), frame.idSpan);
@@ -253,67 +283,74 @@
 		/*
 		    Init for Links
 		*/
-		initLinks: function (pageInitData){
-		    //Iteration over links
-		    var links = pageInitData.getCurrentDoc().getElementsByTagName("A");
-		    
-		    //Limit max. number of links
-		    var maxIdNumber = MlbPrefs.maxIdNumber
-		    
-		    for(var i=0; i < links.length; i++){
-		       if(pageInitData.pageData.counter>=maxIdNumber){
-		       	break;
-		       }
+		initLinks : function(pageInitData) {
+			//For performance reasons in case of keep existing ids only the not initialized a are taken
+			var xpathExp = "//A"
+			if (pageInitData.keepExsitingIds) {
+				xpathExp += "[not(@MLB_hasIdSpan)]"				
+			}
+			var doc = pageInitData.getCurrentDoc()
+		   var links = doc.evaluate(xpathExp, doc, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)
 
-		       var link = links[i];
-		       //is there anything noteworth
-		       if (!this.isMarkableLink(link)){
-		          continue;
-		       }
-		       
-		       //Display image links?
-		       //TODO remove one of possibilities, no performance impact
-//		       var isImageLink = this.hasOnlyImgChilds(link);
-		       var isImageLink = this.isImageLink(link);
-		       
-		       var idSpan = this.getAndResetIdSpan(link, link, pageInitData);
-		       
-		       //Check against preferences
-		       if(idSpan==null &&
-		         ((isImageLink && !MlbPrefs.isIdsForImgLinksEnabled()) ||
-		          (!isImageLink && !MlbPrefs.isIdsForLinksEnabled()))){
-		            continue;
-		       }
-		
-		       //Is there already a span with the id
-             if(idSpan!=null){  
-   		       if(pageInitData.keepExistingIds){
-		       	    continue
-		       	 }else{
-		             var showIdSpan = isImageLink && MlbPrefs.isIdsForImgLinksEnabled() ||
-		       					      !isImageLink && MlbPrefs.isIdsForLinksEnabled();
-		             this.updateSpan(pageInitData, showIdSpan, idSpan);
-		       	 }
-		       }else{
-		          //Insert new Span
-		          if(isImageLink){
-                  var newSpan = this.insertSpanForImageLink(pageInitData, link)		             
-		          }else{
-		          	//Todo remove?
-//                  var newSpan = this.insertSpanForTextLink(pageInitData, link)		             
-                  var newSpan = this.insertSpanForTextLinkNew(pageInitData, link)		             
-		          }
-					 //Set reference to idSpan 
-		          link.idSpan=newSpan;
-		        }
-		        //Update elements array
-		        pageInitData.pageData.addElementWithId(link);
-		    }
+			// Limit max. number of links
+			var maxIdNumber = MlbPrefs.maxIdNumber
+
+			for (var i = 0; i < links.snapshotLength; i++) {
+				if (pageInitData.pageData.counter >= maxIdNumber) {
+					break;
+				}
+
+				var link = links.snapshotItem(i);
+				// is there anything noteworth
+				if (!link.idSpan && !this.isMarkableLink(link)) {
+					continue;
+				}
+
+				// Display image links?
+				var isImageLink = this.isImageLink(link);
+
+				var idSpan = this.getAndResetIdSpan(link, link, pageInitData);
+
+				// Check against preferences
+				if (idSpan == null
+						&& ((isImageLink && !MlbPrefs.isIdsForImgLinksEnabled()) || (!isImageLink && !MlbPrefs.isIdsForLinksEnabled()))) {
+					continue;
+				}
+
+				// Is there already a span with the id
+				if (idSpan != null) {
+					if (pageInitData.keepExsitingIds) {
+						continue
+					} else {
+			     			var showIdSpan = isImageLink
+								&& MlbPrefs.isIdsForImgLinksEnabled()
+								|| !isImageLink
+								&& MlbPrefs.isIdsForLinksEnabled();
+						this.updateSpan(pageInitData, showIdSpan, idSpan);
+					}
+				} else {
+					// Insert new Span
+					if (isImageLink) {
+						var newSpan = this.insertSpanForImageLink(pageInitData,
+								link)
+					} else {
+						var newSpan = this.insertSpanForTextLink(pageInitData, link)
+					}
+					// Set reference to idSpan
+					link.idSpan = newSpan;
+				}
+				// Update elements array
+				pageInitData.pageData.addElementWithId(link);
+			}
 		},
 		
+		/*
+		 * TODO: Remove in future release
+		 
 		insertSpanForTextLink: function(pageInitData, link){
          var newSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.LINK);
-         //Append to last element in link except for imgages for better style
+         // Append to last element in link except for imgages for better
+			// style
 			if(link.hasChildNodes() && 
 			   link.lastChild.nodeType==Node.ELEMENT_NODE && 
 			   !XMLUtils.isTagName(link.lastChild, "img")){
@@ -322,9 +359,9 @@
 			   link.appendChild(newSpan);
 			}
 			return newSpan
-		},
+		},*/
 
-		insertSpanForTextLinkNew: function(pageInitData, link){
+		insertSpanForTextLink: function(pageInitData, link){
          var newSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.LINK);
          //Append to last element in link except for imgages for better style
 			var parentOfLastTextNode = this.findParentOfLastTextNode(link)
@@ -427,9 +464,9 @@
 		 * Checks whether the link is pure img link
 		 */
 		isImageLink: function(link){
-			if((link.getElementsByTagName('img').length>0 ||
-			   getComputedStyle(link, null).backgroundImage!="none") &&
-			   XMLUtils.containsNoText(link)){
+			if((link.idSpan && link.idSpan.getAttribute(MlbCommon.ATTR_ID_SPAN_FOR)==MlbCommon.IdSpanTypes.IMG) ||
+			   ((link.getElementsByTagName('img').length>0 || getComputedStyle(link, null).backgroundImage!="none") &&
+			   XMLUtils.containsNoText(link))){
 				return true
 			}else{
 				return false
@@ -459,14 +496,13 @@
 				var idSpan = this.getAndResetIdSpan(element, parent,
 						pageInitData);
 				if (idSpan != null) {
-					if (pageInitData.keepExistingIds) {
+					if (pageInitData.keepExsitingIds) {
 						if(MlbPrefs.smartPositioning){
       					this.doOverlayPosioning(element)
 						}
 						continue
 					} else {
 						this.updateSpan(pageInitData, MlbPrefs.isIdsForFormElementsEnabled(), idSpan);
-						// TODO check this line
 						this.setElementStyle(element, MlbPrefs.isIdsForFormElementsEnabled())
 					}
 				} else {
@@ -554,11 +590,6 @@
             MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.IFRAME)){
             //Pos in upper right corner
             left = offsets.elemOffsetLeft-offsets.spanOffsetLeft + element.offsetWidth - idSpan.offsetWidth
-            //Todo put in
-//          if(element.offsetHeight <element.scrollHeight){
-//            	//vertical scrollbar is visible
-//            	left-=element.offsetWidth-element.clientWidth
-//            }
             top = offsets.elemOffsetTop-offsets.spanOffsetTop
             style.borderColor="#7F9DB9"
             var compStyle = getComputedStyle(element, "")
@@ -621,8 +652,6 @@
 		
 		/*
 		 * Creates new IdSpan
-		 * TODO: Performance tuning
-		 * Is Prototype still sensefull
 		 */
 		createSpan: function(pageInitData){
 		    if(this.spanPrototype==null){
@@ -664,12 +693,22 @@
 		 * Checks wether window already contains ids
 		 */
 		hasIdSpans: function(winObj){
-			var spans = winObj.document.getElementsByTagName("span");
-		    for(var i=0; i<spans.length; i++){
-		        if(MlbUtils.isIdSpan(spans[i]))
-		            return true;
-		    }
-		    return false;
+			if(this.isFrameset(winObj)){
+				for (var i = 0; i < winObj.frames.length; i++) {
+					var hasIdsSpans = this.hasIdSpans(winObj.frames[i])
+					if(hasIdsSpans){
+						return true
+					}
+				}
+				return false
+			}else{
+   			var spans = winObj.document.getElementsByTagName("span");
+   		    for(var i=0; i<spans.length; i++){
+   		        if(MlbUtils.isIdSpan(spans[i]))
+   		            return true;
+   		    }
+   		    return false;
+			}
 		},
 		
 		/*
@@ -677,7 +716,7 @@
 		 */
 		updateSpan: function(pageInitData, visible, span){
 			if(visible){
-				span.innerHTML=pageInitData.pageData.getNextId();
+				span.textContent=pageInitData.pageData.getNextId();
 				span.style.display = "inline";
 		    }else{
 		    	span.style.display = "none";

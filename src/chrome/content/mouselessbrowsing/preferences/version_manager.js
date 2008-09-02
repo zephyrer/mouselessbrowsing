@@ -65,7 +65,7 @@
    	},
    	
    	showVersionInfoPage: function(){
-   		var newTab = Utils.openUrlInNewTab('http://www.mouseless.de/index.php?/content/view/14/26/')
+   		var newTab = Utils.openUrlInNewTab('http://mlb.whatsnew.rudolf-noe.de')
    		newTab.moveBefore(Application.activeWindow.tabs[0])
          newTab.focus();
    	}

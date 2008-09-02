@@ -130,6 +130,22 @@
 		
 		isCoolirisPreviewsInstalled: function(){
 			return Utils.isExtensionInstalledAndEnabled(COOLIRIS_PREVIEWS_GUI_ID)
+		},
+		
+		/*
+		 * Returns an array with all window object of all frames included in the provided win (inkl. the provided win itself)
+		 */
+		getAllFrames: function(win, resultArray){
+			 if(resultArray==null){
+			 	resultArray = new Array()
+			 	resultArray.push(win)
+			 }
+		    for (var i = 0; i < win.frames.length; i++) {
+		    	var frame = win.frames[i]
+		    	resultArray.push(frame)
+		    	this.getAllFrames(frame, resultArray)
+		    }	
+		    return resultArray
 		}
 	}
 	var NS = rno_common.Namespace
