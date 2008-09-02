@@ -131,7 +131,7 @@
               statusIcon.style.display="none";
           }
           var exlNumpadIcon = document.getElementById("mlb-status-exl-numpad-image");
-          if(MlbPrefs.exclusiveUseOfNumpad && MlbPrefs.showMlbIconInStatusbar){
+          if(MlbPrefs.exclusiveUseOfNumpad && MlbPrefs.showMlbIconInStatusbar && !MlbPrefs.isCharIdType()){
               exlNumpadIcon.style.display="block";
           }else{
               exlNumpadIcon.style.display="none";
@@ -143,7 +143,7 @@
               statusLabel.style.display="none";
           }
           var tooltiptext = "Mouseless Browsing " + MlbCommon.MLB_VERSION
-          if(MlbPrefs.exclusiveUseOfNumpad){
+          if(MlbPrefs.exclusiveUseOfNumpad && !MlbPrefs.isCharIdType()){
           	tooltiptext += "\n\n" + Utils.getString(STRINGBUNDLE_ID, "exclusiveUseOfNumpadActive")
           }
           statusPanel.tooltipText = tooltiptext

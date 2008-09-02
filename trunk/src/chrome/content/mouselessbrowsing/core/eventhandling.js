@@ -107,7 +107,6 @@
 		
 		onkeydown: function(event){
          //Suppress event if exclusive use
-         //Todo make it properly as in case of alphanummeric ids it makes no sense
          if((this.isCaseOfExclusivlyUseOfNumpad(event)) 
             || (MlbPrefs.isNumericIdType() && this.isDigitPressed(event) && this.isOneOfConfiguredModifierCombination(event) 
                && !this.isAltCtrlInEditableField(event))
@@ -219,6 +218,10 @@
 		    
 		    //Else...
 		    var element = MlbUtils.getCurrentContentWin().mlbPageData.getElementForId(this.keybuffer);
+		    //Todo remove: If onDomContentLoaded the pageData is not refreshed removed items could be in the pageData
+		    if(element.ownerDocument==null){//Element no longer exists within the document
+		    	return
+		    }
 		    var currentDoc = element.ownerDocument;
 		    var currentWin = currentDoc.defaultView;
 		    //Return code for onclick-functions
@@ -230,16 +233,20 @@
 		        currentWin.focus();
 		        return;
 		    }
-		    //If it is text- or password-field
+		    //First try at least to focus
+          try{
+             element.focus();
+          }catch(e){}
+
+          //If it is text- or password-field
 		    if((tagName=="input" && (type=="text" || type=="password")) ||
 		        tagName=="textarea"){
-		    	      element.focus()
 		            element.select()
 		    } 
 		    //If its an anchor check different possibilities
 		    else if (tagName == "a") {
+   			var loadInBackground = Prefs.getBoolPref("browser.tabs.loadInBackground")
 				if (this.openInNewTab) {
-					var loadInBackground = Prefs.getBoolPref("browser.tabs.loadInBackground")
 					Utils.openUrlInNewTab(element.href, !loadInBackground);
 					return;
 				} else if (this.openInNewWindow) {
@@ -248,27 +255,40 @@
 				}else if (this.openInCoolirisPreviews){
    		    	this.showCoolirisPreview(element);
    		    	return
+		      }else if (element.target!=null 
+		                && !this.isTargetInCurrentWin(currentWin.top, element.target)){//Extra handling as FF does not open link if it not within the same window
+		      	var tabs = Application.activeWindow.tabs
+		      	for (var i = 0; i < tabs.length; i++) {
+		      		var tab = tabs[i]
+		      		if(tab.document.defaultView.name==element.target){
+		      			tab.load(Utils.createURI(element.href))
+		      			if(!loadInBackground){
+		      		     tab.focus()
+		      			}
+		      			return
+		      		}
+		      	}
+		      	var openInNewTab = true
 		      }
 			 }
-		    //In every other case try to focus
-		    else {
-		        try{
-		            element.focus();
-		        }catch(e){}
-		    }
-		    
 
-		    var targetBlank = false
-		    var target = element.target
-		    if(tagName=="a" && (target=="_blank" || /new$/.test(target))){
-		    	targetBlank = true
-		    }
-		    
 		    //And simulate click
 		    var clickEvent = currentDoc.createEvent("MouseEvents");
 		    clickEvent.initMouseEvent( "click", true, true, currentWin, 1, 0, 0, 0, 0, 
-		        targetBlank, false, false, false, 0, null);
+		        openInNewTab, false, false, false, 0, null);
 		    element.dispatchEvent(clickEvent);
+		},
+		
+		/*
+		 * Determines whether the target of a link is within the current win
+		 */
+		isTargetInCurrentWin: function(topWin, target){
+			var allFrames = MlbUtils.getAllFrames(topWin)
+			if(target=="_self" || target=="_parent" || target=="_top" ||
+			   allFrames.some(function(element){return element.name==target})){
+				return true
+			}
+			return false
 		},
 		
 		/*
@@ -331,12 +351,10 @@
 		hideIdSpans: function(winObj){
 	       //Reset PageData
 	       MlbUtils.getCurrentContentWin().mlbPageData = new mouselessbrowsing.PageData()
-		    var spans = winObj.document.getElementsByTagName("span");
-		    for(var i=0; i<spans.length; i++){
-		        var span = spans[i];
-		        if(!MlbUtils.isIdSpan(span)){
-		            continue;
-		        }
+		    var doc = winObj.document;
+		    var spans = doc.evaluate("//span[@MLB_idSpanFlag]", doc, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null)
+		    for(var i=0; i<spans.snapshotLength; i++){
+   		     var span = spans.snapshotItem(i)
               span.style.display = "none";
               var elementForSpan = MlbUtils.getElementForIdSpan(span)
               if(elementForSpan!=null){
@@ -405,11 +423,10 @@
 		    if(this.isSuppressShortCut()){
 		    	return
 		    }
-		    var focusedWindow = document.commandDispatcher.focusedWindow;
 		    if(direction=="up")
-		        focusedWindow.scrollBy(0, -MlbPrefs.pixelsToScroll);
+		        content.scrollBy(0, -MlbPrefs.pixelsToScroll);
 		    else
-		        focusedWindow.scrollBy(0, MlbPrefs.pixelsToScroll);
+		        content.scrollBy(0, MlbPrefs.pixelsToScroll);
 		    return ShortCutManager.SUPPRESS_KEY; 
 		},
 		 /*
@@ -569,11 +586,9 @@
          if(this.blockKeyboardInputForMLBActive){
          	this.blockKeyboardInputForMLBActive=false
          	this.clearTimerForBlockKeyboardInput()
-         	MlbUtils.logDebugMessage("Block input: " + this.blockKeyboardInputForMLBActive)
          }else{
          	this.blockKeyboardInputForMLBActive=true
             this.setTimerForBlockKeyboardInputReset()
-            MlbUtils.logDebugMessage("Block input: " + this.blockKeyboardInputForMLBActive)
          }
 		},
 		
@@ -600,7 +615,6 @@
 		 */
 		resetBlockKeyboardInput:function(){
 			mouselessbrowsing.EventHandler.blockKeyboardInputForMLBActive=false
-			MlbUtils.logDebugMessage("Block input: " + mouselessbrowsing.EventHandler.blockKeyboardInputForMLBActive)
 		},
 		
 		isPopupOpen : function() {

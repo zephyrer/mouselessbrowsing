@@ -80,7 +80,6 @@ function MLB_onTogglingVisibilityAllIds(){
 }
 
 function MLB_setStyleDefault(styleTextboxId){
-	var Prefs = Prefs 
 	var textbox = document.getElementById(styleTextboxId)
 	var prefId = textbox.getAttribute("prefid")
 	if(Prefs.hasUserPref(prefId)){
