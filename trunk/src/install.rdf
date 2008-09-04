@@ -10,8 +10,7 @@
 		<em:homepageURL>www.mouseless.de</em:homepageURL>
 		<em:iconURL>chrome://mouselessbrowsing/skin/MLB.ico</em:iconURL>
 		<em:aboutURL/>
-		<em:updateURL/>
-        <em:optionsURL>chrome://mouselessbrowsing/content/mouselessbrowsing/preferences/prefs.xul</em:optionsURL>		
+      <em:optionsURL>chrome://mouselessbrowsing/content/mouselessbrowsing/preferences/prefs.xul</em:optionsURL>		
 		<em:file>
 			<Description about="urn:mozilla:extension:file:mouselessbrowsing.jar">
 				<em:package>content/mouselessbrowsing/</em:package>
@@ -25,7 +24,5 @@
 				<em:maxVersion>3.0.*</em:maxVersion>
 			</Description>
 		</em:targetApplication>
-
-	<em:targetPlatform/><em:updateKey/><em:hidden/><em:developer/><em:developer/><em:developer/><em:developer/><em:developer/><em:developer/><em:developer/><em:developer/></Description>
-
+	</Description>
 </RDF>
