@@ -379,7 +379,7 @@
 				var child = childNodes.item(i)
 				if(child.nodeType==Node.TEXT_NODE && !XMLUtils.isEmptyTextNode(child)){
 					return element
-				}else if (child.hasChildNodes()){
+				}else if (child.hasChildNodes() && this.isElementVisible(child)){
 					var recursiveResult = this.findParentOfLastTextNode(child)
 					if(recursiveResult!=null){
 						return recursiveResult
@@ -387,6 +387,22 @@
 				}
 			}
 			return null;
+		},
+		
+		/*
+		 * Checks wether an element is currently visible to avoid appending ids to invisible links
+		 */
+		isElementVisible: function(element){
+			if(element.className=="" && element.getAttribute('style')==null){
+				return true
+			}
+			var contentWin = element.ownerDocument.defaultView
+			var style = contentWin.getComputedStyle(element, null)
+			if(style.display=="none" || style.visibility=="hidden" || 
+			   element.offsetLeft<-100 || element.offsetTop<-100){
+				return false
+			}
+			return true
 		},
 		
 		insertSpanForImageLink: function(pageInitData, link){
