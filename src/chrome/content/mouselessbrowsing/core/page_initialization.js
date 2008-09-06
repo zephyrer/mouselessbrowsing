@@ -396,8 +396,7 @@
 			if(element.className=="" && element.getAttribute('style')==null){
 				return true
 			}
-			var contentWin = element.ownerDocument.defaultView
-			var style = contentWin.getComputedStyle(element, null)
+			var style = this.getComputedStyle(element)
 			if(style.display=="none" || style.visibility=="hidden" || 
 			   element.offsetLeft<-100 || element.offsetTop<-100){
 				return false
@@ -418,7 +417,7 @@
 			   var imgElementOffsetTop = MlbUtils.getOffsetTopToBody(imgElement)
 			   
 	      	//Set link position relative
-	      	var linkStyle = getComputedStyle(link, null)
+	      	var linkStyle = this.getComputedStyle(link)
 	      	if(linkStyle.position=="static"){
 	      		link.style.position="relative"
 	      	}
@@ -481,7 +480,7 @@
 		 */
 		isImageLink: function(link){
 			if((link.idSpan && link.idSpan.getAttribute(MlbCommon.ATTR_ID_SPAN_FOR)==MlbCommon.IdSpanTypes.IMG) ||
-			   ((link.getElementsByTagName('img').length>0 || getComputedStyle(link, null).backgroundImage!="none") &&
+			   ((link.getElementsByTagName('img').length>0 || this.getComputedStyle(link).backgroundImage!="none") &&
 			   XMLUtils.containsNoText(link))){
 				return true
 			}else{
@@ -608,7 +607,7 @@
             left = offsets.elemOffsetLeft-offsets.spanOffsetLeft + element.offsetWidth - idSpan.offsetWidth
             top = offsets.elemOffsetTop-offsets.spanOffsetTop
             style.borderColor="#7F9DB9"
-            var compStyle = getComputedStyle(element, "")
+            var compStyle = this.getComputedStyle(element)
             style.color = compStyle.color
             if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.IFRAME)){
             	//Because of scrollbars and the iframe has almost always background transparent
@@ -821,6 +820,10 @@
          	}
           }
           return null
+      },
+      
+      getComputedStyle: function(element){
+      	return element.ownerDocument.defaultView.getComputedStyle(element, null)
       }
 	}
 	
