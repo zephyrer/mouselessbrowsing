@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<link rel="stylesheet" type="text/css" href="main.css">
 <title>Insert title here</title>
 </head>
 <body>
@@ -46,6 +47,19 @@
    <tr>
       <td>Small image where no overlay should take place (30x30)</td>
       <td><a href="javascript:alert('')"><img alt="" src="smallImage.jpg"></a>Text behind anchor
+   </tr>      
+   <tr>
+      <td>Link with hidden span as last element</td>
+      <td>
+         <a href="javascript:alert('')" style="text-decoration:none">
+            <span>Text</span>
+            <span style="display:none">Display none</span>
+            <span style="visibility:hidden">visibility:hidden</span>
+            <span class="visibilityHidden">class isibility:hidden</span>
+            <span style="position:absolute; left:-200px">left -200</span>
+            <span style="position:absolute; top:-200px">top -200</span>
+         </a>
+      </td>
    </tr>      
 </table>
 </body>
