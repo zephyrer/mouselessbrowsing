@@ -7,8 +7,8 @@
 
 (function(){
 	//Imports
-   var Prefs = rno_common.Prefs
-   var Utils = rno_common.Utils
+   var Prefs = mlb_common.Prefs
+   var Utils = mlb_common.Utils
    var MlbCommon = mouselessbrowsing.MlbCommon
    var GlobalData = mouselessbrowsing.GlobalData
    
@@ -251,6 +251,6 @@
       }
 
 	} 
-   var NS = rno_common.Namespace
+   var NS = mlb_common.Namespace
    NS.bindToNamespace("mouselessbrowsing", "MlbPrefs", MlbPrefs)
 })()

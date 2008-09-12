@@ -8,8 +8,8 @@
 	//Imports
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	var MlbPrefs = mouselessbrowsing.MlbPrefs
-	var Utils = rno_common.Utils
-	var XMLUtils = rno_common.XMLUtils 
+	var Utils = mlb_common.Utils
+	var XMLUtils = mlb_common.XMLUtils 
 	var COOLIRIS_PREVIEWS_GUI_ID = "{CE6E6E3B-84DD-4cac-9F63-8D2AE4F30A4B}"
 	
 	var MlbUtils = {
@@ -148,6 +148,6 @@
 		    return resultArray
 		}
 	}
-	var NS = rno_common.Namespace
+	var NS = mlb_common.Namespace
 	NS.bindToNamespace("mouselessbrowsing", "MlbUtils", MlbUtils)
 })()

@@ -6,9 +6,9 @@
  */
 (function(){
 	//Imports
-	var Utils = rno_common.Utils
-	var XMLUtils = rno_common.XMLUtils
-	var PerfTimer = rno_common.PerfTimer
+	var Utils = mlb_common.Utils
+	var XMLUtils = mlb_common.XMLUtils
+	var PerfTimer = mlb_common.PerfTimer
 	var MlbPrefs = mouselessbrowsing.MlbPrefs
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	var MlbUtils = mouselessbrowsing.MlbUtils
@@ -827,7 +827,7 @@
       }
 	}
 	
-   var NS    = rno_common.Namespace
+   var NS    = mlb_common.Namespace
    NS.bindToNamespace("mouselessbrowsing", "PageInitializer", PageInitializer)
    
 })()

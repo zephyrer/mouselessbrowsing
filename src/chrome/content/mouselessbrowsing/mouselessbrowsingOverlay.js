@@ -7,7 +7,7 @@
 (function(){
    
    //Imports
-	var Utils = rno_common.Utils
+	var Utils = mlb_common.Utils
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	var PageInitializer = mouselessbrowsing.PageInitializer
 	var EventHandler = mouselessbrowsing.EventHandler
@@ -59,7 +59,7 @@
 		  var target = event.originalTarget
 		  var offsetTop = mouselessbrowsing.MlbUtils.getOffsetTopToBody(target)
 		  var offsetLeft = mouselessbrowsing.MlbUtils.getOffsetLeftToBody(target)
-	     rno_common.Utils.logMessage("MLB: TagName: " + target.tagName + " OffsetLeft (Body): " + offsetLeft + " OffsetTop (Body): " + offsetTop)
+	     mlb_common.Utils.logMessage("MLB: TagName: " + target.tagName + " OffsetLeft (Body): " + offsetLeft + " OffsetTop (Body): " + offsetTop)
 	     event.stopPropagation()
 	     event.preventDefault()
 		}

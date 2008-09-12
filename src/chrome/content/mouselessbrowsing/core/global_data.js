@@ -5,6 +5,6 @@
 	var GlobalData = {
       previousVisibilityMode: null,
 	}
-   var NS = rno_common.Namespace
+   var NS = mlb_common.Namespace
    NS.bindToNamespace("mouselessbrowsing", "GlobalData", GlobalData)
 })()

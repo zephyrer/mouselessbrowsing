@@ -2,8 +2,8 @@
  * Contains Code for migration to version 0.5
  */
 (function(){
-	var Prefs = rno_common.Prefs
-	var Utils = rno_common.Utils
+	var Prefs = mlb_common.Prefs
+	var Utils = mlb_common.Utils
 	var MlbUtils = mouselessbrowsing.MlbUtils
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	
@@ -73,6 +73,6 @@
    	
    	
    }
-   var NS = rno_common.Namespace
+   var NS = mlb_common.Namespace
    NS.bindToNamespace("mouselessbrowsing", "VersionManager", VersionManager)
 })()

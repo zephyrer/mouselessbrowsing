@@ -8,10 +8,10 @@
 (function(){
 	
 	var MlbCommon = mouselessbrowsing.MlbCommon
-	var Prefs = rno_common.Prefs
+	var Prefs = mlb_common.Prefs
 	var MlbPrefs = mouselessbrowsing.MlbPrefs
-	var Utils = rno_common.Utils
-	var KeyInputbox = rno_common.KeyInputbox
+	var Utils = mlb_common.Utils
+	var KeyInputbox = mlb_common.KeyInputbox
 	var VersionManager = mouselessbrowsing.VersionManager
 	var PageInitializer = mouselessbrowsing.PageInitializer
 	var STRINGBUNDLE_ID = "mouselessbrowsingOverlaySB"
@@ -48,52 +48,39 @@
 		    //Shortcut for Enter
 		    ShortCutManager.addJsShortCutWithCombinedKeyCode(208, "mouselessbrowsing.EventHandler.handleEnter()", MlbCommon.SCM_CLIENT_ID);
 		    
-          combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.openInNewTabPostfixKey");
-          ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.openLinkInOtherLocationViaPostfixKey(event, mouselessbrowsing.MlbCommon.OpenLinkLocations.TAB)", MlbCommon.SCM_CLIENT_ID);
+          this.setShortcut("mouselessbrowsing.keys.openInNewTabPostfixKey", "mouselessbrowsing.EventHandler.openLinkInOtherLocationViaPostfixKey(event, mouselessbrowsing.MlbCommon.OpenLinkLocations.TAB)");
 
-          combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.openInNewWindowPostfixKey");
-          ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.openLinkInOtherLocationViaPostfixKey(event, mouselessbrowsing.MlbCommon.OpenLinkLocations.WINDOW)", MlbCommon.SCM_CLIENT_ID);
+          this.setShortcut("mouselessbrowsing.keys.openInNewWindowPostfixKey", "mouselessbrowsing.EventHandler.openLinkInOtherLocationViaPostfixKey(event, mouselessbrowsing.MlbCommon.OpenLinkLocations.WINDOW)");
 
-          combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.openInCoolirisPreviewsPostfixKey");
-          ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.openLinkInOtherLocationViaPostfixKey(event, mouselessbrowsing.MlbCommon.OpenLinkLocations.COOLIRIS_PREVIEW)", MlbCommon.SCM_CLIENT_ID);
+          this.setShortcut("mouselessbrowsing.keys.openInCoolirisPreviewsPostfixKey", "mouselessbrowsing.EventHandler.openLinkInOtherLocationViaPostfixKey(event, mouselessbrowsing.MlbCommon.OpenLinkLocations.COOLIRIS_PREVIEW)");
 
-		    var combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.toggleMLB");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.toggleIds()", MlbCommon.SCM_CLIENT_ID);
+		    this.setShortcut("mouselessbrowsing.keys.toggleMLB", "mouselessbrowsing.EventHandler.toggleIds()");
 		    
-			 combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.toggleAllIds");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.toggleAllIds()", MlbCommon.SCM_CLIENT_ID);
+			 this.setShortcut("mouselessbrowsing.keys.toggleAllIds", "mouselessbrowsing.EventHandler.toggleAllIds()");
 		    
-		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.historyBack");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.moveHistory('back')", MlbCommon.SCM_CLIENT_ID);
+		    this.setShortcut("mouselessbrowsing.keys.historyBack", "mouselessbrowsing.EventHandler.moveHistory('back')");
 		
-		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.historyForward");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.moveHistory('forward')", MlbCommon.SCM_CLIENT_ID);
+		    this.setShortcut("mouselessbrowsing.keys.historyForward", "mouselessbrowsing.EventHandler.moveHistory('forward')");
 		    
-		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.clearKeybuffer");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.resetVars()", MlbCommon.SCM_CLIENT_ID);
+		    this.setShortcut("mouselessbrowsing.keys.clearKeybuffer", "mouselessbrowsing.EventHandler.resetVars()");
 		    
-		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.scrollDown");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.scrollUpDown('down')", MlbCommon.SCM_CLIENT_ID);
+		    this.setShortcut("mouselessbrowsing.keys.scrollDown", "mouselessbrowsing.EventHandler.scrollUpDown('down')");
 		    
-		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.scrollUp");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.scrollUpDown('up')", MlbCommon.SCM_CLIENT_ID);
+		    this.setShortcut("mouselessbrowsing.keys.scrollUp", "mouselessbrowsing.EventHandler.scrollUpDown('up')");
 		    
-		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.selectLink");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.selectLink()", MlbCommon.SCM_CLIENT_ID);
+		    this.setShortcut("mouselessbrowsing.keys.selectLink", "mouselessbrowsing.EventHandler.selectLink()");
 
-		    combinedKeyCode = Prefs.getCharPref(MlbPrefs.BLOCK_KEYBOARD_INDPUT_PREF_ID);
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.toggleBlockKeyboardInputForMLB()", MlbCommon.SCM_CLIENT_ID);
+		    this.setShortcut(MlbPrefs.BLOCK_KEYBOARD_INDPUT_PREF_ID, "mouselessbrowsing.EventHandler.toggleBlockKeyboardInputForMLB()");
 
-		    combinedKeyCode = Prefs.getCharPref(MlbPrefs.BLUR_ACTIVE_ELEMENT_KEY_PREF_ID);
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.blurActiveElement()", MlbCommon.SCM_CLIENT_ID);
+		    this.setShortcut(MlbPrefs.BLUR_ACTIVE_ELEMENT_KEY_PREF_ID, "mouselessbrowsing.EventHandler.blurActiveElement()");
 		    
-		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.openConfig");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.openConfiguration()", MlbCommon.SCM_CLIENT_ID);
+		    this.setShortcut("mouselessbrowsing.keys.openConfig", "mouselessbrowsing.EventHandler.openConfiguration()");
+		    var combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.openConfig");
 			 var openConfigBC = document.getElementById("mlb_openConfig_bc");
 			 openConfigBC.setAttribute('acceltext', KeyInputbox.getStringForCombinedKeyCode(combinedKeyCode))
 
+		    this.setShortcut("mouselessbrowsing.keys.addSiteRule", "mouselessbrowsing.EventHandler.addSiteRule()");
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.addSiteRule");
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.EventHandler.addSiteRule()", MlbCommon.SCM_CLIENT_ID);
 			 var addUrlRuleBC = document.getElementById("mlb_addUrlRule_bc");
 			 addUrlRuleBC.setAttribute('acceltext', KeyInputbox.getStringForCombinedKeyCode(combinedKeyCode))
 
@@ -101,9 +88,16 @@
 		    ShortCutManager.addJsShortCutWithCombinedKeyCode(2304, "mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpad();", MlbCommon.SCM_CLIENT_ID);
 		
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.toggleExlusiveUseOfNumpad");
-		    if(combinedKeyCode!="2304")
+		    if(combinedKeyCode!="2304" && combinedKeyCode!="0")
 			    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.MlbPrefs.toggleExclusiveUseOfNumpad();", MlbCommon.SCM_CLIENT_ID);
 		
+		},
+		
+		setShortcut: function(prefsKey, jsCode){
+			var combinedKeyCode = Prefs.getCharPref(prefsKey);
+			if(combinedKeyCode!="0"){
+				ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, jsCode, MlbCommon.SCM_CLIENT_ID);
+			}
 		},
 		
 		initMenu: function(){
@@ -155,7 +149,7 @@
 	
 	}
 	
-	var NS = rno_common.Namespace
+	var NS = mlb_common.Namespace
 	NS.bindToNamespace("mouselessbrowsing","InitManager", InitManager)
 
 })()
