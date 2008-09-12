@@ -7,17 +7,18 @@
 */
 var MlbCommon = mouselessbrowsing.MlbCommon
 var MlbUtils = mouselessbrowsing.MlbUtils
-var Utils = rno_common.Utils
-var Prefs = rno_common.Prefs
-var PrefUtils = rno_common.PrefUtils
-var Listbox = rno_common.Listbox
+var Utils = mlb_common.Utils
+var Prefs = mlb_common.Prefs
+var PrefUtils = mlb_common.PrefUtils
+var Listbox = mlb_common.Listbox
+var KeyInputbox = mlb_common.KeyInputbox
 var COMBINED_KEY_CODE_ATTR = "COMBINED_KEY_CODE_ATTR"
 var keyInputBox 
 var STRINGBUNDLE_ID = "jsStrings"
 
 function doOnload(){
    keyInputBox = byId('keyInputBox')
-   rno_common.Prefs.loadPrefs(document);
+   mlb_common.Prefs.loadPrefs(document);
 	document.title = "Mouseless Browsing " + MlbCommon.MLB_VERSION 
    MLB_onCommandIdType();
 	MLB_onTogglingVisibilityAllIds();
@@ -53,7 +54,7 @@ function saveUserPrefs(){
 		alert(e)
 		return false
 	}
-   rno_common.Prefs.savePrefs(document);
+   mlb_common.Prefs.savePrefs(document);
    Utils.notifyObservers(MlbCommon.MLB_PREF_OBSERVER);
 }
 
@@ -64,7 +65,7 @@ function MLB_restoreDefaults(){
 	var mlb = "mouselessbrowsing."
 	var prefsNotToReset = [mlb+"version", mlb+"siteRules"]
 	Prefs.clearUserPrefForBranch(mlb, prefsNotToReset)
-	rno_common.Prefs.loadPrefs(document);
+	mlb_common.Prefs.loadPrefs(document);
 }
 
 function dialogHelp(){

@@ -92,6 +92,6 @@
 		}
 	}
 	
-	var NS = rno_common.Namespace;
+	var NS = mlb_common.Namespace;
 	NS.bindToNamespace("mouselessbrowsing", "PageData", PageData)
 })()

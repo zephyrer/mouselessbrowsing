@@ -1,6 +1,7 @@
 /**
  * Contains constants and loading of common subscripts
  */
+ DE_MOUSELESS_EXTENSION_NS = null;
 (function(){
 	var MlbCommon = { 
 		//Constants
@@ -61,35 +62,39 @@
 		 * Loads Script from url
 		 * Must be local url
 		 */
-		loadScript: function(url){
+		loadScript: function(url, scopeObj){
 			var sm = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].
 							getService(Components.interfaces.mozIJSSubScriptLoader)
-			sm.loadSubScript(url);
+			sm.loadSubScript(url, scopeObj);
 		},
 		
 		init: function(){
+			//Create Namespace objects
+			DE_MOUSELESS_EXTENSION_NS = window['mlb_common'] = new Object()
 			//Load subscripts
-			this.loadScript(this.COMMON_CHROME_ULR+"namespace.js")
-			this.loadScript(this.COMMON_CHROME_ULR+"constants.js")
-			this.loadScript(this.COMMON_CHROME_ULR+"utils.js")
-			this.loadScript(this.COMMON_CHROME_ULR+"ControlUtils.js")
-			this.loadScript(this.COMMON_CHROME_ULR+"string_utils.js")
-			this.loadScript(this.COMMON_CHROME_ULR+"prefs.js")
-			this.loadScript(this.COMMON_CHROME_ULR+"pref_utils.js")
-			this.loadScript(this.COMMON_CHROME_ULR+"xmlutils.js")
-			this.loadScript(this.COMMON_CHROME_ULR+"listbox.js")
-			this.loadScript(this.COMMON_CHROME_ULR+"keyinputbox.js")
-			this.loadScript(this.COMMON_CHROME_ULR+"keyCodeMapper.js")
+			this.loadScript(this.COMMON_CHROME_ULR+"namespace.js", DE_MOUSELESS_EXTENSION_NS)
+			this.loadScript(this.COMMON_CHROME_ULR+"constants.js", DE_MOUSELESS_EXTENSION_NS)
+			this.loadScript(this.COMMON_CHROME_ULR+"utils.js", DE_MOUSELESS_EXTENSION_NS)
+			this.loadScript(this.COMMON_CHROME_ULR+"ControlUtils.js", DE_MOUSELESS_EXTENSION_NS)
+			this.loadScript(this.COMMON_CHROME_ULR+"string_utils.js", DE_MOUSELESS_EXTENSION_NS)
+			this.loadScript(this.COMMON_CHROME_ULR+"xmlutils.js", DE_MOUSELESS_EXTENSION_NS)
+			this.loadScript(this.COMMON_CHROME_ULR+"prefs.js", DE_MOUSELESS_EXTENSION_NS)
+			this.loadScript(this.COMMON_CHROME_ULR+"pref_utils.js", DE_MOUSELESS_EXTENSION_NS)
+			this.loadScript(this.COMMON_CHROME_ULR+"listbox.js", DE_MOUSELESS_EXTENSION_NS)
+			this.loadScript(this.COMMON_CHROME_ULR+"keyinputbox.js", DE_MOUSELESS_EXTENSION_NS)
+			this.loadScript(this.COMMON_CHROME_ULR+"keyCodeMapper.js", DE_MOUSELESS_EXTENSION_NS)
 			this.loadScript(this.COMMON_CHROME_ULR+"shortcutmanager.js")
-			this.loadScript(this.COMMON_CHROME_ULR+"perf_timer.js")
-			
+			this.loadScript(this.COMMON_CHROME_ULR+"perf_timer.js", DE_MOUSELESS_EXTENSION_NS)
+			//Reset namespace object
+			DE_MOUSELESS_EXTENSION_NS = null
+
 			//Init version
-			this.MLB_VERSION = rno_common.Utils.getExtension(this.MLB_GUI_ID).version
+			this.MLB_VERSION = mlb_common.Utils.getExtension(this.MLB_GUI_ID).version
 		}
 	}
 	
 	MlbCommon.init()
 	
-	var NS = rno_common.Namespace
+	var NS = mlb_common.Namespace
 	NS.bindToNamespace("mouselessbrowsing", "MlbCommon", MlbCommon)
 })()

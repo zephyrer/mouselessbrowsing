@@ -9,9 +9,9 @@
 (function(){
    
    //Imports   		
-	var Utils = rno_common.Utils
-	var StringUtils = rno_common.StringUtils
-	var Prefs = rno_common.Prefs
+	var Utils = mlb_common.Utils
+	var StringUtils = mlb_common.StringUtils
+	var Prefs = mlb_common.Prefs
 	var MlbPrefs = mouselessbrowsing.MlbPrefs
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	var MlbUtils = mouselessbrowsing.MlbUtils
@@ -107,12 +107,16 @@
 		
 		onkeydown: function(event){
          //Suppress event if exclusive use
-         if((this.isCaseOfExclusivlyUseOfNumpad(event)) 
+         if((this.isCaseOfExclusivlyUseOfNumpad(event) && (!event.ctrlKey||this.isOneOfConfiguredModifierCombination(event)))//second part is to avoid overwriting of change tab 
             || (MlbPrefs.isNumericIdType() && this.isDigitPressed(event) && this.isOneOfConfiguredModifierCombination(event) 
                && !this.isAltCtrlInEditableField(event))
             || this.blockKeyboardInputForMLBActive){
                this.stopEvent(event)
                this.eventStopped=true
+               //Fix for Bug Id 13 and Workaround for FF Bug 291082; 
+               if(MlbUtils.isElementOfType(event.originalTarget, MlbUtils.ElementTypes.SELECT)){
+               	event.originalTarget.blur()
+               }
          }else{
          	   this.eventStopped=false
          }
@@ -146,11 +150,21 @@
 		
 		handleEnter: function(){
 			var event = ShortCutManager.currentEvent;
-         if(this.keybuffer!="" && this.shouldExecute()){
+         if(this.shouldExecute()){
            this.execute();
            this.stopEvent(event);
          }
          this.resetVars();
+		},
+
+		/*
+		    Autoexecution function when pressed ctrl-key
+		*/
+		executeAutomatic: function(){
+		    if(this.shouldExecute()){
+		        this.execute();
+		    }
+		    this.resetVars();
 		},
 		
 		isCharCodeInIds: function(charString){
@@ -175,16 +189,6 @@
 		    }
 		},
 			
-		/*
-		    Autoexecution function when pressed ctrl-key
-		*/
-		executeAutomatic: function(){
-		    if(this.shouldExecute()){
-		        this.execute();
-		    }
-		    this.resetVars();
-		    return;
-		},
 		
 		shouldExecute: function(){
 			if(MlbUtils.getCurrentContentWin().mlbPageData.hasElementWithId(this.keybuffer) ||
@@ -691,7 +695,7 @@
 		}
    }
 
-   var NS = rno_common.Namespace
+   var NS = mlb_common.Namespace
    NS.bindToNamespace("mouselessbrowsing", "EventHandler", EventHandler)
 
 })()
