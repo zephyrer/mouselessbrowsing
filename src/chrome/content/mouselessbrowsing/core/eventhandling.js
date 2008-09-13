@@ -74,9 +74,11 @@
 
 		   //Do nothing if
 		   if(!window.getBrowser() ||
-            //Ids not visible		   		  
+            //Case Ids not visible		   		  
 		      MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.NONE ||
-            (MlbPrefs.isCharIdType() && (event.ctrlKey || event.altKey)) ||
+		      //Case char ids and modifier was pressed
+            (MlbPrefs.isCharIdType() && (event.ctrlKey || event.altKey || event.metaKey)) ||
+            
             (MlbPrefs.isNumericIdType() && MlbUtils.isWritableElement(event.originalTarget) && !this.eventStopped && !this.isOneOfConfiguredModifierCombination(event)) ||
             (MlbUtils.isWritableElement(event.originalTarget) && !this.eventStopped) ||
 		      !this.isCharCodeInIds(charString)){ 
@@ -106,10 +108,12 @@
 		},
 		
 		onkeydown: function(event){
-         //Suppress event if exclusive use
-         if((this.isCaseOfExclusivlyUseOfNumpad(event) && (!event.ctrlKey||this.isOneOfConfiguredModifierCombination(event)))//second part is to avoid overwriting of change tab 
+			//Case excl. use of numpad, second part is to avoid overwriting of change tab 
+         if((this.isCaseOfExclusivlyUseOfNumpad(event) && (!event.ctrlKey||this.isOneOfConfiguredModifierCombination(event)))
+            //Case Digit + modifier 
             || (MlbPrefs.isNumericIdType() && this.isDigitPressed(event) && this.isOneOfConfiguredModifierCombination(event) 
                && !this.isAltCtrlInEditableField(event))
+            //Case input is blocked for MLB
             || this.blockKeyboardInputForMLBActive){
                this.stopEvent(event)
                this.eventStopped=true

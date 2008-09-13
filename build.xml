@@ -6,7 +6,7 @@
 <property name="build_dir" location="./build" />
 <property name="dist_dir" location="./dist" />
 <property name="backup_dir" location="./backup" />
-<property name="version" value="0_5"/>
+<property name="version" value="0_5_1"/>
 
 <target name="createDistributionXPI">
     <delete>
@@ -17,5 +17,16 @@
     <copy todir="${backup_dir}/src">
 		<fileset dir="${src_dir}"/>
     </copy>
+</target>
+<target name="ftpToHomepage">
+	<ftp server="wp1067403.wp026.webpack.hosteurope.de"
+	       remotedir="www/joomla/resources"
+	       userid="ftp1067403-rudolfnoe"
+	       password="bikefahrn"
+	       depends="yes">
+	    <fileset dir="${build_dir}">
+	      <include name="*.xpi"/>
+	    </fileset>
+	  </ftp>
 </target>
 </project>
