@@ -33,9 +33,11 @@
         src="../common/shortcutmanager.js">
     </script>
     <script type="application/x-javascript" 
+        src="miscellaneous/google_project_helper.js">
+    </script>
+    <script type="application/x-javascript" 
         src="mouselessbrowsingOverlay.js">
     </script>
-
     <stringbundleset>
     	<stringbundle id="mouselessbrowsingOverlaySB" src="chrome://mouselessbrowsing/locale/mouselessbrowsingOverlay.properties"/>
     </stringbundleset>
