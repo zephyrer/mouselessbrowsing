@@ -263,7 +263,7 @@
 				}else if (this.openInCoolirisPreviews){
    		    	this.showCoolirisPreview(element);
    		    	return
-		      }else if (element.target!=null 
+		      }else if (element.target!=null && element.target.length>0  
 		                && !this.isTargetInCurrentWin(currentWin.top, element.target)){//Extra handling as FF does not open link if it not within the same window
 		      	var tabs = Application.activeWindow.tabs
 		      	for (var i = 0; i < tabs.length; i++) {

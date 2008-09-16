@@ -11,6 +11,7 @@
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	var PageInitializer = mouselessbrowsing.PageInitializer
 	var EventHandler = mouselessbrowsing.EventHandler
+	var GoogleProjectHelper = mouselessbrowsing.miscellaneous.GoogleProjectHelper
 	
 	//Add event for each window
 	window.addEventListener('load',  MLB_initOnStartup, false);
@@ -32,6 +33,7 @@
 		if(appcontent){
 			appcontent.addEventListener("DOMContentLoaded", {handleEvent: function(event){PageInitializer.onDOMContentLoaded(event)}}, true);
 			appcontent.addEventListener("pageshow", {handleEvent: function(event){PageInitializer.onPageShow(event)}}, false);
+			appcontent.addEventListener("pageshow", {handleEvent: function(event){GoogleProjectHelper.onPageShow(event)}}, false);
 			//TODO Remove
 //			appcontent.addEventListener("mousedown", showOffsets, true);
          //Todo
