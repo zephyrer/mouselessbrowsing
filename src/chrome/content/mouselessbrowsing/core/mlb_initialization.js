@@ -85,7 +85,9 @@
 			 addUrlRuleBC.setAttribute('acceltext', KeyInputbox.getStringForCombinedKeyCode(combinedKeyCode))
 
 		    //Toggling exclusive use with double stroke of numpad-key
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(2304, "mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpad();", MlbCommon.SCM_CLIENT_ID);
+			 if(MlbPrefs.toggleExlNumpadWithDoubleStrokeNumKey){
+		       ShortCutManager.addJsShortCutWithCombinedKeyCode(2304, "mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpad();", MlbCommon.SCM_CLIENT_ID);
+			 }
 		
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.toggleExlusiveUseOfNumpad");
 		    if(combinedKeyCode!="2304" && combinedKeyCode!="0")

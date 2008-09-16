@@ -50,6 +50,7 @@
 		siteRules: null,
 		styleForIdSpan: null,
 		styleForFrameIdSpan: null,
+		toggleExlNumpadWithDoubleStrokeNumKey: null,
 		//Not configurable via prefs dialog 
 		debug: null,
 		visibilityMode: null,
@@ -76,6 +77,7 @@
       		this.modifierForOpenInNewTab = Prefs.getCharPref("mouselessbrowsing.modifierForOpenInNewTab");
       		this.modifierForOpenInNewWindow = Prefs.getCharPref("mouselessbrowsing.modifierForOpenInNewWindow");
       		this.modifierForOpenInCoolirisPreviews = Prefs.getCharPref("mouselessbrowsing.modifierForOpenInCoolirisPreviews");
+      		this.toggleExlNumpadWithDoubleStrokeNumKey = Prefs.getBoolPref("mouselessbrowsing.toggleExlNumpadWithDoubleStrokeNumKey");
 		      if(this.isCharIdType()){
 			      this.idChars = Prefs.getCharPref("mouselessbrowsing.idChars");
 		      }else{
