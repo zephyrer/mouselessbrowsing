@@ -44,6 +44,7 @@ pref("mouselessbrowsing.keys.toggleMLB", "1760"); //Decimal
 pref("mouselessbrowsing.keys.toggleExlusiveUseOfNumpad", "304"); //Pause
 pref("mouselessbrowsing.keys.openConfig", "1239"); //Ctrl+Alt+Shift+M
 pref("mouselessbrowsing.keys.addSiteRule", "1319");//Ctrl+Alt+Shift+R
+pref("mouselessbrowsing.toggleExlNumpadWithDoubleStrokeNumKey", true);
 pref("mouselessbrowsing.version", "");
 pref("mouselessbrowsing.debug", false);
 pref("mouselessbrowsing.debug.perf", false);
