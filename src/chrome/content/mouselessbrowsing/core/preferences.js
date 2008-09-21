@@ -18,31 +18,26 @@
 		this.exclusiveUseOfNumpad = exclusiveUseOfNumpad
 		this.showIdsOnDemand = showIdsOnDemand
 	}
+   var NS = mlb_common.Namespace
+   NS.bindToNamespace("mouselessbrowsing", "SiteRule", SiteRule)
 	
 	var MlbPrefs = {
 		DEBUG_PREF_ID: "mouselessbrowsing.debug",
 		DEBUG_PERF_PREF_ID: "mouselessbrowsing.debug.perf",
 		BLUR_ACTIVE_ELEMENT_KEY_PREF_ID: "mouselessbrowsing.keys.blurActiveElement",
 		BLOCK_KEYBOARD_INDPUT_PREF_ID: "mouselessbrowsing.keys.blockKeyboardInputForMlb",
-		showIdsOnDemand: null,
-		enableCtrlPlusDigit: null,
-		executeAutomaticEnabled: null,
+		disableMLB: null,
 		initOnDomContentLoaded: null,
+		executeAutomaticEnabled: null,
 		delayForAutoExecute: null,
 		pixelsToScroll: null,
 		maxIdNumber: null,
 		idType: null,
-		exclusiveUseOfNumpad: null,
 		modifierForWritableElement: null,
 		modifierForOpenInNewTab: null,
 		modifierForOpenInNewWindow: null,
 		modifierForOpenInCoolirisPreviews: null,
 		idChars: null,
-		disableAllIds: null,
-		idsForLinksEnabled: null,
-		idsForImgLinksEnabled: null,
-		idsForFormElementsEnabled: null,
-		idsForFramesEnabled: null,
 		smartPositioning: null,
 		showKeybufferInStatusbar: null,
 		showMlbIconInStatusbar: null,
@@ -53,22 +48,18 @@
 		toggleExlNumpadWithDoubleStrokeNumKey: null,
 		//Not configurable via prefs dialog 
 		debug: null,
-		visibilityMode: null,
-      
-      //Backup of prefs in case of applying site rule
-      prefsBackup: null,
       
 		initPrefs: function (){
 		    try{
 				//Checking actual preference settings
-				this.showIdsOnDemand = Prefs.getBoolPref("mouselessbrowsing.showIdsOnDemand");
-		      this.exclusiveUseOfNumpad = Prefs.getBoolPref("mouselessbrowsing.exclusiveNumpad");
+		      this.observedPropExclusiveUseOfNumpad = Prefs.getBoolPref("mouselessbrowsing.exclusiveNumpad");
+		      this.disableMLB= Prefs.getBoolPref("mouselessbrowsing.disableMLB");
 		      this.initOnDomContentLoaded = Prefs.getBoolPref("mouselessbrowsing.initOnDomContentLoaded");
+		      this.executeAutomaticEnabled = Prefs.getBoolPref("mouselessbrowsing.executeAutomatic");
 				this.smartPositioning = Prefs.getBoolPref("mouselessbrowsing.smartPositioning");
 		      this.showKeybufferInStatusbar = Prefs.getBoolPref("mouselessbrowsing.showKeybufferInStatusbar");
-		      this.showMlbIconInStatusbar= Prefs.getBoolPref("mouselessbrowsing.showMlbIconInStatusbar");
-		      this.showMlbMenu= Prefs.getBoolPref("mouselessbrowsing.showMlbMenu");
-		      this.executeAutomaticEnabled = Prefs.getBoolPref("mouselessbrowsing.executeAutomatic");
+		      this.showMlbIconInStatusbar = Prefs.getBoolPref("mouselessbrowsing.showMlbIconInStatusbar");
+		      this.showMlbMenu = Prefs.getBoolPref("mouselessbrowsing.showMlbMenu");
 		      this.delayForAutoExecute = Prefs.getCharPref("mouselessbrowsing.autoExecuteDelay");
 		      this.pixelsToScroll = Prefs.getCharPref("mouselessbrowsing.pixelsToScroll");
 		      this.maxIdNumber = Prefs.getCharPref("mouselessbrowsing.maxIdNumber");
@@ -83,15 +74,8 @@
 		      }else{
 		      	this.idChars = "1234567890"
 		      }
-		      this.disableAllIds = Prefs.getBoolPref("mouselessbrowsing.disableAllIds");
-		      if(!this.disableAllIds){
-   				this.initShowIdPrefs(MlbCommon.VisibilityModes.CONFIG, false);
-		      }
 		      this.initSiteRules()
 		      this.initStylePrefs()
-		      this.initVisibilityMode()      
-		      
-		      this.prefsBackup = null;
 
 		      //Init debug prefs
 		      this.debug = Prefs.getBoolPref(this.DEBUG_PREF_ID) 
@@ -133,41 +117,6 @@
 		    return newStyleArray.join(";")
 		},
 		
-		initVisibilityMode: function(){
-			this.visibilityMode = this.disableAllIds==false?
-			  MlbCommon.VisibilityModes.CONFIG:MlbCommon.VisibilityModes.NONE;
-		},
-		
-		/*
-		 * Seperate function for reuse when toggling visibility of spans
-		 */
-		initShowIdPrefs: function (visibilityMode, makeDisableAllFlagPersistent){
-			this.visibilityMode = visibilityMode
-			switch (this.visibilityMode) {
-				case MlbCommon.VisibilityModes.NONE:
-					this.disableAllIds = true
-					break;
-				case MlbCommon.VisibilityModes.CONFIG:
-					this.disableAllIds = false
-					this.idsForLinksEnabled = Prefs.getBoolPref("mouselessbrowsing.enableLinkIds");
-				   this.idsForImgLinksEnabled = Prefs.getBoolPref("mouselessbrowsing.enableImgLinkIds");
-				   this.idsForFormElementsEnabled = Prefs.getBoolPref("mouselessbrowsing.enableFormElementIds");
-					this.idsForFramesEnabled = Prefs.getBoolPref("mouselessbrowsing.enableFrameIds");
-					break;
-				case MlbCommon.VisibilityModes.ALL:
-					this.disableAllIds = false
-					this.idsForLinksEnabled = true
-				   this.idsForImgLinksEnabled = true
-				   this.idsForFormElementsEnabled = true
-					this.idsForFramesEnabled = true
-					break;
-			}
-			if(makeDisableAllFlagPersistent){
-			   // Make flag for all ids persistent	
-		      Prefs.setBoolPref("mouselessbrowsing.disableAllIds", this.disableAllIds);
-			}
-		},
-		
 		initSiteRules: function(){
 			this.siteRules = new Array()
 			if(!Prefs.hasUserPref('mouselessbrowsing.siteRules')){
@@ -184,56 +133,12 @@
          }
 		},
 		
-		applySiteRules: function(win){
-         var url = win.top.location.href
-         for(var i=0; i<this.siteRules.length; i++) {
-            var siteRule = this.siteRules[i]
-            if(siteRule.urlRegEx.test(url)){
-               if(this.prefsBackup==null){
-                  this.prefsBackup = new SiteRule(null, this.visibilityMode, this.exclusiveUseOfNumpad, this.showIdsOnDemand)
-               }
-            	this.initShowIdPrefs(siteRule.visibilityMode, false)
-            	this.exclusiveUseOfNumpad = siteRule.exclusiveUseOfNumpad 
-            	this.showIdsOnDemand = siteRule.showIdsOnDemand
-            	break; 
-            }else if(this.prefsBackup!=null){
-            	//reset prefs
-            	this.initShowIdPrefs(this.prefsBackup.visibilityMode, false)
-            	this.exclusiveUseOfNumpad = this.prefsBackup.exclusiveUseOfNumpad 
-            	this.showIdsOnDemand = this.prefsBackup.showIdsOnDemand
-            	this.prefsBackup = null
-            }         
-         }
-         this.initVisibilityMode()
-      },
-      
-      toggleExclusiveUseOfNumpad: function(){
-      	this.exclusiveUseOfNumpad = !this.exclusiveUseOfNumpad
-      	return ShortCutManager.SUPPRESS_KEY
-      },
-      
       isNumericIdType: function(){
       	return this.idType==MlbCommon.IdTypes.NUMERIC
       },
       
       isCharIdType: function(){
       	return this.idType==MlbCommon.IdTypes.CHAR
-      },
-      
-      isIdsForLinksEnabled: function(){
-      	return !this.disableAllIds && this.idsForLinksEnabled
-      },
-      
-      isIdsForImgLinksEnabled: function(){
-      	return !this.disableAllIds && this.idsForImgLinksEnabled
-      },
-      
-      isIdsForFormElementsEnabled: function(){
-      	return !this.disableAllIds && this.idsForFormElementsEnabled
-      },
-      
-      isIdsForFramesEnabled: function(){
-      	return !this.disableAllIds && this.idsForFramesEnabled
       },
       
       setShowMlbMenuFlag: function(show){
@@ -251,8 +156,10 @@
       isEscKey: function(prefKey){
       	return Prefs.getCharPref(prefKey)==27<<4
       }
-
+      
 	} 
    var NS = mlb_common.Namespace
    NS.bindToNamespace("mouselessbrowsing", "MlbPrefs", MlbPrefs)
+
+   
 })()

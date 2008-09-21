@@ -2,8 +2,8 @@
  * Global data needed in all MLB JS Files
  */
 (function(){
+	//TODO coud maybe removed in future
 	var GlobalData = {
-      previousVisibilityMode: null,
 	}
    var NS = mlb_common.Namespace
    NS.bindToNamespace("mouselessbrowsing", "GlobalData", GlobalData)

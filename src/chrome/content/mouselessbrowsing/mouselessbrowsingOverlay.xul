@@ -18,6 +18,9 @@
         src="core/page_data.js">
     </script>
     <script type="application/x-javascript" 
+        src="core/tab_local_prefs.js">
+    </script>
+    <script type="application/x-javascript" 
         src="core/eventhandling.js">
     </script>
     <script type="application/x-javascript" 
@@ -27,13 +30,13 @@
         src="preferences/version_manager.js">
     </script>
     <script type="application/x-javascript" 
-        src="core/mlb_initialization.js">
-    </script>
-    <script type="application/x-javascript" 
         src="../common/shortcutmanager.js">
     </script>
     <script type="application/x-javascript" 
         src="miscellaneous/google_project_helper.js">
+    </script>
+    <script type="application/x-javascript" 
+        src="core/mlb_initialization.js">
     </script>
     <script type="application/x-javascript" 
         src="mouselessbrowsingOverlay.js">

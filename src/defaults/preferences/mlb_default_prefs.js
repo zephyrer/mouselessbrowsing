@@ -3,6 +3,7 @@
  * Rudolf Noe
  * 27.12.05
  */
+pref("mouselessbrowsing.disableMLB", false);
 pref("mouselessbrowsing.showIdsOnDemand", false);
 pref("mouselessbrowsing.exclusiveNumpad", false);
 pref("mouselessbrowsing.initOnDomContentLoaded", true);
@@ -37,13 +38,14 @@ pref("mouselessbrowsing.keys.openInCoolirisPreviewsPostfixKey", "1696"); //Subtr
 pref("mouselessbrowsing.keys.selectLink", "260"); //Shift
 pref("mouselessbrowsing.keys.scrollDown", "1712"); //Plus
 pref("mouselessbrowsing.keys.scrollUp", "1744");   //Subtract
-pref("mouselessbrowsing.keys.blurActiveElement", "0"); //Esc
+pref("mouselessbrowsing.keys.blurActiveElement", "0"); //None
 pref("mouselessbrowsing.keys.blockKeyboardInputForMlb", "0"); //None
 pref("mouselessbrowsing.keys.toggleAllIds", "1762"); //Crtl+Decimal
 pref("mouselessbrowsing.keys.toggleMLB", "1760"); //Decimal
 pref("mouselessbrowsing.keys.toggleExlusiveUseOfNumpad", "304"); //Pause
 pref("mouselessbrowsing.keys.openConfig", "1239"); //Ctrl+Alt+Shift+M
 pref("mouselessbrowsing.keys.addSiteRule", "1319");//Ctrl+Alt+Shift+R
+pref("mouselessbrowsing.keys.toggleEnableDisableMLB", "0");//None
 pref("mouselessbrowsing.toggleExlNumpadWithDoubleStrokeNumKey", true);
 pref("mouselessbrowsing.version", "");
 pref("mouselessbrowsing.debug", false);

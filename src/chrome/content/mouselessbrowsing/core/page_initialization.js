@@ -10,6 +10,7 @@
 	var XMLUtils = mlb_common.XMLUtils
 	var PerfTimer = mlb_common.PerfTimer
 	var MlbPrefs = mouselessbrowsing.MlbPrefs
+	var TabLocalPrefs = mouselessbrowsing.TabLocalPrefs
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	var MlbUtils = mouselessbrowsing.MlbUtils
 	var GlobalData = mouselessbrowsing.GlobalData
@@ -69,7 +70,7 @@
 		init: function(){
          this.spanPrototype = null;
          mouselessbrowsing.EventHandler.hideIdSpans(content)
-         MlbPrefs.applySiteRules(content)
+         TabLocalPrefs.applySiteRules(content)
          this.updatePage();
 		},
 		
@@ -117,13 +118,12 @@
          
          //Apply URL exceptions
          //Could not be in initPage as it should not be executed on toggleing
-         MlbPrefs.applySiteRules(win)
+         TabLocalPrefs.applySiteRules(win)
          
          //Is MLB activated?
-         if(MlbPrefs.showIdsOnDemand==true ){
+         if(TabLocalPrefs.isShowIdsOnDemand(win)){
             //Set the visibility modes so that with toggeling the ids will become visible
-            MlbPrefs.visibilityMode=MlbCommon.VisibilityModes.NONE;
-            GlobalData.previousVisibilityMode=MlbCommon.VisibilityModes.CONFIG
+            MlbPrefs.setVisibilityMode(win, MlbCommon.VisibilityModes.NONE);
             //If history back was pressed after toggling of the ids 
             //the alreay generated ids must be hidden
             var topWin = pageInitData.getCurrentTopWin()
@@ -150,11 +150,11 @@
 		 */ 
 		initPage: function(pageInitData){
          
-			if(MlbPrefs.disableAllIds==true){
+			var win = pageInitData.getCurrentTopWin()
+
+			if(TabLocalPrefs.isDisableAllIds(win)==true){
 				return
 			}
-			
-			var win = pageInitData.getCurrentTopWin()
 		   
 		   var pageData = this.getPageData(win)
 		   if(pageData==null){
@@ -207,17 +207,17 @@
 			 pageInitData.setCurrentWin(win);
 		
 		    //Init ids for frames
-		    if(MlbPrefs.isIdsForFramesEnabled() && pageInitData.getCurrentDoc()){
+		    if(TabLocalPrefs.isIdsForFramesEnabled(win) && pageInitData.getCurrentDoc()){
 		        this.initFramesIds(pageInitData);
 		    }
 		    
 		    //Init ids for form elements
-		    if(MlbPrefs.isIdsForFormElementsEnabled() && pageInitData.getCurrentDoc()){
+		    if(TabLocalPrefs.isIdsForFormElementsEnabled(win) && pageInitData.getCurrentDoc()){
 		        this.initFormElements(pageInitData)
 		    }    
 		
 			//Init ids for links
-		    if((MlbPrefs.isIdsForLinksEnabled() || MlbPrefs.isIdsForImgLinksEnabled()) 
+		    if((TabLocalPrefs.isIdsForLinksEnabled(win) || TabLocalPrefs.isIdsForImgLinksEnabled(win)) 
 		        && pageInitData.getCurrentDoc()){
 		        this.initLinks(pageInitData)
 		    }
@@ -243,7 +243,7 @@
 			   	if(pageInitData.keepExsitingIds){
 			   		continue
 			   	}else{
-	               this.updateSpan(pageInitData, MlbPrefs.isIdsForFramesEnabled(), frame.idSpan);
+	               this.updateSpan(pageInitData, TabLocalPrefs.isIdsForFramesEnabled(pageInitData.getCurrentTopWin()), frame.idSpan);
 			   	}
 		      }else{
 			      var idSpan = this.getNewSpan(pageInitData, MlbCommon.IdSpanTypes.FRAME);
@@ -289,6 +289,7 @@
 			if (pageInitData.keepExsitingIds) {
 				xpathExp += "[not(@MLB_hasIdSpan)]"				
 			}
+			var topWin = pageInitData.getCurrentTopWin()
 			var doc = pageInitData.getCurrentDoc()
 		   var links = doc.evaluate(xpathExp, doc, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)
 
@@ -313,7 +314,7 @@
 
 				// Check against preferences
 				if (idSpan == null
-						&& ((isImageLink && !MlbPrefs.isIdsForImgLinksEnabled()) || (!isImageLink && !MlbPrefs.isIdsForLinksEnabled()))) {
+						&& ((isImageLink && !TabLocalPrefs.isIdsForImgLinksEnabled(topWin)) || (!isImageLink && !TabLocalPrefs.isIdsForLinksEnabled(topWin)))) {
 					continue;
 				}
 
@@ -323,9 +324,9 @@
 						continue
 					} else {
 			     			var showIdSpan = isImageLink
-								&& MlbPrefs.isIdsForImgLinksEnabled()
+								&& TabLocalPrefs.isIdsForImgLinksEnabled(topWin)
 								|| !isImageLink
-								&& MlbPrefs.isIdsForLinksEnabled();
+								&& TabLocalPrefs.isIdsForLinksEnabled(topWin);
 						this.updateSpan(pageInitData, showIdSpan, idSpan);
 					}
 				} else {
@@ -517,8 +518,9 @@
 						}
 						continue
 					} else {
-						this.updateSpan(pageInitData, MlbPrefs.isIdsForFormElementsEnabled(), idSpan);
-						this.setElementStyle(element, MlbPrefs.isIdsForFormElementsEnabled())
+						var idsEnabled = TabLocalPrefs.isIdsForFormElementsEnabled(pageInitData.getCurrentTopWin())
+						this.updateSpan(pageInitData, idsEnabled, idSpan);
+						this.setElementStyle(element, idsEnabled)
 					}
 				} else {
 					// Generate new span
