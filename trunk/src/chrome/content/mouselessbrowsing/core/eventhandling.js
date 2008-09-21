@@ -12,6 +12,7 @@
 	var Utils = mlb_common.Utils
 	var StringUtils = mlb_common.StringUtils
 	var Prefs = mlb_common.Prefs
+	var TabLocalPrefs = mouselessbrowsing.TabLocalPrefs
 	var MlbPrefs = mouselessbrowsing.MlbPrefs
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	var MlbUtils = mouselessbrowsing.MlbUtils
@@ -75,7 +76,7 @@
 		   //Do nothing if
 		   if(!window.getBrowser() ||
             //Case Ids not visible		   		  
-		      MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.NONE ||
+		      TabLocalPrefs.getVisibilityMode()==MlbCommon.VisibilityModes.NONE ||
 		      //Case char ids and modifier was pressed
             (MlbPrefs.isCharIdType() && (event.ctrlKey || event.altKey || event.metaKey)) ||
             
@@ -226,7 +227,7 @@
 		    
 		    //Else...
 		    var element = MlbUtils.getCurrentContentWin().mlbPageData.getElementForId(this.keybuffer);
-		    //Todo remove: If onDomContentLoaded the pageData is not refreshed removed items could be in the pageData
+		    //If onDomContentLoaded the pageData is not refreshed removed items could be in the pageData
 		    if(element.ownerDocument==null){//Element no longer exists within the document
 		    	return
 		    }
@@ -306,18 +307,17 @@
 			if(this.isSuppressShortCut()){
 				return
 			}
+			var currentVisibilityMode = TabLocalPrefs.getVisibilityMode()
+			var previousVisibilityMode = TabLocalPrefs.getPreviousVisibilityMode()
 			var resultingVisibilityMode = null;
-			if(MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.CONFIG || MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.ALL){
+			if(currentVisibilityMode==MlbCommon.VisibilityModes.CONFIG || currentVisibilityMode==MlbCommon.VisibilityModes.ALL){
 				//If ids are currently shown, switch to visibility mode "none"
-				GlobalData.previousVisibilityMode=MlbPrefs.visibilityMode;
 		    	resultingVisibilityMode=MlbCommon.VisibilityModes.NONE;
-		   }else if(GlobalData.previousVisibilityMode==MlbCommon.VisibilityModes.CONFIG){
+		   }else if(previousVisibilityMode==MlbCommon.VisibilityModes.CONFIG){
 	         //Previous mode was config, switch back to config mode		   	
-            GlobalData.previousVisibilityMode=MlbPrefs.visibilityMode;
             resultingVisibilityMode=MlbCommon.VisibilityModes.CONFIG;
 			}else {
 			   //Previous mode was all, switch back to all mode
-			   GlobalData.previousVisibilityMode=MlbPrefs.visibilityMode;
 			   resultingVisibilityMode=MlbCommon.VisibilityModes.ALL;
 			}
 		   this.updateIdsAfterToggling(resultingVisibilityMode);
@@ -329,9 +329,9 @@
 		 * all elements
 		 */
 		toggleAllIds: function(){
-			GlobalData.previousVisibilityMode=MlbPrefs.visibilityMode;
+         var currentVisibilityMode = TabLocalPrefs.getVisibilityMode()
 		   var resultingVisibilityMode = null
-		   if(MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.NONE || MlbPrefs.visibilityMode==MlbCommon.VisibilityModes.CONFIG){
+		   if(currentVisibilityMode==MlbCommon.VisibilityModes.NONE || currentVisibilityMode==MlbCommon.VisibilityModes.CONFIG){
 		    	resultingVisibilityMode=MlbCommon.VisibilityModes.ALL;
 		   }else{ 
 		    	resultingVisibilityMode=MlbCommon.VisibilityModes.CONFIG;
@@ -343,7 +343,7 @@
 		 * Initiates the update of the id spans after toggling the ids
 		 */
 		updateIdsAfterToggling: function(visibilityMode){
-	       MlbPrefs.initShowIdPrefs(visibilityMode, true);
+	       TabLocalPrefs.initShowIdPrefs(visibilityMode);
          //Set visibility flags		    
 			if(visibilityMode==MlbCommon.VisibilityModes.NONE){
 		       this.hideIdSpans(MlbUtils.getCurrentContentWin());
@@ -443,7 +443,7 @@
 		isCaseOfExclusivlyUseOfNumpad: function(event){
 		    var keyCode = event.keyCode;
 		    var isNumpad = (keyCode>=96 && keyCode<=106) || (keyCode>=110 && keyCode<=111) 
-		    return MlbPrefs.isNumericIdType() && MlbPrefs.exclusiveUseOfNumpad && isNumpad;
+		    return MlbPrefs.isNumericIdType() && TabLocalPrefs.isExclusiveUseOfNumpad() && isNumpad;
 		},
 		
       /*
@@ -486,7 +486,7 @@
 		         this.toggleExclusiveUseOfNumpadSecondCall=true;
 		        setTimeout("mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpadSecondCall=false", 1000);
 		    }else{
-		        MlbPrefs.exclusiveUseOfNumpad = !MlbPrefs.exclusiveUseOfNumpad;
+		        TabLocalPrefs.toggleExclusiveUseOfNumpad()
 		    }
 		    return ShortCutManager.SUPPRESS_KEY
 		},
@@ -638,6 +638,7 @@
 			return false
 		},
 
+		//TODO Remove tab numbering stuff
 		/*
 		 * (Re) numbers the tabs
 		 */

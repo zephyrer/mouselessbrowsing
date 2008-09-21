@@ -4,6 +4,7 @@
 <!ENTITY tab.url_rules.label "URL Rules">
 <!ENTITY tab.keys.label "Keys">
 <!ENTITY groupbox.general_options.label "General Options">
+<!ENTITY disableMLB.label "Disable Mouseless Browsing">
 <!ENTITY showIdsOnDemand.label "Show ids only on demand">
 <!ENTITY initOnDomContentLoaded.label "Show ids before all images are loaded (this can partly lead to misplaced ids)">
 <!ENTITY executeAutomatice.label "Execute automatically without pressing Enter">
@@ -52,6 +53,7 @@
 <!ENTITY mouselessbrowsing.keys.blockKeyboardInputForMlb "Block keyboard input for MLB">
 <!ENTITY mouselessbrowsing.keys.openConfig "Open Configuration">
 <!ENTITY mouselessbrowsing.keys.addSiteRule "Add URL Rule">
+<!ENTITY mouselessbrowsing.keys.toggleEnableDisableMLB "Toggle enable/disable MLB">
 <!ENTITY keyboxKeys.menuitem.tab.label "Tab">
 <!ENTITY keyboxKeys.menuitem.shift_tab.label "Shift+Tab">
 <!ENTITY keys.assignBU.label "Assign">

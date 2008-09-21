@@ -19,10 +19,6 @@
 			this.idToElementMap = new Object()
 		}
 		
-      //Todo no yet used
-		//previousVisisbility Mode
-		this.previousVisibilityMode = MlbCommon.VisibilityModes.CONFIG
-		
 		this.absolutePositionedFormElements = new Array();
 	}
 	

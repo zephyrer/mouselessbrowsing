@@ -67,6 +67,9 @@
 						<grid >
 							<rows>
 								<row>
+									<checkbox label="&disableMLB.label;" prefid="mouselessbrowsing.disableMLB"/>
+								</row>
+								<row>
 									<checkbox id="onDemandFlag" label="&showIdsOnDemand.label;" prefid="mouselessbrowsing.showIdsOnDemand"/>
 								</row>
 								<row>
@@ -401,6 +404,10 @@
                   </listitem>
                   <listitem prefid="mouselessbrowsing.keys.addSiteRule">
                      <listcell label="&mouselessbrowsing.keys.addSiteRule;"/>
+                     <listcell />
+                  </listitem>
+                  <listitem prefid="mouselessbrowsing.keys.toggleEnableDisableMLB">
+                     <listcell label="&mouselessbrowsing.keys.toggleEnableDisableMLB;"/>
                      <listcell />
                   </listitem>
                </listbox>
