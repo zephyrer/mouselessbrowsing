@@ -60,8 +60,24 @@
 		    }
 		    TabLocalPrefs.initPrefs()
 		    this.initMenu();
-          if(mouselessbrowsing.PageInitializer){
-            mouselessbrowsing.PageInitializer.init()
+          var showIdsOnDemand = Prefs.getBoolPref("mouselessbrowsing.showIdsOnDemand");
+          var disableAllIds = Prefs.getBoolPref("mouselessbrowsing.disableAllIds");
+          //Init the current page the others are only initialized on demand
+          PageInitializer.init()
+
+          //As only the current page will be entirely initialized for performance reasons
+          //the visibility mode of the others must be adjusted 
+          var browsers = gBrowser._browsers
+          for (var i = 0; i < browsers.length; i++) {
+          	if(browsers[i]==gBrowser.mCurrentBrowser){
+          		continue
+          	}
+          	var contentWin = browsers[i].contentWindow
+          	var visibilityMode = TabLocalPrefs.getVisibilityMode(contentWin)
+          	var idsVisible = PageInitializer.hasVisibleIdSpans(contentWin)  
+            if(visibilityMode==MlbCommon.VisibilityModes.NONE && idsVisible){
+          		EventHandler.hideIdSpans(contentWin)
+          	}
           }
 		},
 		
@@ -73,7 +89,10 @@
 			}
 			//Add single shortcut for enabling MLB
 			this.setShortcut("mouselessbrowsing.keys.toggleEnableDisableMLB", "mouselessbrowsing.InitManager.toggleEnableDisableMLB()");
-			
+			this.hideAllIds()
+		},
+		
+		hideAllIds: function(){
 			//Hide ids in all browsers
 			var browsers = gBrowser._browsers
 			if(browsers!=null){
@@ -223,6 +242,7 @@
 		toggleEnableDisableMLB: function(){
 			Prefs.setBoolPref("mouselessbrowsing.disableMLB", !MlbPrefs.disableMLB)
 			this.init()
+			return ShortCutManager.SUPPRESS_KEY
 		},
 		
 		observe: function(){

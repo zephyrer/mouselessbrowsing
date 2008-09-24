@@ -196,7 +196,8 @@
 			
 		
 		shouldExecute: function(){
-			if(MlbUtils.getCurrentContentWin().mlbPageData.hasElementWithId(this.keybuffer) ||
+			if(MlbUtils.getCurrentContentWin().mlbPageData && //avoid error if page is changed in the meantime e.g. with history back
+			   MlbUtils.getCurrentContentWin().mlbPageData.hasElementWithId(this.keybuffer) ||
 				this.globalIds[this.keybuffer]!=null){
 				return true;
 			}else{
@@ -310,9 +311,13 @@
 			var currentVisibilityMode = TabLocalPrefs.getVisibilityMode()
 			var previousVisibilityMode = TabLocalPrefs.getPreviousVisibilityMode()
 			var resultingVisibilityMode = null;
-			if(currentVisibilityMode==MlbCommon.VisibilityModes.CONFIG || currentVisibilityMode==MlbCommon.VisibilityModes.ALL){
-				//If ids are currently shown, switch to visibility mode "none"
-		    	resultingVisibilityMode=MlbCommon.VisibilityModes.NONE;
+			if((currentVisibilityMode==MlbCommon.VisibilityModes.CONFIG || currentVisibilityMode==MlbCommon.VisibilityModes.ALL)){
+			   if(this.getPageInitializer().hasVisibleIdSpans(content)){
+   				//If ids are currently shown, switch to visibility mode "none"
+   		    	resultingVisibilityMode=MlbCommon.VisibilityModes.NONE;
+			   }else{//Special case to make ids visible on first shortcut after reenabling MLB 
+   		    	resultingVisibilityMode=MlbCommon.VisibilityModes.CONFIG;
+			   }			   	
 		   }else if(previousVisibilityMode==MlbCommon.VisibilityModes.CONFIG){
 	         //Previous mode was config, switch back to config mode		   	
             resultingVisibilityMode=MlbCommon.VisibilityModes.CONFIG;
@@ -343,7 +348,7 @@
 		 * Initiates the update of the id spans after toggling the ids
 		 */
 		updateIdsAfterToggling: function(visibilityMode){
-	       TabLocalPrefs.initShowIdPrefs(visibilityMode);
+	       TabLocalPrefs.initVisibilityModeAndShowIdPrefs(visibilityMode);
          //Set visibility flags		    
 			if(visibilityMode==MlbCommon.VisibilityModes.NONE){
 		       this.hideIdSpans(MlbUtils.getCurrentContentWin());

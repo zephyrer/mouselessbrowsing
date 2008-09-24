@@ -87,15 +87,12 @@
 	}
 	TabLocalPrefs.isIdsForFramesEnabled = isIdsForFramesEnabled
 
-   function getPreviousVisibilityMode(){
-      return getPrefs().previousVisibilityMode
+   function initVisibilityModeAndShowIdPrefs(visibilityMode){
+   	var tabLocalPrefs = getPrefs()
+   	tabLocalPrefs.setVisibilityMode(visibilityMode)
+   	tabLocalPrefs.initShowIdPrefs()
    }
-   TabLocalPrefs.getPreviousVisibilityMode = getPreviousVisibilityMode
-   
-   function initShowIdPrefs(visibilityMode){
-   	getPrefs().initShowIdPrefs(visibilityMode)
-   }
-   TabLocalPrefs.initShowIdPrefs = initShowIdPrefs
+   TabLocalPrefs.initVisibilityModeAndShowIdPrefs = initVisibilityModeAndShowIdPrefs
    
    function applySiteRules(contentWin){
    	var tabLocalPrefs = getPrefs(contentWin)
@@ -104,13 +101,18 @@
    }
    TabLocalPrefs.applySiteRules = applySiteRules
    
-	function getVisibilityMode(){
-      return getPrefs().visibilityMode
+   function getPreviousVisibilityMode(){
+      return getPrefs().previousVisibilityMode
+   }
+   TabLocalPrefs.getPreviousVisibilityMode = getPreviousVisibilityMode
+   
+	function getVisibilityMode(win){
+      return getPrefs(win).visibilityMode
 	}
 	TabLocalPrefs.getVisibilityMode = getVisibilityMode
 
-   function setVisibilityMode(win, visibilityMode){
-   	getPrefs(win).setVisibilityMode(visibilityMode)
+   function setVisibilityMode(win, visibilityMode, previousVisibilityMode){
+   	getPrefs(win).setVisibilityMode(visibilityMode, previousVisibilityMode)
    }
    TabLocalPrefs.setVisibilityMode = setVisibilityMode
    
@@ -129,14 +131,12 @@
 			this.showIdsOnDemand = Prefs.getBoolPref("mouselessbrowsing.showIdsOnDemand");
 			this.exclusiveUseOfNumpad = Prefs.getBoolPref("mouselessbrowsing.exclusiveNumpad");
 			var disableAllIds = Prefs.getBoolPref("mouselessbrowsing.disableAllIds");
-			if (disableAllIds) {
-				this.visibilityMode = MlbCommon.VisibilityModes.NONE
-				this.previousVisibilityMode = MlbCommon.VisibilityModes.CONFIG
+			if (disableAllIds || this.showIdsOnDemand) {
+				this.setVisibilityMode(MlbCommon.VisibilityModes.NONE, MlbCommon.VisibilityModes.CONFIG)
 			} else {
-				this.visibilityMode = MlbCommon.VisibilityModes.CONFIG
-				this.previousVisibilityMode = MlbCommon.VisibilityModes.NONE
+				this.setVisibilityMode(MlbCommon.VisibilityModes.CONFIG, MlbCommon.VisibilityModes.NONE)
 			}
-			this.initShowIdPrefs(this.visibilityMode);
+			this.initShowIdPrefs();
 			this.prefsBackup = null
 		},
 
@@ -146,8 +146,12 @@
 					&& !this.idsForFramesEnabled
 		},
 
-		setVisibilityMode : function(visibilityMode) {
-			this.previousVisibilityMode = this.visibilityMode
+		setVisibilityMode : function(visibilityMode, previousVisibilityMode) {
+			if(previousVisibilityMode==null){
+			   this.previousVisibilityMode = this.visibilityMode
+			}else{
+				this.previousVisibilityMode = previousVisibilityMode
+			}
 			this.visibilityMode = visibilityMode
 		},
 
@@ -161,27 +165,34 @@
 								this.visibilityMode, this.exclusiveUseOfNumpad,
 								null)//showon demand could not be changed tab wise
 					}
-					this.initShowIdPrefs(siteRule.visibilityMode)
 					this.exclusiveUseOfNumpad = siteRule.exclusiveUseOfNumpad
 					this.showIdsOnDemand = siteRule.showIdsOnDemand
-					this.visibilityMode = siteRule.visibilityMode
+					this.setVisibilityModeForSiteRule(siteRule.visibilityMode)
+					this.initShowIdPrefs()
 					break;
 				} else if (this.prefsBackup != null) {
 					// reset prefs to global ones
-					this.initShowIdPrefs(this.prefsBackup.visibilityMode)
 					this.exclusiveUseOfNumpad = this.prefsBackup.exclusiveUseOfNumpad
 					this.showIdsOnDemand = Prefs.getBoolPref("mouselessbrowsing.showIdsOnDemand");
-					this.visibilityMode = this.prefsBackup.visibilityMode
+					this.setVisibilityModeForSiteRule(this.prefsBackup.visibilityMode)
+					this.initShowIdPrefs()
 					this.prefsBackup = null
 				}
+			}
+		},
+		
+		setVisibilityModeForSiteRule : function(siteRuleVisibilityMode) {
+			if (siteRuleVisibilityMode == MlbCommon.VisibilityModes.NONE) {
+				this.setVisibilityMode(MlbCommon.VisibilityModes.NONE, MlbCommon.VisibilityModes.CONFIG)
+			} else {
+				this.setVisibilityMode(siteRuleVisibilityMode,	MlbCommon.VisibilityModes.NONE)
 			}
 		},
 
 		/*
 		 * Seperate function for reuse when toggling visibility of spans
 		 */
-		initShowIdPrefs : function(visibilityMode) {
-			this.visibilityMode = visibilityMode
+		initShowIdPrefs : function() {
 			var disableAllIds = false
 			switch (this.visibilityMode) {
 				case MlbCommon.VisibilityModes.NONE :
