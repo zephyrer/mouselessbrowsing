@@ -123,11 +123,14 @@
          //Is MLB activated?
          if(TabLocalPrefs.isShowIdsOnDemand(win)){
             //Set the visibility modes so that with toggeling the ids will become visible
-            MlbPrefs.setVisibilityMode(win, MlbCommon.VisibilityModes.NONE);
+         	var currentVisibilityMode = TabLocalPrefs.getVisibilityMode(win)
+         	if(currentVisibilityMode!=MlbCommon.VisibilityModes.NONE){
+               TabLocalPrefs.setVisibilityMode(win, MlbCommon.VisibilityModes.NONE);
+         	}
             //If history back was pressed after toggling of the ids 
             //the alreay generated ids must be hidden
             var topWin = pageInitData.getCurrentTopWin()
-            if(this.hasIdSpans(topWin)){
+            if(this.hasVisibleIdSpans(topWin)){
                EventHandler.hideIdSpans(topWin);
             }
             return;
@@ -709,10 +712,10 @@
 		/*
 		 * Checks wether window already contains ids
 		 */
-		hasIdSpans: function(winObj){
+		hasVisibleIdSpans: function(winObj){
 			if(this.isFrameset(winObj)){
 				for (var i = 0; i < winObj.frames.length; i++) {
-					var hasIdsSpans = this.hasIdSpans(winObj.frames[i])
+					var hasIdsSpans = this.hasVisibleIdSpans(winObj.frames[i])
 					if(hasIdsSpans){
 						return true
 					}
@@ -721,7 +724,7 @@
 			}else{
    			var spans = winObj.document.getElementsByTagName("span");
    		    for(var i=0; i<spans.length; i++){
-   		        if(MlbUtils.isIdSpan(spans[i]))
+   		        if(MlbUtils.isIdSpan(spans[i]) && spans[i].style.display=="inline")
    		            return true;
    		    }
    		    return false;
