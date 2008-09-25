@@ -261,7 +261,7 @@
 			      frame.idSpan = idSpan;
 			   }
 			   //Update element Array
-		      pageInitData.pageData.addElementWithId(doc.defaultView);
+		      pageInitData.pageData.addElementWithId(doc.body);
 		   }
 		},
 		
@@ -421,10 +421,13 @@
 			   var imgElementOffsetTop = MlbUtils.getOffsetTopToBody(imgElement)
 			   
 	      	//Set link position relative
-	      	var linkStyle = this.getComputedStyle(link)
-	      	if(linkStyle.position=="static"){
-	      		link.style.position="relative"
-	      	}
+			   //25.09.2008 It seams to be that this is not used any more
+			   //TODO remove in future, see MLB Bug 25
+//	      	var linkStyle = this.getComputedStyle(link)
+//	      	var imgStyle = this.getComputedStyle(imgElement)
+//	      	if(linkStyle.position=="static" && imgStyle.position=="static"){
+//	      		link.style.position="relative"
+//	      	}
 
 	      	//Insert Link with absolute Positioning
 	         newSpan.style.position="absolute"

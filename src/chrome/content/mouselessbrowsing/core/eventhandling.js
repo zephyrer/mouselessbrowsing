@@ -241,6 +241,9 @@
 		    
 		    if(tagName=="body"){
 		        currentWin.focus();
+		        if(currentDoc.body){
+		          currentDoc.body.focus()
+		        }
 		        return;
 		    }
 		    //First try at least to focus
