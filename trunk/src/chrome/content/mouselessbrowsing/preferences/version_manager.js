@@ -9,26 +9,38 @@
 	
    var VersionManager = { 
    	VERSION_PREF: "mouselessbrowsing.version",
-   	currentVersion: null,
+   	versionComparator: Components.classes["@mozilla.org/xpcom/version-comparator;1"]
+                   .getService(Components.interfaces.nsIVersionComparator),
    	
+      versionsToBeMigrated: ["0.5"],
+                   
    	hasVersionToBeMigrated: function(){
    		var newInstalledVersion = Utils.getExtension(MlbCommon.MLB_GUI_ID).version
-   		this.currentVersion = Prefs.getCharPref(this.VERSION_PREF)
-   		var versionComparator = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
-                   .getService(Components.interfaces.nsIVersionComparator)
-   		if(versionComparator.compare(newInstalledVersion, this.currentVersion)>0){
-   			this.currentVersion = newInstalledVersion
+   		var currentVersion = Prefs.getCharPref(this.VERSION_PREF)
+   		if(this.versionComparator.compare(newInstalledVersion, currentVersion)>0){
    			return true
    		}else{
    			return false
    		}
    	},
    	
-   	migrateVersion: function(){
-   		Prefs.setCharPref(this.VERSION_PREF, this.currentVersion)
+   	doMigration: function(){
+   		var currentVersion = Prefs.getCharPref(this.VERSION_PREF)
+   		for (var i = 0; i < this.versionsToBeMigrated.length; i++) {
+   			var version = this.versionsToBeMigrated[i]
+   			if(this.versionComparator.compare(version, currentVersion)>0){
+   				var mirgationFunctionName = "migrateToVersion_" + version.replace(/\./g,"_") 
+   				this[mirgationFunctionName]()
+   				MlbUtils.logDebugMessage("Successfully migrated to version " + version)
+   			}
+   		}
+   		Prefs.setCharPref(this.VERSION_PREF, Utils.getExtension(MlbCommon.MLB_GUI_ID).version)
+   		setTimeout(mouselessbrowsing.VersionManager.showVersionInfoPage, 1000)
+   	},
+   	
+   	migrateToVersion_0_5: function(){
    		this.migrateStyles()
    		this.deleteObsoletePrefs()
-   		setTimeout(mouselessbrowsing.VersionManager.showVersionInfoPage, 1000)
    	},
    	
    	migrateStyles: function(){

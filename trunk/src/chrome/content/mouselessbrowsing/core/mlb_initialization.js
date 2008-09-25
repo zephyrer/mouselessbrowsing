@@ -38,7 +38,7 @@
 		init: function(event){
 		   MlbPrefs.initPrefs();
          if(VersionManager.hasVersionToBeMigrated()){
-            VersionManager.migrateVersion()
+            VersionManager.doMigration()
          }
          if(MLB_prefObserver==null){
             this.registerObservers();
