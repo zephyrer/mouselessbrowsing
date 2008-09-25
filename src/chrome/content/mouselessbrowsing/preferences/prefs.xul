@@ -333,7 +333,7 @@
 			</tabpanel>
          <tabpanel>
             <vbox flex="1">
-               <listbox id="keyListBox" prefLoadFunction="MLB_loadKeyListbox" prefSaveFunction="MLB_saveKeyListbox" onselect="byId('keyListboxBC').setAttribute('disabled', false)" height="275px">
+               <listbox id="keyListBox" prefLoadFunction="MLB_loadKeyListbox" prefSaveFunction="MLB_saveKeyListbox" onselect="byId('keyListboxBC').setAttribute('disabled', false)" height="290px">
                   <listcols>
                   	<listcol flex="1"/>
                   	<listcol width="150px"/>
