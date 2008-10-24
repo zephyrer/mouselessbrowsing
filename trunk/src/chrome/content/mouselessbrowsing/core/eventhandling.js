@@ -281,14 +281,17 @@
 		      			return
 		      		}
 		      	}
-		      	var openInNewTab = true
+               var newTab = Utils.openUrlInNewTab(element.href, !loadInBackground);
+               //set name of new window
+               newTab.document.defaultView.name = element.target
+               return;
 		      }
 			 }
 
 		    //And simulate click
 		    var clickEvent = currentDoc.createEvent("MouseEvents");
 		    clickEvent.initMouseEvent( "click", true, true, currentWin, 1, 0, 0, 0, 0, 
-		        openInNewTab, false, false, false, 0, null);
+		        false, false, false, false, 0, null);
 		    element.dispatchEvent(clickEvent);
 		},
 		

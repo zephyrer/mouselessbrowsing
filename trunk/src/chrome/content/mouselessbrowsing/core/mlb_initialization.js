@@ -10,6 +10,7 @@
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	var Prefs = mlb_common.Prefs
 	var MlbPrefs = mouselessbrowsing.MlbPrefs
+	var MlbUtils = mouselessbrowsing.MlbUtils
 	var TabLocalPrefs = mouselessbrowsing.TabLocalPrefs
 	var EventHandler = mouselessbrowsing.EventHandler
    var GoogleProjectHelper = mouselessbrowsing.miscellaneous.GoogleProjectHelper
@@ -32,7 +33,7 @@
    var tabSelectHandler = {handleEvent: function(event){mouselessbrowsing.TabLocalPrefs.onTabSelect()}}
    
    
-	InitManager = {
+	var InitManager = {
 		eventHandlersActive: false,
 		
 		init: function(event){
@@ -50,6 +51,7 @@
 				this.enableMLB()
 			}
 		   this.initStatusbar();
+		   MlbUtils.logDebugMessage("InitManager.init done")
 		},
 		
 		enableMLB: function (){
@@ -240,6 +242,7 @@
 		},
 		
 		toggleEnableDisableMLB: function(){
+			MlbUtils.logDebugMessage('init on toggling')
 			Prefs.setBoolPref("mouselessbrowsing.disableMLB", !MlbPrefs.disableMLB)
 			this.init()
 			return ShortCutManager.SUPPRESS_KEY
