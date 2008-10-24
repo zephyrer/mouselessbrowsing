@@ -241,14 +241,6 @@ function MLB_saveKeyListbox(){
    }
 }
 
-function MLB_setKeyboxFromKeyboxMenu(keyCombId){
-	if(keyCombId=="TAB"){
-	  keyInputBox.setCombinedValue(9<<4)
-	}else if(keyCombId=="SHIFT_TAB"){
-	  keyInputBox.setCombinedValue(9<<4|Event.SHIFT_MASK)
-	}
-}
-
 function byId(elementId){
 	return document.getElementById(elementId)
 }

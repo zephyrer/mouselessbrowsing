@@ -397,9 +397,10 @@
 		 * Checks wether an element is currently visible to avoid appending ids to invisible links
 		 */
 		isElementVisible: function(element){
-			if(element.className=="" && element.getAttribute('style')==null){
+			//Comment out 08.10.2008 due to mail from Martijn
+			/*if(element.className=="" && element.getAttribute('style')==null){
 				return true
-			}
+			}*/
 			var style = this.getComputedStyle(element)
 			if(style.display=="none" || style.visibility=="hidden" || 
 			   element.offsetLeft<-100 || element.offsetTop<-100){
@@ -421,7 +422,10 @@
 			   var imgElementOffsetTop = MlbUtils.getOffsetTopToBody(imgElement)
 			   
 	      	//Set link position relative
-			   //25.09.2008 It seams to be that this is not used any more
+			   //25.09.2008 It seams to be that this is not necessary any more
+			   //position relative on the parent element can lead to misplacing in case the on child is positioned
+			   //relative or absolute and not the direct parent has the position attribute but on ancestor higher in the 
+			   //hierarchy
 			   //TODO remove in future, see MLB Bug 25
 //	      	var linkStyle = this.getComputedStyle(link)
 //	      	var imgStyle = this.getComputedStyle(imgElement)
