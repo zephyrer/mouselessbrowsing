@@ -422,16 +422,16 @@
 			   var imgElementOffsetTop = MlbUtils.getOffsetTopToBody(imgElement)
 			   
 	      	//Set link position relative
-			   //25.09.2008 It seams to be that this is not necessary any more
-			   //position relative on the parent element can lead to misplacing in case the on child is positioned
+			   //position relative on the parent element can lead to misplacing in case that one child is positioned
 			   //relative or absolute and not the direct parent has the position attribute but on ancestor higher in the 
 			   //hierarchy
-			   //TODO remove in future, see MLB Bug 25
-//	      	var linkStyle = this.getComputedStyle(link)
-//	      	var imgStyle = this.getComputedStyle(imgElement)
-//	      	if(linkStyle.position=="static" && imgStyle.position=="static"){
-//	      		link.style.position="relative"
-//	      	}
+            //See also MLB issue 25, 37, 
+            //TODO for future release 
+	      	var linkStyle = this.getComputedStyle(link)
+	      	var imgStyle = this.getComputedStyle(imgElement)
+	      	if(linkStyle.position=="static" && imgStyle.position=="static"){
+	      		link.style.position="relative"
+	      	}
 
 	      	//Insert Link with absolute Positioning
 	         newSpan.style.position="absolute"

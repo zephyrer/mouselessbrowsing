@@ -41,6 +41,7 @@ pref("mouselessbrowsing.keys.scrollUp", "1744");   //Subtract
 pref("mouselessbrowsing.keys.blurActiveElement", "0"); //None
 pref("mouselessbrowsing.keys.blockKeyboardInputForMlb", "0"); //None
 pref("mouselessbrowsing.keys.toggleAllIds", "1762"); //Crtl+Decimal
+pref("mouselessbrowsing.keys.updatePage", "1761"); //Alt+Decimal
 pref("mouselessbrowsing.keys.toggleMLB", "1760"); //Decimal
 pref("mouselessbrowsing.keys.toggleExlusiveUseOfNumpad", "304"); //Pause
 pref("mouselessbrowsing.keys.openConfig", "1239"); //Ctrl+Alt+Shift+M

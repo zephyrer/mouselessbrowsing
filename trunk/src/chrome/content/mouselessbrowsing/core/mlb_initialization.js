@@ -143,6 +143,8 @@
 		    this.setShortcut("mouselessbrowsing.keys.toggleMLB", "mouselessbrowsing.EventHandler.toggleIds()");
 		    
 			 this.setShortcut("mouselessbrowsing.keys.toggleAllIds", "mouselessbrowsing.EventHandler.toggleAllIds()");
+
+          this.setShortcut("mouselessbrowsing.keys.updatePage", "mouselessbrowsing.PageInitializer.updatePage()");
 		    
 		    this.setShortcut("mouselessbrowsing.keys.historyBack", "mouselessbrowsing.EventHandler.moveHistory('back')");
 		
