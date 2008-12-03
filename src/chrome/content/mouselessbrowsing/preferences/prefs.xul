@@ -350,6 +350,10 @@
                      <listcell label="&mouselessbrowsing.keys.toggleAllIds;"/>
                      <listcell />
                   </listitem>
+                  <listitem prefid="mouselessbrowsing.keys.updatePage">
+                     <listcell label="&mouselessbrowsing.keys.updatePage;"/>
+                     <listcell />
+                  </listitem>
                   <listitem prefid="mouselessbrowsing.keys.toggleExlusiveUseOfNumpad">
                      <listcell label="&mouselessbrowsing.keys.toggleExlusiveUseOfNumpad;"/>
                      <listcell />

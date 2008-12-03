@@ -39,6 +39,7 @@
 <!ENTITY keyLB.listheader.key_combination.label "Key Combination">
 <!ENTITY mouselessbrowsing.keys.toggleMLB "Toggling visibility of ids on/off">
 <!ENTITY mouselessbrowsing.keys.toggleAllIds "Toggling visibility of ids for all/only configured elements">
+<!ENTITY mouselessbrowsing.keys.updatePage "Update ids of page">
 <!ENTITY mouselessbrowsing.keys.toggleExlusiveUseOfNumpad "Toggling exclusive use of numpad">
 <!ENTITY mouselessbrowsing.keys.clearKeybuffer "Clearing keybuffer">
 <!ENTITY mouselessbrowsing.keys.openInNewTabPostfixKey "Postfix-key to open link in new tab">
