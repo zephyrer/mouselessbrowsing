@@ -8,10 +8,12 @@
 
 (function(){
    
-   //Imports   		
-	var Utils = mlb_common.Utils
-	var StringUtils = mlb_common.StringUtils
+   //Imports
+   var Firefox = mlb_common.Firefox
 	var Prefs = mlb_common.Prefs
+	var ShortcutManager = mlb_common.ShortcutManager
+	var StringUtils = mlb_common.StringUtils
+	var Utils = mlb_common.Utils
 	var TabLocalPrefs = mouselessbrowsing.TabLocalPrefs
 	var MlbPrefs = mouselessbrowsing.MlbPrefs
 	var MlbCommon = mouselessbrowsing.MlbCommon
@@ -196,8 +198,8 @@
 			
 		
 		shouldExecute: function(){
-			if(MlbUtils.getCurrentContentWin().mlbPageData && //avoid error if page is changed in the meantime e.g. with history back
-			   MlbUtils.getCurrentContentWin().mlbPageData.hasElementWithId(this.keybuffer) ||
+			if(this.getPageInitializer().getPageData() && //avoid error if page is changed in the meantime e.g. with history back
+			   this.getPageInitializer().getPageData().hasElementWithId(this.keybuffer) ||
 				this.globalIds[this.keybuffer]!=null){
 				return true;
 			}else{
@@ -227,7 +229,7 @@
 		    }
 		    
 		    //Else...
-		    var element = MlbUtils.getCurrentContentWin().mlbPageData.getElementForId(this.keybuffer);
+		    var element = this.getPageInitializer().getPageData().getElementForId(this.keybuffer);
 		    //If onDomContentLoaded the pageData is not refreshed removed items could be in the pageData
 		    if(element.ownerDocument==null){//Element no longer exists within the document
 		    	return
@@ -283,16 +285,24 @@
 		      	}
                var newTab = Utils.openUrlInNewTab(element.href, !loadInBackground);
                //set name of new window
-               newTab.document.defaultView.name = element.target
+               //TODO make it right
+               if(element.target!="_blank")
+                  newTab.document.defaultView.name = element.target
                return;
 		      }
 			 }
 
 		    //And simulate click
-		    var clickEvent = currentDoc.createEvent("MouseEvents");
-		    clickEvent.initMouseEvent( "click", true, true, currentWin, 1, 0, 0, 0, 0, 
-		        false, false, false, false, 0, null);
-		    element.dispatchEvent(clickEvent);
+          function performEvent(type){
+   		    var clickEvent = currentDoc.createEvent("MouseEvents");
+   		    clickEvent.initMouseEvent( type, true, true, currentWin, 1, 0, 0, 0, 0, 
+   		        false, false, false, false, 0, null);
+   		    element.dispatchEvent(clickEvent);
+          }
+          performEvent("mouseover")
+          performEvent("mousedown")
+          performEvent("click")
+          performEvent("mouseup")
 		},
 		
 		/*
@@ -354,36 +364,39 @@
 		 * Initiates the update of the id spans after toggling the ids
 		 */
 		updateIdsAfterToggling: function(visibilityMode){
-	       TabLocalPrefs.initVisibilityModeAndShowIdPrefs(visibilityMode);
-         //Set visibility flags		    
+	      TabLocalPrefs.initVisibilityModeAndShowIdPrefs(visibilityMode);
+         this.hideIdSpans(content);
 			if(visibilityMode==MlbCommon.VisibilityModes.NONE){
-		       this.hideIdSpans(MlbUtils.getCurrentContentWin());
+             this.getPageInitializer().deactivateChangeListener(content)
 		    }else {
 		       this.getPageInitializer().updatePage();
 		    }
 		},
-		
+      
 		/*
 		 * Hides all Id spans
 		 * Called recusvily an all frames
 		 */
 		hideIdSpans: function(winObj){
 	       //Reset PageData
-	       MlbUtils.getCurrentContentWin().mlbPageData = new mouselessbrowsing.PageData()
-		    var doc = winObj.document;
-		    var spans = doc.evaluate("//span[@MLB_idSpanFlag]", doc, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null)
-		    for(var i=0; i<spans.snapshotLength; i++){
-   		     var span = spans.snapshotItem(i)
-              span.style.display = "none";
-              var elementForSpan = MlbUtils.getElementForIdSpan(span)
-              if(elementForSpan!=null){
-                 this.getPageInitializer().setElementStyle(elementForSpan, false)
-              }
-		    }
-		    var frames = winObj.frames;
-		    for(var i=0; i<frames.length; i++){
-		        this.hideIdSpans(frames[i]);
-		    }
+          var pageData = this.getPageInitializer().getPageData(winObj)
+          function _hideIdSpans(winObj){
+   		    var doc = winObj.document;
+   		    var spans = doc.evaluate("//span[@MLB_idSpanFlag]", doc, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null)
+   		    for(var i=0; i<spans.snapshotLength; i++){
+      		     var span = spans.snapshotItem(i)
+                 span.style.display = "none";
+                 var elementForSpan = pageData.getElementBySpan(span)
+                 if(elementForSpan!=null){
+                    AbstractInitializer.setElementStyle(elementForSpan, false)
+                 }
+   		    }
+   		    var frames = winObj.frames;
+   		    for(var i=0; i<frames.length; i++){
+   		        _hideIdSpans(frames[i]);
+   		    }
+          }
+	       this.getPageInitializer().setPageData(content, new mouselessbrowsing.PageData())
 		},
 		
 		/*
@@ -463,7 +476,7 @@
       openLinkInOtherLocationViaPostfixKey : function(event, locationId) {
 			if (this.keybuffer == "")
 				return;
-			var element = MlbUtils.getCurrentContentWin().mlbPageData.getElementForId(this.keybuffer);
+			var element = this.getPageInitializer().getPageData().getElementForId(this.keybuffer);
 			if (element == null)
 				return;
 			var tagName = element.tagName.toLowerCase();
@@ -523,7 +536,7 @@
 		selectLink: function(){
 		   if(this.keybuffer=="")
 		        return;
-		    var element = MlbUtils.getCurrentContentWin().mlbPageData.getElementForId(this.keybuffer);   
+		    var element = this.getPageInitializer().getPageData().getElementForId(this.keybuffer);   
 		    if(element==null)
 		        return;
 		    var tagName = element.tagName.toLowerCase();
@@ -708,7 +721,18 @@
 		hideMlbStatusbar: function(){
 			MlbPrefs.setShowMlbStatusbarFlag(false)
 			mouselessbrowsing.InitManager.initStatusbar()
-		}
+		},
+      
+      getPageData: function(){
+         return content._mlbPageData
+      },
+      
+      disableMlb: function(){
+         //Hide ids in all browsers
+         Firefox.iterateAllBrowsers(function(browser){
+            EventHandler.hideIdSpans(browser.contentWindow)
+         })
+      },
    }
 
    var NS = mlb_common.Namespace

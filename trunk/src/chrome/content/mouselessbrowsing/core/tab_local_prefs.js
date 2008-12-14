@@ -3,6 +3,7 @@
 	var SiteRule = mouselessbrowsing.SiteRule
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	var Prefs = mlb_common.Prefs
+   var ShortcutManager = mlb_common.ShortcutManager
 	var Utils = mlb_common.Utils
 
 	function TabLocalPrefs() {
@@ -66,8 +67,33 @@
 		return ShortCutManager.SUPPRESS_KEY
 	}
 	TabLocalPrefs.toggleExclusiveUseOfNumpad = toggleExclusiveUseOfNumpad
+   
+   
 
-	function isIdsForLinksEnabled(win) {
+	function isIdsEnabledFor(win, idSpanType) {
+      switch(idSpanType){
+         case MlbCommon.IdSpanTypes.FRAME: 
+            return isIdsForFramesEnabled(win)
+            break;
+         case MlbCommon.IdSpanTypes.IMG: 
+            return isIdsForImgLinksEnabled(win)
+            break;
+         case MlbCommon.IdSpanTypes.LINK: 
+            return isIdsForLinksEnabled(win)
+            break;
+         case MlbCommon.IdSpanTypes.FORMELEMENT: 
+            return isIdsForFormElementsEnabled(win)
+            break;
+         case MlbCommon.IdSpanTypes.OTHER: 
+            return isIdsForOtherElementsEnabled(win)
+            break;
+         default:
+            throw new Error('Unkown idSpanTyp')
+      }
+	}
+	TabLocalPrefs.isIdsEnabledFor = isIdsEnabledFor
+
+   function isIdsForLinksEnabled(win) {
 		return getPrefs(win).idsForLinksEnabled
 	}
 	TabLocalPrefs.isIdsForLinksEnabled = isIdsForLinksEnabled
@@ -86,6 +112,11 @@
 		return getPrefs(win).idsForFramesEnabled
 	}
 	TabLocalPrefs.isIdsForFramesEnabled = isIdsForFramesEnabled
+
+   function isIdsForOtherElementsEnabled(win) {
+		return getPrefs(win).idsForOtherElementsEnabled
+	}
+	TabLocalPrefs.isIdsForOtherElementsEnabled = isIdsForOtherElementsEnabled
 
    function initVisibilityModeAndShowIdPrefs(visibilityMode){
    	var tabLocalPrefs = getPrefs()
@@ -144,6 +175,7 @@
 			return !this.idsForLinksEnabled && !this.idsForImgLinksEnabled
 					&& !this.idsForFormElementsEnabled
 					&& !this.idsForFramesEnabled
+               && !this.idsForOtherElementsEnabled
 		},
 
 		setVisibilityMode : function(visibilityMode, previousVisibilityMode) {
@@ -201,18 +233,20 @@
 					this.idsForImgLinksEnabled = false
 					this.idsForFormElementsEnabled = false
 					this.idsForFramesEnabled = false
+					this.idsForOtherElementsEnabled = false
 					break;
 				case MlbCommon.VisibilityModes.CONFIG :
 					this.idsForLinksEnabled = Prefs.getBoolPref("mouselessbrowsing.enableLinkIds");
 					this.idsForImgLinksEnabled = Prefs.getBoolPref("mouselessbrowsing.enableImgLinkIds");
 					this.idsForFormElementsEnabled = Prefs.getBoolPref("mouselessbrowsing.enableFormElementIds");
 					this.idsForFramesEnabled = Prefs.getBoolPref("mouselessbrowsing.enableFrameIds");
+					this.idsForOtherElementsEnabled = Prefs.getBoolPref("mouselessbrowsing.enableOtherIds");
 					break;
 				case MlbCommon.VisibilityModes.ALL :
 					this.idsForLinksEnabled = true
 					this.idsForImgLinksEnabled = true
 					this.idsForFormElementsEnabled = true
-					this.idsForFramesEnabled = true
+					this.idsForOtherElementsEnabled  = true
 					break;
 			}
 		},
