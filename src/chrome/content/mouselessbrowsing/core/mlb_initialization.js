@@ -7,19 +7,23 @@
 
 (function(){
 	
-	var MlbCommon = mouselessbrowsing.MlbCommon
+	var KeyInputbox = mlb_common.KeyInputbox
 	var Prefs = mlb_common.Prefs
-	var MlbPrefs = mouselessbrowsing.MlbPrefs
-	var MlbUtils = mouselessbrowsing.MlbUtils
-	var TabLocalPrefs = mouselessbrowsing.TabLocalPrefs
+   var ShortcutManager = mlb_common.ShortcutManager
+	var Utils = mlb_common.Utils
+
 	var EventHandler = mouselessbrowsing.EventHandler
    var GoogleProjectHelper = mouselessbrowsing.miscellaneous.GoogleProjectHelper
-	var Utils = mlb_common.Utils
-	var KeyInputbox = mlb_common.KeyInputbox
-	var VersionManager = mouselessbrowsing.VersionManager
+   var LayoutDebugger = mouselessbrowsing.miscellaneous.LayoutDebugger
+   var MlbCommon = mouselessbrowsing.MlbCommon
+	var MlbPrefs = mouselessbrowsing.MlbPrefs
+	var MlbUtils = mouselessbrowsing.MlbUtils
 	var PageInitializer = mouselessbrowsing.PageInitializer
-	var STRINGBUNDLE_ID = "mouselessbrowsingOverlaySB"
+	var TabLocalPrefs = mouselessbrowsing.TabLocalPrefs
+	var VersionManager = mouselessbrowsing.VersionManager
    
+	var STRINGBUNDLE_ID = "mouselessbrowsingOverlaySB"
+
    //Prefs observer
    var MLB_prefObserver = null;
    
@@ -51,6 +55,9 @@
 				this.enableMLB()
 			}
 		   this.initStatusbar();
+         if(Application.prefs.get("mouselessbrowsing.debug.layoutdebugger", false)){
+            LayoutDebugger.init()
+         }
 		   MlbUtils.logDebugMessage("InitManager.init done")
 		},
 		
@@ -91,24 +98,15 @@
 			}
 			//Add single shortcut for enabling MLB
 			this.setShortcut("mouselessbrowsing.keys.toggleEnableDisableMLB", "mouselessbrowsing.InitManager.toggleEnableDisableMLB()");
-			this.hideAllIds()
-		},
-		
-		hideAllIds: function(){
-			//Hide ids in all browsers
-			var browsers = gBrowser._browsers
-			if(browsers!=null){
-   			for (var i = 0; i < browsers.length; i++) {
-      			EventHandler.hideIdSpans(browsers[i].contentWindow)
-   			}
-			}
+		   PageInitializer.disableMlb()
+			EventHandler.disableMlb()
 		},
 		
 		registerObservers: function(){
 			//Add preferences-observer
 	      MLB_prefObserver = Utils.createObserverForInterface(InitManager)
 	      Utils.registerObserver(MlbCommon.MLB_PREF_OBSERVER, MLB_prefObserver)
-	      Utils.observeObject(TabLocalPrefs, "observedPropExclusiveUseOfNumpad", "mouselessbrowsing.InitManager.initStatusbar()")
+	      Utils.observeObject(TabLocalPrefs, "observedPropExclusiveUseOfNumpad", this.initStatusbar, this)
 		},
 		
 		initEventHandlers : function(addOrRemoveListenerFunction) {

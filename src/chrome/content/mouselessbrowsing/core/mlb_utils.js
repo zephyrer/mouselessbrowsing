@@ -22,14 +22,6 @@
          return element.getAttribute && element.getAttribute(MlbCommon.ATTR_ID_SPAN_FLAG)!=null;
       },
       
-      getElementForIdSpan: function(idSpan){
-         return idSpan[MlbCommon.ATTR_ELEMENT_FOR_ID_SPAN]	
-      },
-      
-      setElementForIdSpan: function(idSpan, element){
-      	idSpan[MlbCommon.ATTR_ELEMENT_FOR_ID_SPAN]=element
-      },
-      
 		/*
 		* Returns true when the srcElement of the keyevent is an textfield, password-field
 		* selectbox or textarea
@@ -74,7 +66,8 @@
                      (XMLUtils.isTagName(element, "INPUT") && "submit"==element.type) ||
                      (XMLUtils.isTagName(element, "INPUT") && "reset"==element.type)  ||
                      (XMLUtils.isTagName(element, "INPUT") && "image"==element.type)  ||
-                     (XMLUtils.isTagName(element, "INPUT") && "file"==element.type)
+                     (XMLUtils.isTagName(element, "INPUT") && "file"==element.type) ||
+                     (element.hasAttribute('role') && element.getAttribute('role').indexOf("button")!=-1)
          }else if(this.ElementTypes.CHECKBOX==type){
             return XMLUtils.isTagName(element, "INPUT") && "checkbox"==element.type
          }else if(this.ElementTypes.RADIO==type){
@@ -105,10 +98,6 @@
             offsetTop += element.offsetTop
          }
          return offsetTop
-      },
-      
-      getCurrentContentWin: function(){
-      	return window.getBrowser().contentWindow;
       },
       
       logDebugMessage: function(messageString){
@@ -146,7 +135,21 @@
 		    	this.getAllFrames(frame, resultArray)
 		    }	
 		    return resultArray
-		}
+		},
+      
+      iterateFrames: function(win, handler, thisObj){
+         var frames = this.getAllFrames(win)
+         for (var i = 0; i < frames.length; i++) {
+            if(thisObj)
+               handler.apply(thisObj, [frames[i]])
+            else
+               handler(frames[i])
+         }
+      },
+      
+      isVisibleWindow: function(win){
+         return win.innerHeight!=0 && win.innerWidth!=0
+      }
 	}
 	var NS = mlb_common.Namespace
 	NS.bindToNamespace("mouselessbrowsing", "MlbUtils", MlbUtils)
