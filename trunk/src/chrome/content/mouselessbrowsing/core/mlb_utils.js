@@ -13,44 +13,28 @@
 	var COOLIRIS_PREVIEWS_GUI_ID = "{CE6E6E3B-84DD-4cac-9F63-8D2AE4F30A4B}"
 	
 	var MlbUtils = {
-		/*
-		 * Determines wether the provided span-node is an Id-Span
-		 * @param DOM-Element
-		 * @returns boolean
-		 */
-		isIdSpan: function(element){
-         return element.getAttribute && element.getAttribute(MlbCommon.ATTR_ID_SPAN_FLAG)!=null;
+      /*
+       * Returns an array with all window object of all frames included in the provided win (inkl. the provided win itself)
+       */
+      getAllFrames: function(win, resultArray){
+          if(resultArray==null){
+            resultArray = new Array()
+            resultArray.push(win)
+          }
+          for (var i = 0; i < win.frames.length; i++) {
+            var frame = win.frames[i]
+            resultArray.push(frame)
+            this.getAllFrames(frame, resultArray)
+          } 
+          return resultArray
       },
       
-		/*
-		* Returns true when the srcElement of the keyevent is an textfield, password-field
-		* selectbox or textarea
-		*/
-		isWritableElement: function(element){
-		   if(element==null || element.tagName==null)
-		       return false;
-		   var tagName = element.tagName.toUpperCase();
-		   var type = element.type?element.type.toUpperCase():"";
-		   var isWritableFormElement = (tagName.indexOf("INPUT")!=-1 && (type=="TEXT" || 
-		           type=="PASSWORD")) || tagName.indexOf("TEXTAREA")!=-1 || 
-		           tagName.indexOf("SELECT")!=-1 ||
-		           element.ownerDocument.designMode=="on"
-		   return isWritableFormElement;
-		},
-		
-		ElementTypes: {
-			TEXT: "TEXT",
-			PASSWORD: "PASSWORD",
-			TEXTAREA: "TEXTAREA",
-			SELECT: "SELECT",
-			CHECKBOX: "CHECKBOX",
-			RADIO: "RADIO",
-			BUTTON: "BUTTON",
-			FIELDSET: "FIELDSET",
-			FILE: "FILE",
-			IFRAME: "IFRAME"
-		},
-		
+      getPageData: function(win){
+         if(!win)
+            win = content
+         return win.top._mlbPageData
+      },
+      
 		isElementOfType: function(element, type){
 			if(this.ElementTypes.TEXT==type){
 				return XMLUtils.isTagName(element, "INPUT") && "text"==element.type
@@ -82,28 +66,10 @@
          return false
 		},
 		
-		getOffsetLeftToBody: function(element){
-			var offsetLeft = element.offsetLeft
-			while(element.offsetParent!=null){
-				element = element.offsetParent
-				offsetLeft += element.offsetLeft
-			}
-			return offsetLeft
+		isCoolirisPreviewsInstalled: function(){
+			return Utils.isExtensionInstalledAndEnabled(COOLIRIS_PREVIEWS_GUI_ID)
 		},
-
-      getOffsetTopToBody: function(element){
-         var offsetTop = element.offsetTop
-         while(element.offsetParent!=null){
-            element = element.offsetParent
-            offsetTop += element.offsetTop
-         }
-         return offsetTop
-      },
-      
-      logDebugMessage: function(messageString){
-      	Utils.logDebugMessage("MLB: " + messageString, MlbPrefs.DEBUG_PREF_ID)
-      },
-      
+		
       isEditableIFrame: function(element){
       	if((element instanceof HTMLDocument && element.designMode=="on") ||
       	  (element.tagName && element.tagName.toUpperCase()=="IFRAME" && element.contentDocument.designMode=="on")){
@@ -113,29 +79,35 @@
          }
       },
       
-      showMlbHelp: function() {
-			Utils.openUrlInNewTab("http://mlb.rudolf-noe.de", true)
-		},
-		
-		isCoolirisPreviewsInstalled: function(){
-			return Utils.isExtensionInstalledAndEnabled(COOLIRIS_PREVIEWS_GUI_ID)
-		},
-		
-		/*
-		 * Returns an array with all window object of all frames included in the provided win (inkl. the provided win itself)
-		 */
-		getAllFrames: function(win, resultArray){
-			 if(resultArray==null){
-			 	resultArray = new Array()
-			 	resultArray.push(win)
-			 }
-		    for (var i = 0; i < win.frames.length; i++) {
-		    	var frame = win.frames[i]
-		    	resultArray.push(frame)
-		    	this.getAllFrames(frame, resultArray)
-		    }	
-		    return resultArray
-		},
+      
+      /*
+       * Determines wether the provided span-node is an Id-Span
+       * @param DOM-Element
+       * @returns boolean
+       */
+      isIdSpan: function(element){
+         return element.getAttribute && element.getAttribute(MlbCommon.ATTR_ID_SPAN_FLAG)!=null;
+      },
+
+      /*
+      * Returns true when the srcElement of the keyevent is an textfield, password-field
+      * selectbox or textarea
+      */
+      isWritableElement: function(element){
+         if(element==null || element.tagName==null)
+             return false;
+         var tagName = element.tagName.toUpperCase();
+         var type = element.type?element.type.toUpperCase():"";
+         var isWritableFormElement = (tagName.indexOf("INPUT")!=-1 && (type=="TEXT" || 
+                 type=="PASSWORD")) || tagName.indexOf("TEXTAREA")!=-1 || 
+                 tagName.indexOf("SELECT")!=-1 ||
+                 element.ownerDocument.designMode=="on"
+         return isWritableFormElement;
+      },
+      
+      isVisibleWindow: function(win){
+         return win.innerHeight!=0 && win.innerWidth!=0
+      },
       
       iterateFrames: function(win, handler, thisObj){
          var frames = this.getAllFrames(win)
@@ -147,8 +119,33 @@
          }
       },
       
-      isVisibleWindow: function(win){
-         return win.innerHeight!=0 && win.innerWidth!=0
+      logDebugMessage: function(messageString){
+         Utils.logDebugMessage("MLB: " + messageString, MlbPrefs.DEBUG_PREF_ID)
+      },
+      
+      /*
+       * Sets the current page data
+       * @param win: arbitray content win
+       * @param pageData
+       */
+      setPageData: function(win, pageData){
+         win.top._mlbPageData = pageData
+      },
+      
+      showMlbHelp: function() {
+         Utils.openUrlInNewTab("http://mlb.rudolf-noe.de", true)
+      },
+      
+      ElementTypes: {
+         BUTTON: "BUTTON",
+         CHECKBOX: "CHECKBOX",
+         FIELDSET: "FIELDSET",
+         FILE: "FILE",
+         PASSWORD: "PASSWORD",
+         RADIO: "RADIO",
+         SELECT: "SELECT",
+         TEXT: "TEXT",
+         TEXTAREA: "TEXTAREA"
       }
 	}
 	var NS = mlb_common.Namespace

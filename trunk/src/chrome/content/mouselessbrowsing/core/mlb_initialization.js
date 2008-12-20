@@ -5,23 +5,10 @@
  * 30.12.2007
  */
 
+with(mlb_common){
+with(mouselessbrowsing){
 (function(){
 	
-	var KeyInputbox = mlb_common.KeyInputbox
-	var Prefs = mlb_common.Prefs
-   var ShortcutManager = mlb_common.ShortcutManager
-	var Utils = mlb_common.Utils
-
-	var EventHandler = mouselessbrowsing.EventHandler
-   var GoogleProjectHelper = mouselessbrowsing.miscellaneous.GoogleProjectHelper
-   var LayoutDebugger = mouselessbrowsing.miscellaneous.LayoutDebugger
-   var MlbCommon = mouselessbrowsing.MlbCommon
-	var MlbPrefs = mouselessbrowsing.MlbPrefs
-	var MlbUtils = mouselessbrowsing.MlbUtils
-	var PageInitializer = mouselessbrowsing.PageInitializer
-	var TabLocalPrefs = mouselessbrowsing.TabLocalPrefs
-	var VersionManager = mouselessbrowsing.VersionManager
-   
 	var STRINGBUNDLE_ID = "mouselessbrowsingOverlaySB"
 
    //Prefs observer
@@ -39,6 +26,7 @@
    
 	var InitManager = {
 		eventHandlersActive: false,
+      scm: new ShortcutManager(window, "keydown"),
 		
 		init: function(event){
 		   MlbPrefs.initPrefs();
@@ -48,7 +36,7 @@
          if(MLB_prefObserver==null){
             this.registerObservers();
          }
-         ShortCutManager.clearAllShortCutsForClientId(MlbCommon.SCM_CLIENT_ID);
+         this.scm.clearAllShortcuts(MlbCommon.SCM_CLIENT_ID);
 			if(MlbPrefs.disableMLB){
 				this.disableMLB()
 			}else{
@@ -76,18 +64,16 @@
 
           //As only the current page will be entirely initialized for performance reasons
           //the visibility mode of the others must be adjusted 
-          var browsers = gBrowser._browsers
-          for (var i = 0; i < browsers.length; i++) {
-          	if(browsers[i]==gBrowser.mCurrentBrowser){
-          		continue
-          	}
-          	var contentWin = browsers[i].contentWindow
+          Firefox.iterateAllBrowsers(function(browser){
+             if(browser==Firefox.getActiveBrowser())
+               return
+          	var contentWin = browser.contentWindow
           	var visibilityMode = TabLocalPrefs.getVisibilityMode(contentWin)
           	var idsVisible = PageInitializer.hasVisibleIdSpans(contentWin)  
             if(visibilityMode==MlbCommon.VisibilityModes.NONE && idsVisible){
           		EventHandler.hideIdSpans(contentWin)
           	}
-          }
+          })
 		},
 		
 		disableMLB: function(){
@@ -101,6 +87,10 @@
 		   PageInitializer.disableMlb()
 			EventHandler.disableMlb()
 		},
+      
+      getShortcutManager: function(){
+         return this.scm
+      },
 		
 		registerObservers: function(){
 			//Add preferences-observer
@@ -130,7 +120,7 @@
 		
 		initShortCuts: function (){
 		    //Shortcut for Enter
-		    ShortCutManager.addJsShortCutWithCombinedKeyCode(208, "mouselessbrowsing.EventHandler.handleEnter()", MlbCommon.SCM_CLIENT_ID);
+		    this.scm.addShortcut(208, "mouselessbrowsing.EventHandler.handleEnter()", null, MlbCommon.SCM_CLIENT_ID);
 		    
           this.setShortcut("mouselessbrowsing.keys.openInNewTabPostfixKey", "mouselessbrowsing.EventHandler.openLinkInOtherLocationViaPostfixKey(event, mouselessbrowsing.MlbCommon.OpenLinkLocations.TAB)");
 
@@ -142,7 +132,7 @@
 		    
 			 this.setShortcut("mouselessbrowsing.keys.toggleAllIds", "mouselessbrowsing.EventHandler.toggleAllIds()");
 
-          this.setShortcut("mouselessbrowsing.keys.updatePage", "mouselessbrowsing.PageInitializer.updatePage()");
+          this.setShortcut("mouselessbrowsing.keys.updatePage", function(){PageInitializer.updatePage(); return ShortcutManager.SUPPRESS_KEY});
 		    
 		    this.setShortcut("mouselessbrowsing.keys.historyBack", "mouselessbrowsing.EventHandler.moveHistory('back')");
 		
@@ -172,12 +162,12 @@
 
 		    //Toggling exclusive use with double stroke of numpad-key
 			 if(MlbPrefs.toggleExlNumpadWithDoubleStrokeNumKey){
-		       ShortCutManager.addJsShortCutWithCombinedKeyCode(2304, "mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpad();", MlbCommon.SCM_CLIENT_ID);
+		       this.scm.addShortcut(2304, "mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpad();", null, MlbCommon.SCM_CLIENT_ID);
 			 }
 		
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.toggleExlusiveUseOfNumpad");
 		    if(combinedKeyCode!="2304" && combinedKeyCode!="0")
-			    ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, "mouselessbrowsing.TabLocalPrefs.toggleExclusiveUseOfNumpad();", MlbCommon.SCM_CLIENT_ID);
+			    this.scm.addShortcut(combinedKeyCode, "mouselessbrowsing.TabLocalPrefs.toggleExclusiveUseOfNumpad();",  null, MlbCommon.SCM_CLIENT_ID);
 		    
 			 this.setShortcut("mouselessbrowsing.keys.toggleEnableDisableMLB", "mouselessbrowsing.InitManager.toggleEnableDisableMLB()");
 		},
@@ -185,7 +175,7 @@
 		setShortcut: function(prefsKey, jsCode){
 			var combinedKeyCode = Prefs.getCharPref(prefsKey);
 			if(combinedKeyCode!="0"){
-				ShortCutManager.addJsShortCutWithCombinedKeyCode(combinedKeyCode, jsCode, MlbCommon.SCM_CLIENT_ID);
+				this.scm.addShortcut(combinedKeyCode, jsCode, null, MlbCommon.SCM_CLIENT_ID);
 			}
 		},
 		
@@ -245,7 +235,6 @@
 			MlbUtils.logDebugMessage('init on toggling')
 			Prefs.setBoolPref("mouselessbrowsing.disableMLB", !MlbPrefs.disableMLB)
 			this.init()
-			return ShortCutManager.SUPPRESS_KEY
 		},
 		
 		observe: function(){
@@ -261,14 +250,14 @@
    function showOffsets(event){
       if(event.ctrlKey && event.button==2){
         var target = event.originalTarget
-        var offsetTop = MlbUtils.getOffsetTopToBody(target)
-        var offsetLeft = MlbUtils.getOffsetLeftToBody(target)
-        mlb_common.Utils.logMessage("MLB: TagName: " + target.tagName + " OffsetLeft (Body): " + offsetLeft + " OffsetTop (Body): " + offsetTop)
+        
+        var offset = DomUtils.getOffsetToBody(target)
+        mlb_common.Utils.logMessage("MLB: TagName: " + target.tagName + " OffsetLeft (Body): " + offset.x + " OffsetTop (Body): " + offset.y)
         event.stopPropagation()
         event.preventDefault()
       }
    }
 	
 })()
-
+}}
 

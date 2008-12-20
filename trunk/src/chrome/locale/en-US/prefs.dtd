@@ -8,6 +8,7 @@
 <!ENTITY showIdsOnDemand.label "Show ids only on demand">
 <!ENTITY initOnDomContentLoaded.label "Show ids before all images are loaded (this can partly lead to misplaced ids)">
 <!ENTITY executeAutomatice.label "Execute automatically without pressing Enter">
+<!ENTITY executeInstantlyWhenIdUnique.label "Execute action instantly when the id is unique (prevents use of post-fix keys)">
 <!ENTITY groupbox.id_type.label "Id Type">
 <!ENTITY idTypeNumeric.label "Use Numeric Ids">
 <!ENTITY exlusiveUseOfNumpad.label "Use numpad exclusively for Mouseless Browsing">
@@ -22,8 +23,11 @@
 <!ENTITY enableImgLinkIds.label "Enable ids for image-links">
 <!ENTITY enableImgFormElementIds.label "Enable ids for form elements">
 <!ENTITY enableImgFrameIds.label "Enable ids for frames">
+<!ENTITY enableOtherIds.label "Enable ids for other clickable elements (e.g. Flash, DIVs etc.)">
 <!ENTITY groupbox.other-layout-config.label "Other Layout Configuration">
 <!ENTITY smartPositioning.label "Smart positioning of ids">
+<!ENTITY omitSmartPosForCheckboxAndRadio.label "Omit smart positioning of checkboxes and radio buttons (reduce initialization time)">
+<!ENTITY filterDuplicateLinks.label "Hide ids for image links for which an identical text link exists">
 <!ENTITY showKeybufferInStatusbar.label "Show keybuffer in statusbar">
 <!ENTITY showMlbIconInStatusbar.label "Show MLB Icon in statusbar">
 <!ENTITY showMlbMenu.label "Show MLB Menu in the Tools menu">

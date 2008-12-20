@@ -3,7 +3,6 @@
 	var SiteRule = mouselessbrowsing.SiteRule
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	var Prefs = mlb_common.Prefs
-   var ShortcutManager = mlb_common.ShortcutManager
 	var Utils = mlb_common.Utils
 
 	function TabLocalPrefs() {
@@ -64,7 +63,6 @@
 	function toggleExclusiveUseOfNumpad() {
 		getPrefs().toggleExclusiveUseOfNumpad()
 		TabLocalPrefs.observedPropExclusiveUseOfNumpad = getPrefs().exclusiveUseOfNumpad
-		return ShortCutManager.SUPPRESS_KEY
 	}
 	TabLocalPrefs.toggleExclusiveUseOfNumpad = toggleExclusiveUseOfNumpad
    

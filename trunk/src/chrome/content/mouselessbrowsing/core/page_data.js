@@ -1,9 +1,7 @@
+with(mouselessbrowsing){
 (function(){
-   //Imports
-   var MlbCommon = mouselessbrowsing.MlbCommon
-   	
    //Constructor
-	function PageData(idChars){	
+	function PageData(){	
 		
       this.changeListener = null
       
@@ -16,24 +14,30 @@
       //Counter which hold the actual number of initializations
       this.initCounter = 0
       
+      this.nextKeepExistingIds = true
+      
       this.initResetableMembers()
 	}
    
    //Static create method to enable hooking of layout debugger
-   PageData.createPageData = function(idChars){
-      return new PageData(idChars)
+   PageData.createPageData = function(){
+      return new PageData()
    }
 	
 	PageData.prototype =  {
+
+      getNextKeepExistingIds: function(){
+         return this.nextKeepExistingIds
+      },
+
+      setNextKeepExistingIds: function(nextKeepExistingIds){
+         this.nextKeepExistingIds = nextKeepExistingIds
+      },
 
       getInitCounter: function(){
          return this.initCounter
       },
       
-      setInitCounter: function(initCounter){
-         this.initCounter = initCounter
-      },
-
       getChangeListener: function(){
          return this.changeListener
       },
@@ -43,45 +47,12 @@
       },
       
       addElementIdSpanBinding: function(element, idSpan){
-         var bindingKey = this.elementIdSpanMapKey++
+         var bindingKey = this.elementIdSpanMapKey++ + ""
          this.elementIdSpanMap[bindingKey]= {element:element, idSpan: idSpan}
          element.setAttribute(MlbCommon.MLB_BINDING_KEY_ATTR, bindingKey) 
          idSpan.setAttribute(MlbCommon.MLB_BINDING_KEY_ATTR, bindingKey) 
       },
       
-      getElementBySpan: function(refSpan){
-         if(!refSpan.hasAttribute(MlbCommon.MLB_BINDING_KEY_ATTR))
-            return null
-         return this.elementIdSpanMap[refSpan.getAttribute(MlbCommon.MLB_BINDING_KEY_ATTR)].element
-      },
-      
-      getIdSpanByElement: function(refElement){
-         if(!refElement.hasAttribute(MlbCommon.MLB_BINDING_KEY_ATTR))
-            return null
-         return this.elementIdSpanMap[refElement.getAttribute(MlbCommon.MLB_BINDING_KEY_ATTR)].idSpan
-      },
-      
-      incrementInitCounter: function(){
-         return ++this.initCounter
-      },
-      
-      initResetableMembers: function(idChars){
-         //Element Counter
-         this.counter = 0
-         
-         //Array with id-marked elements
-         this.elementsWithId = new Array(1000)
-   
-         if(idChars!=null){
-            this.useCharIds = true
-            this.idChars = idChars
-            this.currentId = ""
-            this.idToElementMap = new Object()
-         }
-         
-         this.absolutePositionedFormElements = new Array();
-      },
-
       addElementWithId: function(element){
 			this.elementsWithId[this.counter] = element;
 			if(this.useCharIds){
@@ -89,6 +60,12 @@
 			}
 		},
 		
+      getElementBySpan: function(refSpan){
+         if(!refSpan.hasAttribute(MlbCommon.MLB_BINDING_KEY_ATTR))
+            return null
+         return this.elementIdSpanMap[refSpan.getAttribute(MlbCommon.MLB_BINDING_KEY_ATTR)].element
+      },
+      
 		getElementForId:function(id){
 			if(this.useCharIds){
 				return this.idToElementMap[id.toUpperCase()]
@@ -97,6 +74,12 @@
 			}
 		},
 		
+      getIdSpanByElement: function(refElement){
+         if(!refElement.hasAttribute(MlbCommon.MLB_BINDING_KEY_ATTR))
+            return null
+         return this.elementIdSpanMap[refElement.getAttribute(MlbCommon.MLB_BINDING_KEY_ATTR)].idSpan
+      },
+
 		getNextId:function(){
 			this.counter = this.counter+1
 			if(this.useCharIds){
@@ -129,8 +112,46 @@
 				return this.elementsWithId[id]!=null
 			}
 		},
+      
+      incrementInitCounter: function(){
+         return ++this.initCounter
+      },
 
-	   replaceChar: function(value, index, newChar) {
+      initResetableMembers: function(){
+         //Element Counter
+         this.counter = 0
+         
+         //Array with id-marked elements
+         this.elementsWithId = new Array(1000)
+   
+         if(MlbPrefs.isCharIdType()){
+            this.useCharIds = true
+            this.idChars = MlbPrefs.idChars
+            this.idToElementMap = new Object()
+         }else{
+            this.useCharIds = false
+            this.idChars = null
+            this.idToElementMap = null
+         }
+         this.currentId = ""
+         
+         this.absolutePositionedFormElements = new Array();
+      },
+      
+      isIdUnique: function(id){
+         if(!this.hasElementWithId(id))
+            return false
+         if(this.useCharIds)
+            id += this.idChars.charAt(0)
+         else
+            id += "0"
+         if(this.hasElementWithId(id))
+            return false
+         else
+            return true
+      },
+
+      replaceChar: function(value, index, newChar) {
 	      result = "";
 	      if(index!=0) {
 	         result = value.substring(0, index);
@@ -140,15 +161,11 @@
 	         result = result + value.substring(index+1);
 	      }
 	      return result;
-	   },
+	   }
       
-      reset: function(){
-         this.initResetableMembers() 
-      },
-		
-		
 	}
 	
 	var NS = mlb_common.Namespace;
 	NS.bindToNamespace("mouselessbrowsing", "PageData", PageData)
 })()
+}

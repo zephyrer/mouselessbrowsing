@@ -1,7 +1,6 @@
 /**
  * Contains constants and loading of common subscripts
  */
- DE_MOUSELESS_EXTENSION_NS = null;
 (function(){
 	var MlbCommon = { 
 		//Constants
@@ -23,13 +22,21 @@
 		//Attribute of id span containing the element it belongs to
 		//Not fill in every case
 		ATTR_ELEMENT_FOR_ID_SPAN: "idSpanElement",
+      
+      //Atribute idicating that this element should be igored
+      ATTR_IGNORE_ELEMENT: "mlb_ignore",
+      
+      //key with which the binding between element and id span can be retrieved from the page data
+      MLB_BINDING_KEY_ATTR: "mlb_binding_key",
+
 		 
 		//Types of id-Spans, the value of the Attribute MLB_idSpanFor
 		IdSpanTypes: {
 			FRAME: "FRAME",
 			IMG: "IMG",
 			FORMELEMENT: "FORMELEMENT",
-			LINK: "LINK"
+			LINK: "LINK",
+			OTHER: "OTHER"
 		},
 		
 		VisibilityModes: {
@@ -69,25 +76,16 @@
 		},
 		
 		init: function(){
-			//Create Namespace objects
-			DE_MOUSELESS_EXTENSION_NS = window['mlb_common'] = new Object()
-			//Load subscripts
-			this.loadScript(this.COMMON_CHROME_ULR+"namespace.js", DE_MOUSELESS_EXTENSION_NS)
-			this.loadScript(this.COMMON_CHROME_ULR+"constants.js", DE_MOUSELESS_EXTENSION_NS)
-			this.loadScript(this.COMMON_CHROME_ULR+"utils.js", DE_MOUSELESS_EXTENSION_NS)
-			this.loadScript(this.COMMON_CHROME_ULR+"ControlUtils.js", DE_MOUSELESS_EXTENSION_NS)
-			this.loadScript(this.COMMON_CHROME_ULR+"string_utils.js", DE_MOUSELESS_EXTENSION_NS)
-			this.loadScript(this.COMMON_CHROME_ULR+"xmlutils.js", DE_MOUSELESS_EXTENSION_NS)
-			this.loadScript(this.COMMON_CHROME_ULR+"prefs.js", DE_MOUSELESS_EXTENSION_NS)
-			this.loadScript(this.COMMON_CHROME_ULR+"pref_utils.js", DE_MOUSELESS_EXTENSION_NS)
-			this.loadScript(this.COMMON_CHROME_ULR+"listbox.js", DE_MOUSELESS_EXTENSION_NS)
-			this.loadScript(this.COMMON_CHROME_ULR+"keyinputbox.js", DE_MOUSELESS_EXTENSION_NS)
-			this.loadScript(this.COMMON_CHROME_ULR+"keyCodeMapper.js", DE_MOUSELESS_EXTENSION_NS)
-			this.loadScript(this.COMMON_CHROME_ULR+"shortcutmanager.js")
-			this.loadScript(this.COMMON_CHROME_ULR+"perf_timer.js", DE_MOUSELESS_EXTENSION_NS)
-			//Reset namespace object
-			DE_MOUSELESS_EXTENSION_NS = null
-
+         //Create Namespace object for mouseless
+         var namespaceObj = window['mlb_common'] = new Object()
+         
+         //Load script loader all the rest
+         var tempScriptLoaderNS = new Object()
+         this.loadScript(this.COMMON_CHROME_ULR + "/script/ScriptLoader.js", tempScriptLoaderNS)
+         this.scriptLoader = tempScriptLoaderNS.ScriptLoader
+         var exclude = ["Shortcutmanager.js"]
+         this.scriptLoader.loadScripts(this.COMMON_CHROME_ULR, namespaceObj, exclude, true)
+      
 			//Init version
 			this.MLB_VERSION = mlb_common.Utils.getExtension(this.MLB_GUI_ID).version
 		}

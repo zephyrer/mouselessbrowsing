@@ -3,6 +3,7 @@ with(mouselessbrowsing){
 (function(){
    function AbstractInitializer(pageInitData){
       this.pageInitData = pageInitData
+      this.spanPrototype = null
    }
    
    //Static methods
@@ -39,8 +40,6 @@ with(mouselessbrowsing){
               //span
               var span = this.pageInitData.getCurrentDoc().createElement("span");
               span.style.cssText = MlbPrefs.styleForIdSpan
-              
-              //Lets try it with the new version for FF
               span.style.display = "inline";
               
               //Mark this span as id-span
@@ -52,10 +51,7 @@ with(mouselessbrowsing){
       
       doOverlayPositioning: function(element, newSpan, parentElement, spanPosition){
          parentElement = parentElement?parentElement:element
-         //Before! inserting evaluate offsets
-         var elementOffsetLeft = MlbUtils.getOffsetLeftToBody(element)
-         var elementOffsetTop = MlbUtils.getOffsetTopToBody(element)
-         
+
          //Set link position relative but only if neither the link nor one of its descendants are positioned
          //as this would lead to disarrangements
          //See also MLB issue 25, 37,
@@ -73,33 +69,25 @@ with(mouselessbrowsing){
             DomUtils.insertAfter(newSpan, element)
          
          
-         //If img is to small relative to the span do not overlay image
+         //If overlayed element is to small relative to the span do not 
+         //TODO make configurable
          var factor = 2
          if(element.offsetWidth<factor*newSpan.offsetWidth && 
              element.offsetHeight<factor*newSpan.offsetHeight){
-            newSpan.style.position="relative"
-            return newSpan
-         }
+            spanPosition = SpanPosition.NORTH_EAST_OUTSIDE
+         }         
          
-         //Offsets for img Element
-         var idSpanOffsetLeft = MlbUtils.getOffsetLeftToBody(newSpan)
-         var idSpanOffsetTop = MlbUtils.getOffsetTopToBody(newSpan)
-         var left = elementOffsetLeft - idSpanOffsetLeft + element.offsetWidth
          if(spanPosition==SpanPosition.NORTH_EAST_OUTSIDE){
             //Display in the right upper corner next to the element, as overlay is for e.g. for embedded objects not possible
             var currentMarginRight = this.getComputedStyle(element).marginRight
             currentMarginRight = StringUtils.isEmpty(currentMarginRight)?parseInt(currentMarginRight):0
             element.style.marginRight = (newSpan.offsetWidth-currentMarginRight) + "px" 
-         }else if(spanPosition==SpanPosition.NORTH_EAST_OVERLAY){
-            left =  left - newSpan.offsetWidth
-         }else{
-            throw new Error('unkown span position')
          }
-         var top = elementOffsetTop - idSpanOffsetTop
-         newSpan.style.left = left+"px"
-         newSpan.style.top = top+"px"
-         newSpan.style.backgroundColor="#EEF3F9"
-         newSpan.style.color="black"
+
+         this.positionIdSpan(newSpan, element, spanPosition)
+         
+         newSpan.style.setProperty("background-color", "#EEF3F9", "important")
+         newSpan.style.setProperty("color", "black", "important")
          return newSpan
       },
  
@@ -134,6 +122,38 @@ with(mouselessbrowsing){
          return null;
       },
       
+      hasVisibleText: function(elem, useComputedStyle, isRootElement){
+         //visibility check not for element itself, as it could be initially hidden
+         if(elem.textContent=="" ||
+            (!isRootElement && useComputedStyle && !this.isElementVisible(elem)) ||
+            (!isRootElement && !useComputedStyle && (elem.style.display=="none" || elem.style.visibility=="hidden" )))
+            return false
+         var children = elem.childNodes
+         for (var i = 0; i < children.length; i++) {
+            var child = children[i]
+            if(child.nodeType==3 && !XMLUtils.isEmptyTextNode(child))
+               return true
+            else if (child.nodeType==1){
+               var hasText = this.hasVisibleText(child, useComputedStyle, false)
+               if(hasText)
+                  return true
+            }
+               
+         }
+         return false
+      },
+      
+      initIds: function(){
+         if(MlbPrefs.debugPerf){
+            var timer = new PerfTimer()
+         }
+         this._initIds()
+         if(MlbPrefs.debugPerf){
+            var type = ObjectUtils.getType(this)
+            MlbUtils.logDebugMessage("Init time for " + type + ": " + timer.stop())
+         }
+      },
+      
       insertSpanForTextElement: function(element, newSpan){
          //Append to last element in link except for imgages for better style
          var parentOfLastTextNode = this.findParentOfLastTextNode(element)
@@ -161,39 +181,24 @@ with(mouselessbrowsing){
          return true
       },
       
-      isImageElement: function(element, idSpanType){
+      isImageElement: function(element){
          if(element.hasAttribute("mlb_image_elem"))
             return true
-         var isImage = false
-         if(element.getElementsByTagName('img').length>0 ||
-            StringUtils.isEmpty(element.textContent) || StringUtils.trim(element.textContent).length==0){
-            isImage = true
-         }
-         //Check if any visible text is there
-         function hasVisibleText(element){
-            if(!element.hasChildNodes() || !DomUtils.isVisible(element))
-               return false
-            var children = element.childNodes
-            for (var i = 0; i < children.length; i++) {
-               var child = children[i]
-               if(child.nodeType==3 && !XMLUtils.isEmptyTextNode(child))
-                  return true
-               else if (child.nodeType==1){
-                  var hasText = hasVisibleText(child)
-                  if(hasText)
-                     return true
-               }
-                  
-            }
-            return false
-         }
-         if(!isImage)
-            isImage = !hasVisibleText(element)
+            //TODO remove
+//         var isImage = false
+//         if(element.getElementsByTagName('img').length>0 ||
+//            StringUtils.isEmpty(element.textContent) || StringUtils.trim(element.textContent).length==0){
+//            isImage = true
+//         }
+//         //Check if any visible text is there
+//         if(!isImage)
+         isImage = !this.isTextElement(element)
          if(isImage)
             element.setAttribute("mlb_image_elem", "true")
          return isImage 
       },
 
+      //TODO all descendants must be searched for positioned elements
       isPositionedElement: function(element){
          var style = this.getComputedStyle(element)
          if(style.position!="static")
@@ -209,6 +214,58 @@ with(mouselessbrowsing){
          return false
       },
       
+      isTextElement: function(element){
+         var useComputedStyle = true
+         if(!DomUtils.isVisible)
+            useComputedStyle = false
+         return this.hasVisibleText(element, true, true)
+      },
+      
+      positionIdSpan: function(idSpan, element, spanPosition){
+         idSpan.style.position="relative"
+         idSpan.style.marginRight = (-idSpan.offsetWidth) + "px"
+         idSpan.style.marginBottom = (-idSpan.offsetHeight) + "px"
+         
+         if(spanPosition==SpanPosition.EAST_OUTSIDE || 
+            spanPosition==SpanPosition.NORTH_EAST_OUTSIDE){
+            var currentMarginRight = this.getComputedStyle(element).marginRight
+            currentMarginRight = StringUtils.isEmpty(currentMarginRight)?parseInt(currentMarginRight):0
+            element.style.marginRight = (idSpan.offsetWidth-currentMarginRight) + "px"
+         }
+         
+         var spanOffset = DomUtils.getOffsetToBody(idSpan)
+         var elementOffset = DomUtils.getOffsetToBody(element)
+         
+         var left = elementOffset.x - spanOffset.x 
+         if(spanPosition==SpanPosition.EAST_OUTSIDE || 
+            spanPosition==SpanPosition.NORTH_EAST_OUTSIDE){
+            left = left + element.offsetWidth
+         }else if(spanPosition==SpanPosition.NORTH_EAST_INSIDE){
+            left = left + element.offsetWidth - idSpan.offsetWidth
+         }else {
+            throw new Error('unkown span position')
+         }
+         var top = elementOffset.y - spanOffset.y 
+         if(spanPosition == SpanPosition.EAST_OUTSIDE){
+            top = top + (element.offsetHeight - idSpan.offsetHeight)/2
+         }
+         //Take already set value into acount
+         if(left!=0){
+            left += idSpan.style.left?parseInt(idSpan.style.left, 10):0
+            idSpan.style.left = left + "px"
+         }
+         if(top!=0){
+            top += idSpan.style.top?parseInt(idSpan.style.top, 10):0
+            idSpan.style.top = top + "px"
+         }
+         
+         //Adjust margin-bottom if span was inserted below elmenet
+         var isLineBreakBetween = elementOffset.y + elementOffset.offsetHeight < spanOffset.y
+         if(isLineBreakBetween){
+            
+         }
+      },
+      
       setNewSpanId: function(span){
          span.mlb_initCounter = this.pageInitData.getInitCounter()
          var newId = this.pageInitData.pageData.getNextId();
@@ -218,24 +275,20 @@ with(mouselessbrowsing){
       /*
        * Updates an id span which already exists
        */
-      updateSpan: function(visible, span){
-         if(visible){
-            this.setNewSpanId(span) 
-            span.style.display = "inline";
-          }else{
-            span.style.display = "none";
-          }
-      },
-
+      updateSpan: function(span){
+          this.setNewSpanId(span) 
+          span.style.display = "inline";
+      }
      
    }
    
    Namespace.bindToNamespace("mouselessbrowsing", "AbstractInitializer", AbstractInitializer)
 
    SpanPosition = {
-      NORTH_EAST_OVERLAY: "NORTH_EAST_OVERLAY",
-      NORTH_EAST_OUTSIDE: "NORTH_EAST_OUTSIDE",
-      APPEND_TEXT: "APPEND_TEXT" 
+      APPEND_TEXT: "APPEND_TEXT", 
+      EAST_OUTSIDE: "EAST_OUTSIDE",
+      NORTH_EAST_INSIDE: "NORTH_EAST_INSIDE",
+      NORTH_EAST_OUTSIDE: "NORTH_EAST_OUTSIDE"
    }      
    Namespace.bindToNamespace("mouselessbrowsing", "SpanPosition", SpanPosition)
 })()
