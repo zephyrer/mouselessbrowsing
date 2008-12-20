@@ -5,21 +5,10 @@
  * Created by Rudolf Noé
  * 31.12.2007
  */
-
+with(mlb_common){
+with(mouselessbrowsing){
 (function(){
    
-   //Imports
-   var Firefox = mlb_common.Firefox
-	var Prefs = mlb_common.Prefs
-	var ShortcutManager = mlb_common.ShortcutManager
-	var StringUtils = mlb_common.StringUtils
-	var Utils = mlb_common.Utils
-	var TabLocalPrefs = mouselessbrowsing.TabLocalPrefs
-	var MlbPrefs = mouselessbrowsing.MlbPrefs
-	var MlbCommon = mouselessbrowsing.MlbCommon
-	var MlbUtils = mouselessbrowsing.MlbUtils
-	var GlobalData = mouselessbrowsing.GlobalData
-		
    var EventHandler = {
 		//Keybuffer
 		keybuffer: "",
@@ -84,7 +73,7 @@
             
             (MlbPrefs.isNumericIdType() && MlbUtils.isWritableElement(event.originalTarget) && !this.eventStopped && !this.isOneOfConfiguredModifierCombination(event)) ||
             (MlbUtils.isWritableElement(event.originalTarget) && !this.eventStopped) ||
-		      !this.isCharCodeInIds(charString)){ 
+		      !this.isCharCodeInIds(charString)){
 		    	return;
 		   }
  
@@ -103,10 +92,13 @@
 			this.openInNewWindow= ShortCutManager.encodeEventModifier(event)==MlbPrefs.modifierForOpenInNewWindow
 			this.openInCoolirisPreviews = ShortCutManager.encodeEventModifier(event)==MlbPrefs.modifierForOpenInCoolirisPreviews
 			
-			if(this.isExecuteAutomatic(event)){
-			   this.timerId = setTimeout("mouselessbrowsing.EventHandler.executeAutomatic()", MlbPrefs.delayForAutoExecute);
+         if(this.isExecuteAutomatic(event)){
+            if(MlbPrefs.executeInstantlyWhenIdUnique && MlbUtils.getPageData().isIdUnique(this.keybuffer))
+               this.executeAutomatic()
+            else
+			      this.timerId = setTimeout("mouselessbrowsing.EventHandler.executeAutomatic()", MlbPrefs.delayForAutoExecute);
 			}else{
-			   this.timerId = setTimeout("mouselessbrowsing.EventHandler.resetVars()", MlbPrefs.delayForAutoExecute);
+			   this.setResetTimer()
 			}
 		},
 		
@@ -156,12 +148,13 @@
 		},
 		
 		handleEnter: function(){
-			var event = ShortCutManager.currentEvent;
+			var event = InitManager.getShortcutManager().getCurrentEvent();
          if(this.shouldExecute()){
            this.execute();
            this.stopEvent(event);
          }
          this.resetVars();
+         return ShortcutManager.DO_NOT_SUPPRESS_KEY
 		},
 
 		/*
@@ -198,8 +191,8 @@
 			
 		
 		shouldExecute: function(){
-			if(this.getPageInitializer().getPageData() && //avoid error if page is changed in the meantime e.g. with history back
-			   this.getPageInitializer().getPageData().hasElementWithId(this.keybuffer) ||
+			if(MlbUtils.getPageData() && //avoid error if page is changed in the meantime e.g. with history back
+			   MlbUtils.getPageData().hasElementWithId(this.keybuffer) ||
 				this.globalIds[this.keybuffer]!=null){
 				return true;
 			}else{
@@ -229,7 +222,7 @@
 		    }
 		    
 		    //Else...
-		    var element = this.getPageInitializer().getPageData().getElementForId(this.keybuffer);
+		    var element = MlbUtils.getPageData().getElementForId(this.keybuffer);
 		    //If onDomContentLoaded the pageData is not refreshed removed items could be in the pageData
 		    if(element.ownerDocument==null){//Element no longer exists within the document
 		    	return
@@ -341,8 +334,8 @@
 			   //Previous mode was all, switch back to all mode
 			   resultingVisibilityMode=MlbCommon.VisibilityModes.ALL;
 			}
-		   this.updateIdsAfterToggling(resultingVisibilityMode);
-		   return ShortCutManager.SUPPRESS_KEY
+		   this.updateIdsAfterToggling(resultingVisibilityMode, currentVisibilityMode);
+         
 		},
 		
 		/*
@@ -357,19 +350,23 @@
 		   }else{ 
 		    	resultingVisibilityMode=MlbCommon.VisibilityModes.CONFIG;
 		   }
-		   this.updateIdsAfterToggling(resultingVisibilityMode);
+		   this.updateIdsAfterToggling(resultingVisibilityMode, currentVisibilityMode);
+         
 		},
 		
 		/*
 		 * Initiates the update of the id spans after toggling the ids
 		 */
-		updateIdsAfterToggling: function(visibilityMode){
+		updateIdsAfterToggling: function(visibilityMode, currentVisibilityMode){
 	      TabLocalPrefs.initVisibilityModeAndShowIdPrefs(visibilityMode);
-         this.hideIdSpans(content);
+         //Hide all as the 
 			if(visibilityMode==MlbCommon.VisibilityModes.NONE){
-             this.getPageInitializer().deactivateChangeListener(content)
+            this.hideIdSpans(content);
+            this.getPageInitializer().deactivateChangeListener(content)
 		    }else {
-		       this.getPageInitializer().updatePage();
+            if(currentVisibilityMode==MlbCommon.VisibilityModes.ALL)//hide first all id spans as the number of spans will be less
+               this.hideIdSpans(content)
+		      this.getPageInitializer().updatePage();
 		    }
 		},
       
@@ -379,7 +376,7 @@
 		 */
 		hideIdSpans: function(winObj){
 	       //Reset PageData
-          var pageData = this.getPageInitializer().getPageData(winObj)
+          var pageData = MlbUtils.getPageData(winObj)
           function _hideIdSpans(winObj){
    		    var doc = winObj.document;
    		    var spans = doc.evaluate("//span[@MLB_idSpanFlag]", doc, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null)
@@ -396,7 +393,9 @@
    		        _hideIdSpans(frames[i]);
    		    }
           }
-	       this.getPageInitializer().setPageData(content, new mouselessbrowsing.PageData())
+          _hideIdSpans(winObj)
+          if(pageData)//is null on first initialization after startup
+            pageData.initResetableMembers()
 		},
 		
 		/*
@@ -412,7 +411,6 @@
 		    else
 		        getBrowser().goBack();
 		    
-		    return ShortCutManager.SUPPRESS_KEY;
 		},
 		
 		/*
@@ -420,7 +418,7 @@
 		 * and a textfield or selectbox is focused
 		 */
 		isSuppressShortCut: function(){
-		    var event = ShortCutManager.currentEvent;
+		    var event = InitManager.getShortcutManager().getCurrentEvent();
 		    if(this.isNonPrintableKey(event))
 		    	return false;
 		    var modifierPressed = event.altKey || event.ctrlKey
@@ -459,7 +457,7 @@
 		        content.scrollBy(0, -MlbPrefs.pixelsToScroll);
 		    else
 		        content.scrollBy(0, MlbPrefs.pixelsToScroll);
-		    return ShortCutManager.SUPPRESS_KEY; 
+          
 		},
 		 /*
 		  * Checks wether the actual-keystroke should be suppressed
@@ -474,9 +472,10 @@
        * Opens Link in a new tab
        */
       openLinkInOtherLocationViaPostfixKey : function(event, locationId) {
-			if (this.keybuffer == "")
+			if (this.keybuffer == ""){
 				return;
-			var element = this.getPageInitializer().getPageData().getElementForId(this.keybuffer);
+         }
+			var element = MlbUtils.getPageData().getElementForId(this.keybuffer);
 			if (element == null)
 				return;
 			var tagName = element.tagName.toLowerCase();
@@ -493,7 +492,7 @@
 			} else if (locationId == MlbCommon.OpenLinkLocations.COOLIRIS_PREVIEW && MlbUtils.isCoolirisPreviewsInstalled()) {
 				this.showCoolirisPreview(element)
 			}
-			return ShortCutManager.SUPPRESS_KEY	| ShortCutManager.PREVENT_FURTHER_EVENTS;
+		   return ShortCutManager.PREVENT_FURTHER_EVENTS;
 		},
 		
 		showCoolirisPreview: function(link) {
@@ -512,7 +511,6 @@
 		    }else{
 		        TabLocalPrefs.toggleExclusiveUseOfNumpad()
 		    }
-		    return ShortCutManager.SUPPRESS_KEY
 		},
 		
 		updateStatuspanel: function(status){
@@ -534,9 +532,11 @@
 		},
 		
 		selectLink: function(){
-		   if(this.keybuffer=="")
-		        return;
-		    var element = this.getPageInitializer().getPageData().getElementForId(this.keybuffer);   
+		   if(this.keybuffer==""){
+            return;
+         }
+         var pageData = MlbUtils.getPageData() 
+         var element = pageData.getElementForId(this.keybuffer);   
 		    if(element==null)
 		        return;
 		    var tagName = element.tagName.toLowerCase();
@@ -550,23 +550,30 @@
 		   //Create new Range
 		   var range = doc.createRange();
 		   range.selectNode(element);
-		   range.setEndBefore(element.idSpan)
+		   range.setEndBefore(pageData.getIdSpanByElement(element))
 			//Set new Selection
 			selection.removeAllRanges();
 			selection.addRange(range);
 			
 			this.resetVars();
-		   return ShortCutManager.SUPPRESS_KEY;
+         
 		},
 		
 		onElementFocusEvent: function(event){
-			focusedElement = event.originalTarget
+			var focusedElement = event.originalTarget
 			if(!this.isElementWithOverlayPositioning(focusedElement)){
 				return
 			}
-         var idSpan = focusedElement.idSpan
-         if(focusedElement instanceof HTMLDocument && focusedElement.designMode=="on"){
-         	idSpan = focusedElement.defaultView.frameElement.idSpan
+         var idSpan = null
+         if (focusedElement instanceof HTMLDocument
+               && focusedElement.designMode == "on") {
+            idSpan = focusedElement.defaultView.frameElement.idSpan
+         }else if(focusedElement.ownerDocument){
+            var win = focusedElement.ownerDocument.defaultView
+            var pageData = MlbUtils.getPageData(win)
+            if(pageData!=null){
+               idSpan = pageData.getIdSpanByElement(focusedElement)
+            }
          }
          if(idSpan==null){
          	return
@@ -582,7 +589,6 @@
 			return MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXT) || 
             MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.PASSWORD) ||
             MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXTAREA) ||
-            MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT) ||
             MlbUtils.isEditableIFrame(element)
       },
 		
@@ -723,19 +729,21 @@
 			mouselessbrowsing.InitManager.initStatusbar()
 		},
       
-      getPageData: function(){
-         return content._mlbPageData
-      },
-      
       disableMlb: function(){
          //Hide ids in all browsers
          Firefox.iterateAllBrowsers(function(browser){
             EventHandler.hideIdSpans(browser.contentWindow)
          })
       },
+      
+      setResetTimer: function(){
+         this.timerId = setTimeout("mouselessbrowsing.EventHandler.resetVars()", MlbPrefs.delayForAutoExecute);
+      }
+      
    }
 
    var NS = mlb_common.Namespace
    NS.bindToNamespace("mouselessbrowsing", "EventHandler", EventHandler)
 
 })()
+}}

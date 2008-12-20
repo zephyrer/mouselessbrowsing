@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://browser/skin/"?>
-<?xml-stylesheet href="chrome://mouselessbrowsing/content/common/common.css" type="text/css"?>
+<?xml-stylesheet href="chrome://mouselessbrowsing/content/common/ui/xul/common.css" type="text/css"?>
 <?xml-stylesheet href="prefs_dialog.css" type="text/css"?>
 <!DOCTYPE window SYSTEM "chrome://mouselessbrowsing/locale/prefs.dtd">
 
@@ -54,6 +54,7 @@
 	<tabbox>
 		<tabs>
 			<tab label="&tab.handling.label;" />
+			<tab label="Id Types" />
 			<tab label="&tab.layout.label;" />
 			<tab label="&tab.styles.label;" />
 			<tab label="&tab.url_rules.label;" id="siteruletab" />
@@ -77,6 +78,12 @@
 								</row>
 								<row>
 									<checkbox id="executeAutomatic" label="&executeAutomatice.label;" prefid="mouselessbrowsing.executeAutomatic" />
+								</row>
+								<row>
+                           <hbox>
+                              <spacer width="20px"/>
+   									<checkbox id="executeInstantlyWhenIdUnique" label="&executeInstantlyWhenIdUnique.label;" prefid="mouselessbrowsing.executeInstantlyWhenIdUnique" />
+                           </hbox>
 								</row>
 								<row>
 									<grid>
@@ -103,6 +110,10 @@
 							</rows>
 						</grid>
 					</groupbox>
+            </vbox>
+         </tabpanel>
+         <tabpanel>
+            <vbox>
 					<groupbox>
 						<caption label="&groupbox.id_type.label;"/>
 						<grid>
@@ -205,6 +216,9 @@
 								<row align="center">
 									<checkbox id="frames" style="margin-left:30px" label="&enableImgFrameIds.label;" prefid="mouselessbrowsing.enableFrameIds"  visibilityFlag="true"/>
 								</row>
+								<row align="center">
+									<checkbox id="otherelements" style="margin-left:30px" label="&enableOtherIds.label;" prefid="mouselessbrowsing.enableOtherIds"  visibilityFlag="true"/>
+								</row>
 							</rows>
 						</grid>
 					</groupbox>
@@ -216,7 +230,16 @@
                      </columns>
                      <rows flex="1">
                         <row>
-                           <checkbox id="smartPositioning" label="&smartPositioning.label;" prefid="mouselessbrowsing.smartPositioning" />
+                           <checkbox id="smartPositioning" label="&smartPositioning.label;" prefid="mouselessbrowsing.smartPositioning" oncommand="MLB_onSmartPosChange()"/>
+                        </row>
+                        <row>
+                           <hbox>
+                              <spacer width="20px"/>                              
+                              <checkbox id="omitSmartPosForCheckboxAndRadio" label="&omitSmartPosForCheckboxAndRadio.label;" prefid="mouselessbrowsing.omitSmartPosForCheckboxAndRadio" />
+                           </hbox>
+                        </row>
+                        <row>
+                           <checkbox id="status" label="&filterDuplicateLinks.label;" prefid="mouselessbrowsing.filterDuplicateLinks" />
                         </row>
                         <row>
                            <checkbox id="status" label="&showKeybufferInStatusbar.label;" prefid="mouselessbrowsing.showKeybufferInStatusbar" />

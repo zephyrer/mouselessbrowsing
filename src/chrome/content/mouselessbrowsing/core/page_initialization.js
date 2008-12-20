@@ -7,22 +7,45 @@
 with(mlb_common){
 with(mouselessbrowsing){
 (function(){
+   
+   //Change Listener listening changes in the content DOM
+   var changeListener = function(e) {
+      var node = e.relatedNode
+      if(node.nodeType!=1 || 
+        (node.tagName=="SPAN" && node.getAttribute(MlbCommon.ATTR_ID_SPAN_FLAG)=="true"))
+         return
+//          MlbUtils.logDebugMessage(e.type  + "  " + node)
+      Utils.executeDelayed("UPDATE_PAGE", 500, function(){
+         PageInitializer.updatePage(node.ownerDocument.defaultView.top)
+      })
+   }
+   
+   var pageHideListener = function(e){
+      var win = e.target
+      var d = new Date()
+      MlbUtils.logDebugMessage("beforeunload: " + e.name + " | topwin: " + (win==win.top) + " time: " + d.toLocaleTimeString()+","+d.getMilliseconds())
+      PageInitializer.setNextKeepExistingIds(false)
+   }
 
    var PageInitializer = {
 		
-		//Prototype for Id-span-elment for Ids
-		spanPrototype: null,
-		
-		//RegEx for checking if an link is empty
-		regexWhitespace: /\s/g,
-		
-		
-		//Called after update of Prefs
+      disableMlb: function(){
+         Firefox.iterateAllBrowsers(function(browser){
+            if(MlbUtils.getPageData(browser.contentWindow))
+               PageInitializer.deactivateChangeListener(browser.contentWindow)
+         })
+      },
+
+      //Called after update of Prefs
 		init: function(){
-         this.spanPrototype = null;
-         mouselessbrowsing.EventHandler.hideIdSpans(content)
+         EventHandler.hideIdSpans(content)
+         //Remove mlb_ignore attribute for reevaluation
+         var elems = XPathUtils.getElements("//*[@"+ MlbCommon.ATTR_IGNORE_ELEMENT + "]", content.document)
+         for (var i = 0; i < elems.length; i++) {
+            elems[i].removeAttribute(MlbCommon.ATTR_IGNORE_ELEMENT)
+         }
          TabLocalPrefs.applySiteRules(content)
-         this.updatePage();
+         this.updatePage(content);
 		},
 		
 		//Function called on pageShow event
@@ -30,7 +53,8 @@ with(mouselessbrowsing){
 			var onpageshow2ndCall = !event.persisted && MlbPrefs.initOnDomContentLoaded
 
 			var win = event.originalTarget.defaultView
-			//Onpage show init starts from topwin if already initialized after DOMCOntentLoaded
+
+         //Onpage show init starts from topwin if already initialized after DOMCOntentLoaded
          //It is not enough to load when topwin is loaded as subframes could trigger XmlHttpRequests
          //e.g. Gmail
 			var topWinIsInitialized = win.top.mlb_initialized==true
@@ -38,8 +62,7 @@ with(mouselessbrowsing){
             return
          }
          //After topwin is initialized ids has always to be regenerated entirely as with frameset no top win will be loaded any more
-         var keepExsitingIds = !topWinIsInitialized
-			this.prepareInitialization(event, onpageshow2ndCall, keepExsitingIds, true);
+			this.prepareInitialization(event, onpageshow2ndCall, true);
          if(win==win.top){
             win.mlb_initialized=true
          }
@@ -48,15 +71,13 @@ with(mouselessbrowsing){
 		//Function called on DOMContentLoaded event
 		onDOMContentLoaded: function(event){
 			if(MlbPrefs.initOnDomContentLoaded){
-				var keepExsitingIds = !DomUtils.isFramesetWindow(event.originalTarget.defaultView.top)
-			   this.prepareInitialization(event, false, keepExsitingIds, false);
+			   this.prepareInitialization(event, false, false);
 			}
 		},
 		
-		prepareInitialization: function(event, onpageshow2ndCall, keepExsitingIds, installChangeListener){
+		prepareInitialization: function(event, onpageshow2ndCall, installChangeListener){
          var win = event.originalTarget.defaultView
-         MlbUtils.logDebugMessage('init win: "' + win.name + '"| event: ' + event.type + '| topwin: ' + (win==win.top) + '| keepexistingIds: ' + keepExsitingIds)
-         var pageInitData = new PageInitData(win, onpageshow2ndCall, keepExsitingIds, installChangeListener, event.type)
+         var pageInitData = new PageInitData(win, onpageshow2ndCall, installChangeListener, event.type)
          
          //Apply URL exceptions
          //Could not be in initPage as it should not be executed on toggleing
@@ -88,7 +109,9 @@ with(mouselessbrowsing){
          if(!topWin)
             topWin = content
          var perfTimer = new PerfTimer()
-         var pageInitData = new PageInitData(topWin, false, false, true);
+         var pageData = MlbUtils.getPageData(topWin)
+         this.setNextKeepExistingIds(false)
+         var pageInitData = new PageInitData(topWin, false, true);
          this.initPage(pageInitData)  
          MlbUtils.logDebugMessage("Update page finished: " + perfTimer.stop())
 		},
@@ -105,15 +128,21 @@ with(mouselessbrowsing){
 				return
 			}
 		   
-		   var pageData = this.getPageData(win)
+		   var pageData = MlbUtils.getPageData(win)
 		   if(pageData==null){
-		   	pageInitData.keepExsitingIds = false
-            pageData = this.createPageData()
-		   }else if(!pageInitData.keepExsitingIds){
-		   	pageData.reset()
+            pageData = PageData.createPageData()
+		   }else if(!pageData.getNextKeepExistingIds()){
+            pageInitData.setKeepExistingIds(false)
+            pageData.setNextKeepExistingIds(true)
+		   	pageData.initResetableMembers()
 		   }
 	   	pageInitData.pageData = pageData 
-	      this.setPageData(win, pageData)
+	      MlbUtils.setPageData(win, pageData)
+         
+         //Debug Info
+         MlbUtils.logDebugMessage('init win: "' + pageInitData.getCurrentTopWin().name + '"| event: ' + 
+            pageInitData.eventType + '| topwin: ' + (pageInitData.getCurrentTopWin()==pageInitData.getCurrentWin()) + 
+            " | keepExistingIds: " + pageInitData.getKeepExistingIds())
          
          //Increment initCounter
          pageData.incrementInitCounter()
@@ -137,6 +166,7 @@ with(mouselessbrowsing){
          if(!MlbPrefs.disableAutomaticPageUpdateOnChange && pageInitData.installChangeListener)
             this.activateChangeListener(pageInitData)
 			
+//         alert('')
 		   if(MlbPrefs.debugPerf){
             var timeConsumed = perfTimer.stop()
             var debugMessage = "MLB time for"
@@ -153,29 +183,21 @@ with(mouselessbrowsing){
       
       activateChangeListener: function(pageInitData){
          var topWin = pageInitData.getCurrentTopWin()
-			var changeListener = function(e) {
-            var node = e.relatedNode
-				if(node.nodeType!=1 || 
-              (node.tagName=="SPAN" && node.getAttribute(MlbCommon.ATTR_ID_SPAN_FLAG)=="true"))
-               return
-//				MlbUtils.logDebugMessage(e.type	+ "  " + node)
-            var win = node.ownerDocument.defaultView
-				Utils.executeDelayed("UPDATE_PAGE", 500, function(){
-               PageInitializer.updatePage(topWin)
-            })
-			}
          MlbUtils.iterateFrames(topWin, function(win){
             if(!MlbUtils.isVisibleWindow(win))
                return
-				this.addOrRemoveChangeListener(win, "add", changeListener)
+            if(win.document.designMode!="on")
+				  this.addOrRemoveChangeListener(win, "add", changeListener)
          }, this)
-			this.getPageData(topWin).setChangeListener(changeListener)
+			MlbUtils.getPageData(topWin).setChangeListener(changeListener)
          
       },
 
       deactivateChangeListener: function(topWin){
          // Disable change listener
-         var pageData = this.getPageData(topWin)
+         var pageData = MlbUtils.getPageData(topWin)
+         if(!pageData)
+            return
 			var changeListener = pageData.getChangeListener()
 			if (changeListener) {
             MlbUtils.iterateFrames(topWin, function(win){
@@ -198,21 +220,16 @@ with(mouselessbrowsing){
 		 */
 		initFrame: function(pageInitData, win){
 			 //If document of win is editable skip it, it is a "rich-text-field", e.g. at Gmail
-			 if(win.document.designMode=="on"){
+          //also skip invisble frames
+			 if(win.document.designMode=="on" || !MlbUtils.isVisibleWindow(win)){
 			 	return
 			 }
-
-          //skip invisble frames
-          if(!MlbUtils.isVisibleWindow(win)){
-            return
-          }
 			 
           //Watch for making it editable
 			 win.document.wrappedJSObject.watch("designMode", this.onChangeDesignMode)
           
 			 pageInitData.setCurrentWin(win);
 		
-		    //Init ids for frames
           if(pageInitData.getCurrentDoc()){
    		    if(TabLocalPrefs.isIdsForFramesEnabled(win)){
    		        (new FrameIdsInitializer(pageInitData)).initIds()
@@ -225,7 +242,6 @@ with(mouselessbrowsing){
    		
    			//Init ids for links
    		    if(TabLocalPrefs.isIdsForLinksEnabled(win) || TabLocalPrefs.isIdsForImgLinksEnabled(win)){
-//   		        this.initLinks(pageInitData)
                (new LinkIdsInitializer(pageInitData)).initIds()
    		    }
    			
@@ -234,6 +250,9 @@ with(mouselessbrowsing){
    		        (new OtherElementIdsInitializer(pageInitData)).initIds()
    		    }
           }
+          
+          if(win!=win.top)
+            win.addEventListener("beforeunload", pageHideListener, true)
 		    
 		    //Recursive call for all subframes
 		    for(var i = 0; i<win.frames.length; i++){
@@ -284,55 +303,28 @@ with(mouselessbrowsing){
 			}
 		},
 		
-      /*
-       * Gets the current page data
-       * @param win: arbitray content win
-       * @return the page data stored in the top win
-       */
-      getPageData: function(win){
-         if(!win)
-            win = content
-      	return win.top._mlbPageData
-      },
-      
-      /*
-       * Sets the current page data
-       * @param win: arbitray content win
-       * @param pageData
-       */
-      setPageData: function(win, pageData){
-      	win.top._mlbPageData = pageData
-      },
-      
-      /*
-       * Creates new page data
-       */
-      createPageData: function(){
-         if(MlbPrefs.isCharIdType()){
-         	return new PageData(MlbPrefs.idChars)
-         }else{
-         	return new PageData(null)
-         }
-      },
-      
+      //For future use
       getWindowData: function(win, key){
          if(!win._mouselessStorage || !win._mouselessStorage[key])
             return null
          return win._mouselessStorage[key]
       },
 
+      //For future use
       setWindowData: function(win, key, value){
          if(!win._mouselessStorage)
             win._mouselessStorage = new Object()
          win._mouselessStorage[key] = value
       },
       
-      disableMlb: function(){
-         Firefox.iterateAllBrowsers(function(browser){
-            if(PageInitializer.getPageData(browser.contentWindow))
-               PageInitializer.deactivateChangeListener(browser.contentWindow)
-         })
+      setNextKeepExistingIds: function(value){
+         var pageData = MlbUtils.getPageData()
+         if(pageData)
+            pageData.setNextKeepExistingIds(value)
       }
+      
+      
+      
    }      
 	
    var NS = mlb_common.Namespace

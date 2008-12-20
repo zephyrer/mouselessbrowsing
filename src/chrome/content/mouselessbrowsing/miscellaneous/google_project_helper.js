@@ -26,6 +26,6 @@
    	}
    }
 	var NS = mlb_common.Namespace
-   NS.bindToNamespace("mouselessbrowsing.miscellaneous", "GoogleProjectHelper", GoogleProjectHelper)
+   NS.bindToNamespace("mouselessbrowsing", "GoogleProjectHelper", GoogleProjectHelper)
 })()
 

@@ -11,7 +11,7 @@ with(mouselessbrowsing){
       /*
        * Init Frame-Ids
        */
-      initIds: function(){
+      _initIds: function(){
          for(var i = 0; i<this.pageInitData.getCurrentWin().frames.length; i++){
             var frame = this.pageInitData.getCurrentWin().frames[i];
             var doc = frame.document
@@ -20,10 +20,10 @@ with(mouselessbrowsing){
                //in case of onDomContentLoaded event the body of frames are partly not available
                continue
             }else if(frame.idSpan){
-               if(this.pageInitData.keepExsitingIds){
+               if(this.pageInitData.getKeepExistingIds()){
                   continue
                }else{
-                  this.updateSpan(TabLocalPrefs.isIdsForFramesEnabled(this.pageInitData.getCurrentTopWin()), frame.idSpan);
+                  this.updateSpan(frame.idSpan);
                }
             }else{
                var idSpan = this.getNewSpan(this.pageInitData, MlbCommon.IdSpanTypes.FRAME);

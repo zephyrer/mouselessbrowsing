@@ -5,13 +5,13 @@
   Created by Rudolf Noé
   01.01.2008
 */
+//Import for binding
+KeyInputbox = mlb_common.KeyInputbox   
+
+with(mlb_common){
+
 var MlbCommon = mouselessbrowsing.MlbCommon
 var MlbUtils = mouselessbrowsing.MlbUtils
-var Utils = mlb_common.Utils
-var Prefs = mlb_common.Prefs
-var PrefUtils = mlb_common.PrefUtils
-var Listbox = mlb_common.Listbox
-var KeyInputbox = mlb_common.KeyInputbox
 var COMBINED_KEY_CODE_ATTR = "COMBINED_KEY_CODE_ATTR"
 var keyInputBox 
 var STRINGBUNDLE_ID = "jsStrings"
@@ -25,6 +25,7 @@ function doOnload(){
 	MLB_setPreviewForIds("styleForIdSpan")
 	MLB_setPreviewForIds("styleForFrameIdSpan")
 	MLB_initForCoolirisPreview()
+   MLB_onSmartPosChange()
 	byId('siteRulesLB').addEventListener("select", MLB_onSelectSiteRule, false)
 	PrefUtils.initElementHelp('jsStrings', 'helpDescriptionTB')
 	if(window.arguments){
@@ -213,9 +214,13 @@ function MLB_onCommandRestoreDefault(){
    	Prefs.clearUserPref(prefid)
 	}
 	var defaultKey = Prefs.getCharPref(prefid)
-	Listbox.updateSelectedRow(keyListBox, [null, keyInputBox.getStringForCombinedKeyCode(defaultKey)], [null, null])
+	Listbox.updateSelectedRow(keyListBox, [null, KeyInputbox.getStringForCombinedKeyCode(defaultKey)], [null, null])
    keyListBox.selectedItem.setAttribute(COMBINED_KEY_CODE_ATTR, defaultKey)
    keyListBox.focus()
+}
+
+function MLB_onSmartPosChange(){
+   byId('omitSmartPosForCheckboxAndRadio').disabled=!byId('smartPositioning').checked
 }
 
 function MLB_loadKeyListbox(){
@@ -225,7 +230,7 @@ function MLB_loadKeyListbox(){
    	var keyItem = keyItems[i]
    	var prefId = keyItem.getAttribute('prefid')
    	var combinedKeyCode = Prefs.getCharPref(prefId)
-   	var keyString = keyInputBox.getStringForCombinedKeyCode(combinedKeyCode)
+   	var keyString = KeyInputbox.getStringForCombinedKeyCode(combinedKeyCode)
    	keyItem.setAttribute(COMBINED_KEY_CODE_ATTR, combinedKeyCode)
    	Listbox.updateRow(keyListBox, keyItem, [null, keyString!=null?keyString:"None"], new Array(2))
    }
@@ -243,4 +248,6 @@ function MLB_saveKeyListbox(){
 
 function byId(elementId){
 	return document.getElementById(elementId)
+}
+
 }

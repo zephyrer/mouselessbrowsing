@@ -30,6 +30,7 @@
 		disableAutomaticPageUpdateOnChange: null,
 		initOnDomContentLoaded: null,
 		executeAutomaticEnabled: null,
+		executeInstantlyWhenIdUnique: null,
 		delayForAutoExecute: null,
 		pixelsToScroll: null,
 		maxIdNumber: null,
@@ -40,6 +41,8 @@
 		modifierForOpenInCoolirisPreviews: null,
 		idChars: null,
 		smartPositioning: null,
+      omitSmartPosForCheckboxAndRadio: null,
+      filterDuplicateLinks: null,
 		showKeybufferInStatusbar: null,
 		showMlbIconInStatusbar: null,
 		showMlbMenu: null,
@@ -58,7 +61,10 @@
 		      this.disableAutomaticPageUpdateOnChange= Prefs.getBoolPref("mouselessbrowsing.disableAutomaticPageUpdateOnChange");
 		      this.initOnDomContentLoaded = Prefs.getBoolPref("mouselessbrowsing.initOnDomContentLoaded");
 		      this.executeAutomaticEnabled = Prefs.getBoolPref("mouselessbrowsing.executeAutomatic");
+		      this.executeInstantlyWhenIdUnique = Prefs.getBoolPref("mouselessbrowsing.executeInstantlyWhenIdUnique");
 				this.smartPositioning = Prefs.getBoolPref("mouselessbrowsing.smartPositioning");
+				this.omitSmartPosForCheckboxAndRadio = Prefs.getBoolPref("mouselessbrowsing.omitSmartPosForCheckboxAndRadio");
+				this.filterDuplicateLinks = Prefs.getBoolPref("mouselessbrowsing.filterDuplicateLinks");
 		      this.showKeybufferInStatusbar = Prefs.getBoolPref("mouselessbrowsing.showKeybufferInStatusbar");
 		      this.showMlbIconInStatusbar = Prefs.getBoolPref("mouselessbrowsing.showMlbIconInStatusbar");
 		      this.showMlbMenu = Prefs.getBoolPref("mouselessbrowsing.showMlbMenu");
