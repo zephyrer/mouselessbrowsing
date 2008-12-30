@@ -30,9 +30,7 @@ with(mouselessbrowsing){
 		
 		init: function(event){
 		   MlbPrefs.initPrefs();
-         if(VersionManager.hasVersionToBeMigrated()){
-            VersionManager.doMigration()
-         }
+         VersionManager.doMigration()
          if(MLB_prefObserver==null){
             this.registerObservers();
          }
@@ -43,7 +41,7 @@ with(mouselessbrowsing){
 				this.enableMLB()
 			}
 		   this.initStatusbar();
-         if(Application.prefs.get("mouselessbrowsing.debug.layoutdebugger", false)){
+         if(Application.prefs.getValue("mouselessbrowsing.debug.layoutdebugger", false)){
             LayoutDebugger.init()
          }
 		   MlbUtils.logDebugMessage("InitManager.init done")
@@ -132,8 +130,6 @@ with(mouselessbrowsing){
 		    
 			 this.setShortcut("mouselessbrowsing.keys.toggleAllIds", "mouselessbrowsing.EventHandler.toggleAllIds()");
 
-          this.setShortcut("mouselessbrowsing.keys.updatePage", function(){PageInitializer.updatePage(); return ShortcutManager.SUPPRESS_KEY});
-		    
 		    this.setShortcut("mouselessbrowsing.keys.historyBack", "mouselessbrowsing.EventHandler.moveHistory('back')");
 		
 		    this.setShortcut("mouselessbrowsing.keys.historyForward", "mouselessbrowsing.EventHandler.moveHistory('forward')");

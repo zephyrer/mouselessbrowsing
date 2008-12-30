@@ -50,11 +50,7 @@ with(mouselessbrowsing){
             }
          }else{
             var newSpan = this.getNewSpan(spanType)
-            if(spanPosition==SpanPosition.APPEND_TEXT){
-               this.insertSpanForTextElement(element, newSpan)
-            }else{
-               this.doOverlayPositioning(element, newSpan, element.parentNode, spanPosition)
-            }
+            this.insertIdSpan(newSpan, element, element.parentNode, spanPosition, ImgOverlayStyles)
             this.pageInitData.addElementIdSpanBinding(element, newSpan)
          }
          this.pageInitData.pageData.addElementWithId(element)

@@ -3,6 +3,7 @@ with(mouselessbrowsing){
 (function(){
    function AbstractInitializer(pageInitData){
       this.pageInitData = pageInitData
+      this.pageData = pageInitData.pageData
       this.spanPrototype = null
    }
    
@@ -46,12 +47,24 @@ with(mouselessbrowsing){
               span.setAttribute(MlbCommon.ATTR_ID_SPAN_FLAG, "true");
               this.spanPrototype = span;
           }
-          return this.pageInitData.getCurrentDoc().importNode(this.spanPrototype, true);
+          return this.spanPrototype.cloneNode(true)
       },
       
-      doOverlayPositioning: function(element, newSpan, parentElement, spanPosition){
+      insertIdSpan: function(newSpan, element, parentElement, spanPosition, styleArray){
          parentElement = parentElement?parentElement:element
 
+         if(spanPosition==SpanPosition.APPEND_TEXT){
+            this.insertSpanForTextElement(newSpan, element)
+            //no further positioning
+            return
+         }else if(parentElement==element)
+            element.appendChild(newSpan)
+         else
+            DomUtils.insertAfter(newSpan, element)
+
+         if(SpanPosition.NATURAL_FLOW==spanPosition)//No special positioning is done
+            return
+            
          //Set link position relative but only if neither the link nor one of its descendants are positioned
          //as this would lead to disarrangements
          //See also MLB issue 25, 37,
@@ -59,36 +72,31 @@ with(mouselessbrowsing){
             parentElement.style.position="relative"
          }
 
-         //Insert Link with absolute Positioning
-         newSpan.style.position="absolute"
-         newSpan.style.left="0px"
-         newSpan.style.top="0px"
-         if(parentElement==element)
-            element.appendChild(newSpan)
-         else
-            DomUtils.insertAfter(newSpan, element)
-         
          
          //If overlayed element is to small relative to the span do not 
          //TODO make configurable
          var factor = 2
          if(element.offsetWidth<factor*newSpan.offsetWidth && 
              element.offsetHeight<factor*newSpan.offsetHeight){
-            spanPosition = SpanPosition.NORTH_EAST_OUTSIDE
+            spanPosition = SpanPosition.EAST_OUTSIDE
          }         
          
-         if(spanPosition==SpanPosition.NORTH_EAST_OUTSIDE){
-            //Display in the right upper corner next to the element, as overlay is for e.g. for embedded objects not possible
+         newSpan.style.position="relative"
+         newSpan.style.marginTop = (-newSpan.offsetHeight) + "px"
+         newSpan.style.marginLeft = (-newSpan.offsetWidth) + "px"
+
+         if(spanPosition==SpanPosition.EAST_OUTSIDE || 
+            spanPosition==SpanPosition.NORTH_EAST_OUTSIDE){
             var currentMarginRight = this.getComputedStyle(element).marginRight
             currentMarginRight = StringUtils.isEmpty(currentMarginRight)?parseInt(currentMarginRight):0
-            element.style.marginRight = (newSpan.offsetWidth-currentMarginRight) + "px" 
+            element.style.marginRight = (newSpan.offsetWidth-currentMarginRight) + "px"
+         }
+         
+         for (var i = 0; i < styleArray.length; i++) {
+            newSpan.style.setProperty(styleArray[i][0], styleArray[i][1], "important")   
          }
 
          this.positionIdSpan(newSpan, element, spanPosition)
-         
-         newSpan.style.setProperty("background-color", "#EEF3F9", "important")
-         newSpan.style.setProperty("color", "black", "important")
-         return newSpan
       },
  
       getComputedStyle: function(element){
@@ -144,17 +152,18 @@ with(mouselessbrowsing){
       },
       
       initIds: function(){
-         if(MlbPrefs.debugPerf){
+         var debugPerfDetail = Application.prefs.getValue("mouselessbrowsing.debug.perfdetail", false)
+         if(debugPerfDetail){
             var timer = new PerfTimer()
          }
          this._initIds()
-         if(MlbPrefs.debugPerf){
+         if(debugPerfDetail){
             var type = ObjectUtils.getType(this)
             MlbUtils.logDebugMessage("Init time for " + type + ": " + timer.stop())
          }
       },
       
-      insertSpanForTextElement: function(element, newSpan){
+      insertSpanForTextElement: function(newSpan, element){
          //Append to last element in link except for imgages for better style
          var parentOfLastTextNode = this.findParentOfLastTextNode(element)
          if(parentOfLastTextNode!=null){
@@ -222,17 +231,6 @@ with(mouselessbrowsing){
       },
       
       positionIdSpan: function(idSpan, element, spanPosition){
-         idSpan.style.position="relative"
-         idSpan.style.marginRight = (-idSpan.offsetWidth) + "px"
-         idSpan.style.marginBottom = (-idSpan.offsetHeight) + "px"
-         
-         if(spanPosition==SpanPosition.EAST_OUTSIDE || 
-            spanPosition==SpanPosition.NORTH_EAST_OUTSIDE){
-            var currentMarginRight = this.getComputedStyle(element).marginRight
-            currentMarginRight = StringUtils.isEmpty(currentMarginRight)?parseInt(currentMarginRight):0
-            element.style.marginRight = (idSpan.offsetWidth-currentMarginRight) + "px"
-         }
-         
          var spanOffset = DomUtils.getOffsetToBody(idSpan)
          var elementOffset = DomUtils.getOffsetToBody(element)
          
@@ -243,7 +241,7 @@ with(mouselessbrowsing){
          }else if(spanPosition==SpanPosition.NORTH_EAST_INSIDE){
             left = left + element.offsetWidth - idSpan.offsetWidth
          }else {
-            throw new Error('unkown span position')
+            throw new Error('unknown span position')
          }
          var top = elementOffset.y - spanOffset.y 
          if(spanPosition == SpanPosition.EAST_OUTSIDE){
@@ -258,17 +256,11 @@ with(mouselessbrowsing){
             top += idSpan.style.top?parseInt(idSpan.style.top, 10):0
             idSpan.style.top = top + "px"
          }
-         
-         //Adjust margin-bottom if span was inserted below elmenet
-         var isLineBreakBetween = elementOffset.y + elementOffset.offsetHeight < spanOffset.y
-         if(isLineBreakBetween){
-            
-         }
       },
       
       setNewSpanId: function(span){
-         span.mlb_initCounter = this.pageInitData.getInitCounter()
-         var newId = this.pageInitData.pageData.getNextId();
+         span.mlb_initCounter = this.pageData.getInitCounter()
+         var newId = this.pageData.getNextId();
          span.textContent = newId
       },
 
@@ -287,9 +279,16 @@ with(mouselessbrowsing){
    SpanPosition = {
       APPEND_TEXT: "APPEND_TEXT", 
       EAST_OUTSIDE: "EAST_OUTSIDE",
+      NATRUAL_FLOW: "NATURAL_FLOW",
       NORTH_EAST_INSIDE: "NORTH_EAST_INSIDE",
       NORTH_EAST_OUTSIDE: "NORTH_EAST_OUTSIDE"
    }      
    Namespace.bindToNamespace("mouselessbrowsing", "SpanPosition", SpanPosition)
+   
+   ImgOverlayStyles = [
+      ["background-color", "#EEF3F9"],
+      ["color", "black"],
+   ]
+   Namespace.bindToNamespace("mouselessbrowsing", "ImgOverlayStyles", ImgOverlayStyles)
 })()
 }}

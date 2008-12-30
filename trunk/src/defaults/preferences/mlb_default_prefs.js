@@ -9,13 +9,15 @@ pref("mouselessbrowsing.showIdsOnDemand", false);
 pref("mouselessbrowsing.exclusiveNumpad", false);
 pref("mouselessbrowsing.initOnDomContentLoaded", true);
 pref("mouselessbrowsing.smartPositioning", true);
-pref("mouselessbrowsing.omitSmartPosForCheckboxAndRadio", true);
+//Remove or put in
+//pref("mouselessbrowsing.omitSmartPosForCheckboxAndRadio", true);
 pref("mouselessbrowsing.filterDuplicateLinks", true);
 //pref("mouselessbrowsing.showTabIds", false);
 pref("mouselessbrowsing.showKeybufferInStatusbar", true);
 pref("mouselessbrowsing.showMlbIconInStatusbar", true);
 pref("mouselessbrowsing.showMlbMenu", true);
 pref("mouselessbrowsing.executeAutomatic", false);
+pref("mouselessbrowsing.executeAutomaticNew", true);
 pref("mouselessbrowsing.executeInstantlyWhenIdUnique", false);
 pref("mouselessbrowsing.autoExecuteDelay", "500");
 pref("mouselessbrowsing.pixelsToScroll", "150");
@@ -46,12 +48,11 @@ pref("mouselessbrowsing.keys.scrollUp", "1744");   //Subtract
 pref("mouselessbrowsing.keys.blurActiveElement", "0"); //None
 pref("mouselessbrowsing.keys.blockKeyboardInputForMlb", "0"); //None
 pref("mouselessbrowsing.keys.toggleAllIds", "1762"); //Crtl+Decimal
-pref("mouselessbrowsing.keys.updatePage", "1761"); //Alt+Decimal
 pref("mouselessbrowsing.keys.toggleMLB", "1760"); //Decimal
 pref("mouselessbrowsing.keys.toggleExlusiveUseOfNumpad", "304"); //Pause
 pref("mouselessbrowsing.keys.openConfig", "1239"); //Ctrl+Alt+Shift+M
 pref("mouselessbrowsing.keys.addSiteRule", "1319");//Ctrl+Alt+Shift+R
-pref("mouselessbrowsing.keys.toggleEnableDisableMLB", "0");//None
+pref("mouselessbrowsing.keys.toggleEnableDisableMLB", "1761");//Alt + Decimal
 pref("mouselessbrowsing.toggleExlNumpadWithDoubleStrokeNumKey", true);
 pref("mouselessbrowsing.version", "");
 pref("mouselessbrowsing.debug", false);

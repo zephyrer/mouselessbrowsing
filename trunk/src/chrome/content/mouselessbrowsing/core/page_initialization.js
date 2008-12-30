@@ -7,6 +7,7 @@
 with(mlb_common){
 with(mouselessbrowsing){
 (function(){
+   const UPDATE_PAGE_TIMER_ID = "UPDATE_PAGE"
    
    //Change Listener listening changes in the content DOM
    var changeListener = function(e) {
@@ -15,7 +16,7 @@ with(mouselessbrowsing){
         (node.tagName=="SPAN" && node.getAttribute(MlbCommon.ATTR_ID_SPAN_FLAG)=="true"))
          return
 //          MlbUtils.logDebugMessage(e.type  + "  " + node)
-      Utils.executeDelayed("UPDATE_PAGE", 500, function(){
+      Utils.executeDelayed(UPDATE_PAGE_TIMER_ID, 500, function(){
          PageInitializer.updatePage(node.ownerDocument.defaultView.top)
       })
    }
@@ -38,12 +39,27 @@ with(mouselessbrowsing){
 
       //Called after update of Prefs
 		init: function(){
-         EventHandler.hideIdSpans(content)
-         //Remove mlb_ignore attribute for reevaluation
-         var elems = XPathUtils.getElements("//*[@"+ MlbCommon.ATTR_IGNORE_ELEMENT + "]", content.document)
-         for (var i = 0; i < elems.length; i++) {
-            elems[i].removeAttribute(MlbCommon.ATTR_IGNORE_ELEMENT)
-         }
+         this.deactivateChangeListener(content)
+         MlbUtils.setPageData(content, null)
+         //Clean up documents for reevalutation
+         DomUtils.iterateWindows(content, function(subwin){
+            //Remove spans
+            var spans = XPathUtils.getElements("//span[@" + MlbCommon.ATTR_ID_SPAN_FLAG + "]", subwin.document)
+            for (var i = 0; i < spans.length; i++) {
+               DomUtils.removeElement(spans[i])
+            }
+            //Remove mlb_ignore attribute for reevaluation
+            var elems = XPathUtils.getElements("//*[@"+ MlbCommon.ATTR_IGNORE_ELEMENT + "]", subwin.document)
+            for (var i = 0; i < elems.length; i++) {
+               elems[i].removeAttribute(MlbCommon.ATTR_IGNORE_ELEMENT)
+            }
+            
+            //Remove MlbCommon.MLB_BINDING_KEY_ATTR attribute 
+            var elems = XPathUtils.getElements("//*[@"+ MlbCommon.MLB_BINDING_KEY_ATTR + "]", subwin.document)
+            for (var i = 0; i < elems.length; i++) {
+               elems[i].removeAttribute(MlbCommon.MLB_BINDING_KEY_ATTR)
+            }
+         })
          TabLocalPrefs.applySiteRules(content)
          this.updatePage(content);
 		},
@@ -77,7 +93,7 @@ with(mouselessbrowsing){
 		
 		prepareInitialization: function(event, onpageshow2ndCall, installChangeListener){
          var win = event.originalTarget.defaultView
-         var pageInitData = new PageInitData(win, onpageshow2ndCall, installChangeListener, event.type)
+         var pageInitData = new PageInitData(win, onpageshow2ndCall, installChangeListener, true, event.type)
          
          //Apply URL exceptions
          //Could not be in initPage as it should not be executed on toggleing
@@ -96,6 +112,9 @@ with(mouselessbrowsing){
             if(this.hasVisibleIdSpans(topWin)){
                EventHandler.hideIdSpans(topWin);
             }
+            //Deactivate change listener
+            this.deactivateChangeListener(topWin)
+            
             return;
          }
 
@@ -109,9 +128,8 @@ with(mouselessbrowsing){
          if(!topWin)
             topWin = content
          var perfTimer = new PerfTimer()
-         var pageData = MlbUtils.getPageData(topWin)
+         var pageInitData = new PageInitData(topWin, false, true, false);
          this.setNextKeepExistingIds(false)
-         var pageInitData = new PageInitData(topWin, false, true);
          this.initPage(pageInitData)  
          MlbUtils.logDebugMessage("Update page finished: " + perfTimer.stop())
 		},
@@ -122,13 +140,13 @@ with(mouselessbrowsing){
 		 */ 
 		initPage: function(pageInitData){
          
-			var win = pageInitData.getCurrentTopWin()
+			var topWin = pageInitData.getCurrentTopWin()
 
-			if(TabLocalPrefs.isDisableAllIds(win)==true){
+			if(TabLocalPrefs.isDisableAllIds(topWin)==true){
 				return
 			}
 		   
-		   var pageData = MlbUtils.getPageData(win)
+		   var pageData = MlbUtils.getPageData(topWin)
 		   if(pageData==null){
             pageData = PageData.createPageData()
 		   }else if(!pageData.getNextKeepExistingIds()){
@@ -137,10 +155,10 @@ with(mouselessbrowsing){
 		   	pageData.initResetableMembers()
 		   }
 	   	pageInitData.pageData = pageData 
-	      MlbUtils.setPageData(win, pageData)
+	      MlbUtils.setPageData(topWin, pageData)
          
          //Debug Info
-         MlbUtils.logDebugMessage('init win: "' + pageInitData.getCurrentTopWin().name + '"| event: ' + 
+         MlbUtils.logDebugMessage('init topWin: "' + pageInitData.getCurrentTopWin().name + '"| event: ' + 
             pageInitData.eventType + '| topwin: ' + (pageInitData.getCurrentTopWin()==pageInitData.getCurrentWin()) + 
             " | keepExistingIds: " + pageInitData.getKeepExistingIds())
          
@@ -153,14 +171,16 @@ with(mouselessbrowsing){
 	      if(MlbPrefs.debugPerf){
 				var perfTimer = new PerfTimer()
 			}
-         var topWin = pageInitData.getCurrentTopWin()
          
 			//Deactivate change listener
          if(!MlbPrefs.disableAutomaticPageUpdateOnChange)
             this.deactivateChangeListener(topWin)
          
-		   //Init-Frames starting with top-win
-		   this.initFrame(pageInitData, topWin);
+         if(pageInitData.getKeepExistingIds())
+		      this.initFrame(pageInitData, pageInitData.getCurrentWin());
+         else
+		      this.initFrame(pageInitData, topWin);
+            
          
          //Activate Change listener
          if(!MlbPrefs.disableAutomaticPageUpdateOnChange && pageInitData.installChangeListener)
@@ -194,6 +214,7 @@ with(mouselessbrowsing){
       },
 
       deactivateChangeListener: function(topWin){
+         Utils.clearExecuteDelayedTimer(UPDATE_PAGE_TIMER_ID)
          // Disable change listener
          var pageData = MlbUtils.getPageData(topWin)
          if(!pageData)
@@ -254,11 +275,13 @@ with(mouselessbrowsing){
           if(win!=win.top)
             win.addEventListener("beforeunload", pageHideListener, true)
 		    
-		    //Recursive call for all subframes
-		    for(var i = 0; i<win.frames.length; i++){
-             var frame = win.frames[i]
-		       this.initFrame(pageInitData, win.frames[i]);
-		    }
+		    if(!pageInitData.getKeepExistingIds()){
+             //Recursive call for all subframes
+   		    for(var i = 0; i<win.frames.length; i++){
+                var frame = win.frames[i]
+   		       this.initFrame(pageInitData, win.frames[i]);
+   		    }
+          }
           
 		},
 		
@@ -285,22 +308,18 @@ with(mouselessbrowsing){
 		 * Checks wether window already contains ids
 		 */
 		hasVisibleIdSpans: function(winObj){
-			if(DomUtils.isFramesetWindow(winObj)){
-				for (var i = 0; i < winObj.frames.length; i++) {
-					var hasIdsSpans = this.hasVisibleIdSpans(winObj.frames[i])
-					if(hasIdsSpans){
-						return true
-					}
-				}
-				return false
-			}else{
-   			var spans = winObj.document.getElementsByTagName("span");
-   		    for(var i=0; i<spans.length; i++){
-   		        if(MlbUtils.isIdSpan(spans[i]) && spans[i].style.display=="inline")
-   		            return true;
+         var found = false
+			DomUtils.iterateWindows(winObj, function(subWin){
+            if(found)
+               return
+   			var spans = subWin.document.getElementsByTagName("span");
+   		   for(var i=0; i<spans.length; i++){
+   		       if(MlbUtils.isIdSpan(spans[i]) && spans[i].style.display=="inline"){
+                  found = true
+                }
    		    }
-   		    return false;
-			}
+			})
+         return found
 		},
 		
       //For future use

@@ -83,15 +83,16 @@ with(mouselessbrowsing){
                imgElement = imgElements[0]
                parentElement = link
             }
-            return this.doOverlayPositioning(imgElement, newSpan, parentElement, SpanPosition.NORTH_EAST_INSIDE)
+            this.insertIdSpan(newSpan, imgElement, parentElement, SpanPosition.NORTH_EAST_INSIDE, ImgOverlayStyles)
          }else{
-            return link.appendChild(newSpan)
-         }             
+            link.appendChild(newSpan)
+         }
+         return newSpan
       },
       
       insertSpanForTextLink: function(link){
          var newSpan = this.getNewSpan(MlbCommon.IdSpanTypes.LINK);
-         return this.insertSpanForTextElement(link, newSpan)
+         return this.insertSpanForTextElement(newSpan, link)
       },
 
       /*
@@ -100,16 +101,18 @@ with(mouselessbrowsing){
        * TODO Must be further adapted over time
        */
       isMarkableLink: function(link){
+         
+         //Link offset could be zero but could nevertheless have an image as content 
+         if(!link.innerHTML && (link.offsetHeight<1 || link.offsetWidth<1)){
+            if(this.pageInitData.isOnDomContentLoaded())
+               return "unsure"
+            else
+               return "false"
+         }
+
+         //It is quite likely that there is something
          if(link.className)
             return "true"
-         
-         // No real link
-         // commented out on 18.12.2008
-         //Problems on youtube as links has dynamically added listeners
-//         if (link.tagName=="A" && 
-//               (StringUtils.isEmpty(link.getAttribute("href")) ||  link.getAttribute("href")=="#") &&
-//               link.getAttribute("onclick") == null)
-//            return "false";
          
          var imgs = link.getElementsByTagName("img")
          if (imgs.length>0){

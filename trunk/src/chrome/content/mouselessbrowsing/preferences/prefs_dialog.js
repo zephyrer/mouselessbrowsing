@@ -19,13 +19,14 @@ var STRINGBUNDLE_ID = "jsStrings"
 function doOnload(){
    keyInputBox = byId('keyInputBox')
    mlb_common.Prefs.loadPrefs(document);
-	document.title = "Mouseless Browsing " + MlbCommon.MLB_VERSION 
+	document.title = "Mouseless Browsing " + MlbCommon.MLB_VERSION
+   MLB_onCommandExecuteAutomatic()
    MLB_onCommandIdType();
 	MLB_onTogglingVisibilityAllIds();
 	MLB_setPreviewForIds("styleForIdSpan")
 	MLB_setPreviewForIds("styleForFrameIdSpan")
 	MLB_initForCoolirisPreview()
-   MLB_onSmartPosChange()
+//   MLB_onSmartPosChange()
 	byId('siteRulesLB').addEventListener("select", MLB_onSelectSiteRule, false)
 	PrefUtils.initElementHelp('jsStrings', 'helpDescriptionTB')
 	if(window.arguments){
@@ -181,6 +182,10 @@ function MLB_validateUserInput() {
 	}
 }
 
+function MLB_onCommandExecuteAutomatic(){
+   byId('executeInstantlyWhenIdUnique').disabled = !byId('executeAutomatic').checked   
+}
+
 function MLB_onCommandIdType(){
    var idTypeRG = byId('idtype')
    if(idTypeRG.value==MlbCommon.IdTypes.NUMERIC){
@@ -219,9 +224,10 @@ function MLB_onCommandRestoreDefault(){
    keyListBox.focus()
 }
 
-function MLB_onSmartPosChange(){
-   byId('omitSmartPosForCheckboxAndRadio').disabled=!byId('smartPositioning').checked
-}
+//TODO remove or put in
+//function MLB_onSmartPosChange(){
+//   byId('omitSmartPosForCheckboxAndRadio').disabled=!byId('smartPositioning').checked
+//}
 
 function MLB_loadKeyListbox(){
 	var keyListBox = byId('keyListBox')

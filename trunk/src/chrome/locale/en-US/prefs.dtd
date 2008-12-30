@@ -7,7 +7,7 @@
 <!ENTITY disableMLB.label "Disable Mouseless Browsing">
 <!ENTITY showIdsOnDemand.label "Show ids only on demand">
 <!ENTITY initOnDomContentLoaded.label "Show ids before all images are loaded (this can partly lead to misplaced ids)">
-<!ENTITY executeAutomatice.label "Execute automatically without pressing Enter">
+<!ENTITY executeAutomatic.label "Execute automatically without pressing Enter">
 <!ENTITY executeInstantlyWhenIdUnique.label "Execute action instantly when the id is unique (prevents use of post-fix keys)">
 <!ENTITY groupbox.id_type.label "Id Type">
 <!ENTITY idTypeNumeric.label "Use Numeric Ids">
@@ -43,7 +43,6 @@
 <!ENTITY keyLB.listheader.key_combination.label "Key Combination">
 <!ENTITY mouselessbrowsing.keys.toggleMLB "Toggling visibility of ids on/off">
 <!ENTITY mouselessbrowsing.keys.toggleAllIds "Toggling visibility of ids for all/only configured elements">
-<!ENTITY mouselessbrowsing.keys.updatePage "Update ids of page">
 <!ENTITY mouselessbrowsing.keys.toggleExlusiveUseOfNumpad "Toggling exclusive use of numpad">
 <!ENTITY mouselessbrowsing.keys.clearKeybuffer "Clearing keybuffer">
 <!ENTITY mouselessbrowsing.keys.openInNewTabPostfixKey "Postfix-key to open link in new tab">

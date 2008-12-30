@@ -1,20 +1,72 @@
 /**
  * Contains Code for migration to version 0.5
  */
+with(mouselessbrowsing){
+with(mlb_common){
 (function(){
-	var Prefs = mlb_common.Prefs
-	var Utils = mlb_common.Utils
-	var MlbUtils = mouselessbrowsing.MlbUtils
-	var MlbCommon = mouselessbrowsing.MlbCommon
 	
    var VersionManager = { 
    	VERSION_PREF: "mouselessbrowsing.version",
    	versionComparator: Components.classes["@mozilla.org/xpcom/version-comparator;1"]
                    .getService(Components.interfaces.nsIVersionComparator),
    	
-      versionsToBeMigrated: ["0.5"],
+      versionsToBeMigrated: ["0.5", "0.5.2"],
                    
-   	hasVersionToBeMigrated: function(){
+   	doFirstInstallationMigration: function(){
+         //Set different keys for toggleing Ids for Unix OS as "Decimal" key is "Separator" key on linux
+         if(Utils.getOperationSystem()==OperationSystem.LINUX){
+            var prefs = Application.prefs
+            prefs.setValue("mouselessbrowsing.keys.toggleMLB", "1728")   
+            prefs.setValue("mouselessbrowsing.keys.toggleAllIds", "1730")
+            prefs.setValue("mouselessbrowsing.keys.toggleEnableDisableMLB", "1729")
+            MlbUtils.logDebugMessage("Shortcut for toggling ids changed for Linux host system")
+         }
+         MlbUtils.logDebugMessage("VersionManager.doFirstInstallationMigration done")
+      },
+      
+      doMigration: function(){
+         var migrated = false
+         if(this.isFirstInstallation()){
+            migrated = true
+            this.doFirstInstallationMigration()
+         }else if(this.hasVersionToBeMigrated()){
+            migrated = true
+            this.doMigrationToCurrentVersion()
+         }
+         if(migrated){
+      		Prefs.setCharPref(this.VERSION_PREF, Utils.getExtension(MlbCommon.MLB_GUI_ID).version)
+      		setTimeout(mouselessbrowsing.VersionManager.showVersionInfoPage, 1000)
+         }
+   	},
+      
+      doMigrationToCurrentVersion: function(){
+         var currentVersion = Prefs.getCharPref(this.VERSION_PREF)
+         for (var i = 0; i < this.versionsToBeMigrated.length; i++) {
+            var version = this.versionsToBeMigrated[i]
+            if(this.versionComparator.compare(version, currentVersion)>0){
+               var mirgationFunctionName = "migrateToVersion_" + version.replace(/\./g,"_") 
+               this[mirgationFunctionName]()
+               MlbUtils.logDebugMessage("Successfully migrated to version " + version)
+            }
+         }
+      },
+      
+   	deleteObsoletePrefs: function(){
+			if (Prefs.hasUserPref('mouselessbrowsing.enableCtrlPlusDigit')) {
+   			Application.prefs.get('mouselessbrowsing.enableCtrlPlusDigit').reset()
+			}
+			if (Prefs.hasUserPref('mouselessbrowsing.useSelfDefinedCharsForIds')) {
+   			Application.prefs.get('mouselessbrowsing.useSelfDefinedCharsForIds').reset()
+			}
+			if (Prefs.hasUserPref('mouselessbrowsing.showTabIds')) {
+   			Application.prefs.get('mouselessbrowsing.showTabIds').reset()
+			}
+			MlbUtils.logDebugMessage('Old prefs deleted')
+   	},
+   	
+      hasVersionToBeMigrated: function(){
+         if(this.isFirstInstallation())
+            return false
    		var newInstalledVersion = Utils.getExtension(MlbCommon.MLB_GUI_ID).version
    		var currentVersion = Prefs.getCharPref(this.VERSION_PREF)
    		if(this.versionComparator.compare(newInstalledVersion, currentVersion)>0){
@@ -23,25 +75,10 @@
    			return false
    		}
    	},
-   	
-   	doMigration: function(){
-   		var currentVersion = Prefs.getCharPref(this.VERSION_PREF)
-   		for (var i = 0; i < this.versionsToBeMigrated.length; i++) {
-   			var version = this.versionsToBeMigrated[i]
-   			if(this.versionComparator.compare(version, currentVersion)>0){
-   				var mirgationFunctionName = "migrateToVersion_" + version.replace(/\./g,"_") 
-   				this[mirgationFunctionName]()
-   				MlbUtils.logDebugMessage("Successfully migrated to version " + version)
-   			}
-   		}
-   		Prefs.setCharPref(this.VERSION_PREF, Utils.getExtension(MlbCommon.MLB_GUI_ID).version)
-   		setTimeout(mouselessbrowsing.VersionManager.showVersionInfoPage, 1000)
-   	},
-   	
-   	migrateToVersion_0_5: function(){
-   		this.migrateStyles()
-   		this.deleteObsoletePrefs()
-   	},
+      
+      isFirstInstallation: function(){
+         return Application.prefs.getValue('mouselessbrowsing.version', "").length==0
+      },
    	
    	migrateStyles: function(){
    		var prefKeyStyleForIdSpan = "mouselessbrowsing.styleForIdSpan"
@@ -63,18 +100,14 @@
 			}
    	},
    	
-   	deleteObsoletePrefs: function(){
-			if (Prefs.hasUserPref('mouselessbrowsing.enableCtrlPlusDigit')) {
-   			Application.prefs.get('mouselessbrowsing.enableCtrlPlusDigit').reset()
-			}
-			if (Prefs.hasUserPref('mouselessbrowsing.useSelfDefinedCharsForIds')) {
-   			Application.prefs.get('mouselessbrowsing.useSelfDefinedCharsForIds').reset()
-			}
-			if (Prefs.hasUserPref('mouselessbrowsing.showTabIds')) {
-   			Application.prefs.get('mouselessbrowsing.showTabIds').reset()
-			}
-			MlbUtils.logDebugMessage('Old prefs deleted')
+   	migrateToVersion_0_5: function(){
+   		this.migrateStyles()
+   		this.deleteObsoletePrefs()
    	},
+      
+      migrateToVersion_0_5_2: function(){
+         Application.prefs.setValue("mouselessbrowsing.executeAutomaticNew", Application.prefs.getValue("mouselessbrowsing.executeAutomatic", false))
+      },
    	
    	showVersionInfoPage: function(){
    		var newTab = Utils.openUrlInNewTab('http://mlb.whatsnew.rudolf-noe.de')
@@ -83,8 +116,9 @@
    	}
    	
    	
-   	
    }
    var NS = mlb_common.Namespace
    NS.bindToNamespace("mouselessbrowsing", "VersionManager", VersionManager)
+   
 })()
+}}
