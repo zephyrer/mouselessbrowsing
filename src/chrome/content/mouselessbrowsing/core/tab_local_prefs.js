@@ -32,19 +32,17 @@
 	}
 	TabLocalPrefs.getPrefs = getPrefs
 
-	function isExclusiveUseOfNumpad(win) {
+	TabLocalPrefs.isExclusiveUseOfNumpad = function (win) {
 		return TabLocalPrefs.getPrefs(win).exclusiveUseOfNumpad
 	}
-	TabLocalPrefs.isExclusiveUseOfNumpad = isExclusiveUseOfNumpad
 
-	function onTabSelect() {
+   TabLocalPrefs.onTabSelect = function() {
 		Utils.executeDelayed("SetExlNumpadOnTabChange", 300, function(){
    		TabLocalPrefs.observedPropExclusiveUseOfNumpad = getPrefs().exclusiveUseOfNumpad
 		})
 	}
-	TabLocalPrefs.onTabSelect = onTabSelect
 
-	function initPrefs() {
+   TabLocalPrefs.initPrefs = function() {
 		var browsers = gBrowser._browsers
 		if (browsers != null) {
 			for (var i = 0; i < browsers.length; i++) {
@@ -58,102 +56,85 @@
 			}
 		}
 	}
-	TabLocalPrefs.initPrefs = initPrefs
 
-	function toggleExclusiveUseOfNumpad() {
+	TabLocalPrefs.toggleExclusiveUseOfNumpad = function () {
 		getPrefs().toggleExclusiveUseOfNumpad()
 		TabLocalPrefs.observedPropExclusiveUseOfNumpad = getPrefs().exclusiveUseOfNumpad
 	}
-	TabLocalPrefs.toggleExclusiveUseOfNumpad = toggleExclusiveUseOfNumpad
-   
-   
 
-	function isIdsEnabledFor(win, idSpanType) {
+	TabLocalPrefs.isIdsEnabledFor = function isIdsEnabledFor(win, idSpanType) {
       switch(idSpanType){
          case MlbCommon.IdSpanTypes.FRAME: 
-            return isIdsForFramesEnabled(win)
+            return TabLocalPrefs.isIdsForFramesEnabled(win)
             break;
          case MlbCommon.IdSpanTypes.IMG: 
-            return isIdsForImgLinksEnabled(win)
+            return TabLocalPrefs.isIdsForImgLinksEnabled(win)
             break;
          case MlbCommon.IdSpanTypes.LINK: 
-            return isIdsForLinksEnabled(win)
+            return TabLocalPrefs.isIdsForLinksEnabled(win)
             break;
          case MlbCommon.IdSpanTypes.FORMELEMENT: 
-            return isIdsForFormElementsEnabled(win)
+            return TabLocalPrefs.isIdsForFormElementsEnabled(win)
             break;
          case MlbCommon.IdSpanTypes.OTHER: 
-            return isIdsForOtherElementsEnabled(win)
+            return TabLocalPrefs.isIdsForOtherElementsEnabled(win)
             break;
          default:
             throw new Error('Unkown idSpanTyp')
       }
 	}
-	TabLocalPrefs.isIdsEnabledFor = isIdsEnabledFor
 
-   function isIdsForLinksEnabled(win) {
+   TabLocalPrefs.isIdsForLinksEnabled = function (win) {
 		return getPrefs(win).idsForLinksEnabled
 	}
-	TabLocalPrefs.isIdsForLinksEnabled = isIdsForLinksEnabled
 
-	function isIdsForImgLinksEnabled(win) {
+	TabLocalPrefs.isIdsForImgLinksEnabled = function (win) {
 		return getPrefs(win).idsForImgLinksEnabled
 	}
-	TabLocalPrefs.isIdsForImgLinksEnabled = isIdsForImgLinksEnabled
 
-	function isIdsForFormElementsEnabled(win) {
+	TabLocalPrefs.isIdsForFormElementsEnabled = function(win) {
 		return getPrefs(win).idsForFormElementsEnabled
 	}
-	TabLocalPrefs.isIdsForFormElementsEnabled = isIdsForFormElementsEnabled
 
-	function isIdsForFramesEnabled(win) {
+	TabLocalPrefs.isIdsForFramesEnabled = function (win) {
 		return getPrefs(win).idsForFramesEnabled
 	}
-	TabLocalPrefs.isIdsForFramesEnabled = isIdsForFramesEnabled
 
-   function isIdsForOtherElementsEnabled(win) {
+   TabLocalPrefs.isIdsForOtherElementsEnabled = function (win) {
 		return getPrefs(win).idsForOtherElementsEnabled
 	}
-	TabLocalPrefs.isIdsForOtherElementsEnabled = isIdsForOtherElementsEnabled
 
-   function initVisibilityModeAndShowIdPrefs(visibilityMode){
+   TabLocalPrefs.initVisibilityModeAndShowIdPrefs = function (visibilityMode){
    	var tabLocalPrefs = getPrefs()
    	tabLocalPrefs.setVisibilityMode(visibilityMode)
    	tabLocalPrefs.initShowIdPrefs()
    }
-   TabLocalPrefs.initVisibilityModeAndShowIdPrefs = initVisibilityModeAndShowIdPrefs
    
-   function applySiteRules(contentWin){
+   TabLocalPrefs.applySiteRules = function (contentWin){
    	var tabLocalPrefs = getPrefs(contentWin)
    	tabLocalPrefs.applySiteRules(contentWin)
    	TabLocalPrefs.observedPropExclusiveUseOfNumpad = tabLocalPrefs.exclusiveUseOfNumpad 
    }
-   TabLocalPrefs.applySiteRules = applySiteRules
    
-   function getPreviousVisibilityMode(){
+   TabLocalPrefs.getPreviousVisibilityMode = function (){
       return getPrefs().previousVisibilityMode
    }
-   TabLocalPrefs.getPreviousVisibilityMode = getPreviousVisibilityMode
    
-	function getVisibilityMode(win){
+	TabLocalPrefs.getVisibilityMode = function (win){
       return getPrefs(win).visibilityMode
 	}
-	TabLocalPrefs.getVisibilityMode = getVisibilityMode
 
-   function setVisibilityMode(win, visibilityMode, previousVisibilityMode){
+   TabLocalPrefs.setVisibilityMode = function (win, visibilityMode, previousVisibilityMode){
    	getPrefs(win).setVisibilityMode(visibilityMode, previousVisibilityMode)
    }
-   TabLocalPrefs.setVisibilityMode = setVisibilityMode
    
-   function isDisableAllIds(win){
+   TabLocalPrefs.isDisableAllIds = function (win){
    	return getPrefs(win).isDisableAllIds()
    }
-   TabLocalPrefs.isDisableAllIds = isDisableAllIds
 	
-   function isShowIdsOnDemand(win){
+   TabLocalPrefs.isShowIdsOnDemand = function (win){
       return getPrefs(win).showIdsOnDemand 	
    }
-   TabLocalPrefs.isShowIdsOnDemand = isShowIdsOnDemand
    
 	TabLocalPrefs.prototype = {
 		init : function() {

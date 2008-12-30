@@ -77,7 +77,8 @@
 									<checkbox label="&initOnDomContentLoaded.label;" prefid="mouselessbrowsing.initOnDomContentLoaded"/>
 								</row>
 								<row>
-									<checkbox id="executeAutomatic" label="&executeAutomatice.label;" prefid="mouselessbrowsing.executeAutomatic" />
+									<checkbox id="executeAutomatic" label="&executeAutomatic.label;" prefid="mouselessbrowsing.executeAutomaticNew"
+                                     helpid="mouselessbrowsing.executeAutomatic.help" oncommand="MLB_onCommandExecuteAutomatic()"/>                                     
 								</row>
 								<row>
                            <hbox>
@@ -232,12 +233,13 @@
                         <row>
                            <checkbox id="smartPositioning" label="&smartPositioning.label;" prefid="mouselessbrowsing.smartPositioning" oncommand="MLB_onSmartPosChange()"/>
                         </row>
-                        <row>
+                        <!--TODO remove or put in-->
+                        <!--row>
                            <hbox>
                               <spacer width="20px"/>                              
                               <checkbox id="omitSmartPosForCheckboxAndRadio" label="&omitSmartPosForCheckboxAndRadio.label;" prefid="mouselessbrowsing.omitSmartPosForCheckboxAndRadio" />
                            </hbox>
-                        </row>
+                        </row-->
                         <row>
                            <checkbox id="status" label="&filterDuplicateLinks.label;" prefid="mouselessbrowsing.filterDuplicateLinks" />
                         </row>
@@ -371,10 +373,6 @@
                   </listitem>
                   <listitem prefid="mouselessbrowsing.keys.toggleAllIds">
                      <listcell label="&mouselessbrowsing.keys.toggleAllIds;"/>
-                     <listcell />
-                  </listitem>
-                  <listitem prefid="mouselessbrowsing.keys.updatePage">
-                     <listcell label="&mouselessbrowsing.keys.updatePage;"/>
                      <listcell />
                   </listitem>
                   <listitem prefid="mouselessbrowsing.keys.toggleExlusiveUseOfNumpad">

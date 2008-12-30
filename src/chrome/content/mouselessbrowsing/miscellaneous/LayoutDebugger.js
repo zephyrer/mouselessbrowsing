@@ -28,7 +28,7 @@ with(mlb_common){
    
    LayoutDebugger.init = function(){
       //Replace createMethod
-      if(Application.prefs.get("mouselessbrowsing.debug.layout_debugger_active", false) &&
+      if(Application.prefs.getValue("mouselessbrowsing.debug.layout_debugger_active", false) &&
          LayoutDebugger.createPageDataBackup == null){
          LayoutDebugger.createPageDataBackup = PageData.createPageData
          PageData.createPageData = LayoutDebugger.createPageData 

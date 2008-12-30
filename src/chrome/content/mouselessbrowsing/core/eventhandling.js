@@ -88,9 +88,9 @@ with(mouselessbrowsing){
 			}
 			
 			//Set flag whether link should be opened in new tab or in cooliris preview
-			this.openInNewTab = ShortCutManager.encodeEventModifier(event)==MlbPrefs.modifierForOpenInNewTab
-			this.openInNewWindow= ShortCutManager.encodeEventModifier(event)==MlbPrefs.modifierForOpenInNewWindow
-			this.openInCoolirisPreviews = ShortCutManager.encodeEventModifier(event)==MlbPrefs.modifierForOpenInCoolirisPreviews
+			this.openInNewTab = ShortcutManager.encodeEventModifier(event)==MlbPrefs.modifierForOpenInNewTab
+			this.openInNewWindow= ShortcutManager.encodeEventModifier(event)==MlbPrefs.modifierForOpenInNewWindow
+			this.openInCoolirisPreviews = ShortcutManager.encodeEventModifier(event)==MlbPrefs.modifierForOpenInCoolirisPreviews
 			
          if(this.isExecuteAutomatic(event)){
             if(MlbPrefs.executeInstantlyWhenIdUnique && MlbUtils.getPageData().isIdUnique(this.keybuffer))
@@ -126,7 +126,7 @@ with(mouselessbrowsing){
 		},
 		
       isOneOfConfiguredModifierCombination: function(event) {
-			var encodedModifierCode = ShortCutManager.encodeEventModifier(event)
+			var encodedModifierCode = ShortcutManager.encodeEventModifier(event)
 			if (encodedModifierCode == MlbPrefs.modifierForWritableElement ||
 					encodedModifierCode == MlbPrefs.modifierForOpenInNewTab ||
 					encodedModifierCode == MlbPrefs.modifierForOpenInNewWindow ||
@@ -138,7 +138,7 @@ with(mouselessbrowsing){
 		},
 		
 		isAltCtrlInEditableField: function(event){
-			return MlbUtils.isWritableElement(event.originalTarget) &&  ShortCutManager.isModifierCombination(event, ShortCutManager.CTRL_ALT)
+			return MlbUtils.isWritableElement(event.originalTarget) &&  ShortcutManager.isModifierCombination(event, ShortcutManager.CTRL_ALT)
 		},
 		
 		isDigitPressed: function(event){
@@ -361,8 +361,8 @@ with(mouselessbrowsing){
 	      TabLocalPrefs.initVisibilityModeAndShowIdPrefs(visibilityMode);
          //Hide all as the 
 			if(visibilityMode==MlbCommon.VisibilityModes.NONE){
-            this.hideIdSpans(content);
             this.getPageInitializer().deactivateChangeListener(content)
+            this.hideIdSpans(content);
 		    }else {
             if(currentVisibilityMode==MlbCommon.VisibilityModes.ALL)//hide first all id spans as the number of spans will be less
                this.hideIdSpans(content)
@@ -492,7 +492,7 @@ with(mouselessbrowsing){
 			} else if (locationId == MlbCommon.OpenLinkLocations.COOLIRIS_PREVIEW && MlbUtils.isCoolirisPreviewsInstalled()) {
 				this.showCoolirisPreview(element)
 			}
-		   return ShortCutManager.PREVENT_FURTHER_EVENTS;
+		   return ShortcutManager.PREVENT_FURTHER_EVENTS;
 		},
 		
 		showCoolirisPreview: function(link) {
