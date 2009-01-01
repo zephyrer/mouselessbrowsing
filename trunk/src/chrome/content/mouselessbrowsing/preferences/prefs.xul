@@ -77,6 +77,9 @@
 									<checkbox label="&initOnDomContentLoaded.label;" prefid="mouselessbrowsing.initOnDomContentLoaded"/>
 								</row>
 								<row>
+									<checkbox label="&disableAutomaticPageUpdateOnChange.label;" prefid="mouselessbrowsing.disableAutomaticPageUpdateOnChange"/>
+								</row>
+								<row>
 									<checkbox id="executeAutomatic" label="&executeAutomatic.label;" prefid="mouselessbrowsing.executeAutomaticNew"
                                      helpid="mouselessbrowsing.executeAutomatic.help" oncommand="MLB_onCommandExecuteAutomatic()"/>                                     
 								</row>
@@ -375,6 +378,10 @@
                      <listcell label="&mouselessbrowsing.keys.toggleAllIds;"/>
                      <listcell />
                   </listitem>
+                  <listitem prefid="mouselessbrowsing.keys.updatePage">
+                     <listcell label="&mouselessbrowsing.keys.updatePage;"/>
+                     <listcell />
+                  </listitem>                  
                   <listitem prefid="mouselessbrowsing.keys.toggleExlusiveUseOfNumpad">
                      <listcell label="&mouselessbrowsing.keys.toggleExlusiveUseOfNumpad;"/>
                      <listcell />
