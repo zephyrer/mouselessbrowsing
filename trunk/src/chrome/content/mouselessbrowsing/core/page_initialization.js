@@ -63,6 +63,30 @@ with(mouselessbrowsing){
          TabLocalPrefs.applySiteRules(content)
          this.updatePage(content);
 		},
+      
+      initIdSpanElementBinding: function(targetDocument, pageData){
+         var bindingKeyToBindingMap = {}
+         var elems = XPathUtils.getElements("//*[@"+ MlbCommon.MLB_BINDING_KEY_ATTR + "]", targetDocument)
+         for (var i = 0; i < elems.length; i++) {
+            var elem = elems[i]
+            var bindingKey = elem.getAttribute(MlbCommon.MLB_BINDING_KEY_ATTR)
+            var bindingEntry = bindingKeyToBindingMap[bindingKey]
+            if(bindingEntry==null)
+               bindingKeyToBindingMap[bindingKey] = bindingEntry = {}
+            if(elem.hasAttribute(MlbCommon.ATTR_ID_SPAN_FLAG))
+               bindingEntry.idSpan = elem
+            else
+               bindingEntry.element = elem
+         }
+         for(var bindingKey in bindingKeyToBindingMap){
+            var bindingEntry = bindingKeyToBindingMap[bindingKey]
+            if(bindingEntry.idSpan==null){
+               bindingEntry.element.removeAttribute(MlbCommon.MLB_BINDING_KEY_ATTR)
+               continue
+            }
+            pageData.addElementIdSpanBinding(bindingEntry.element, bindingEntry.idSpan)
+         }
+      },
 		
 		//Function called on pageShow event
 		onPageShow: function(event){
@@ -78,7 +102,7 @@ with(mouselessbrowsing){
             return
          }
          //After topwin is initialized ids has always to be regenerated entirely as with frameset no top win will be loaded any more
-			this.prepareInitialization(event, onpageshow2ndCall, true);
+			this.prepareInitialization(event, onpageshow2ndCall, true, !event.persisted);
          if(win==win.top){
             win.mlb_initialized=true
          }
@@ -87,13 +111,13 @@ with(mouselessbrowsing){
 		//Function called on DOMContentLoaded event
 		onDOMContentLoaded: function(event){
 			if(MlbPrefs.initOnDomContentLoaded){
-			   this.prepareInitialization(event, false, false);
+			   this.prepareInitialization(event, false, false, true);
 			}
 		},
 		
-		prepareInitialization: function(event, onpageshow2ndCall, installChangeListener){
+		prepareInitialization: function(event, onpageshow2ndCall, installChangeListener, keepExisitingIds){
          var win = event.originalTarget.defaultView
-         var pageInitData = new PageInitData(win, onpageshow2ndCall, installChangeListener, true, event.type)
+         var pageInitData = new PageInitData(win, onpageshow2ndCall, installChangeListener, keepExisitingIds, event)
          
          //Apply URL exceptions
          //Could not be in initPage as it should not be executed on toggleing
@@ -154,14 +178,19 @@ with(mouselessbrowsing){
             pageData.setNextKeepExistingIds(true)
 		   	pageData.initResetableMembers()
 		   }
-	   	pageInitData.pageData = pageData 
 	      MlbUtils.setPageData(topWin, pageData)
+	   	pageInitData.pageData = pageData 
          
          //Debug Info
          MlbUtils.logDebugMessage('init topWin: "' + pageInitData.getCurrentTopWin().name + '"| event: ' + 
-            pageInitData.eventType + '| topwin: ' + (pageInitData.getCurrentTopWin()==pageInitData.getCurrentWin()) + 
+            (pageInitData.getEvent()?pageInitData.getEvent().type:"update") + ' | topwin: ' + (pageInitData.getCurrentTopWin()==pageInitData.getCurrentWin()) + 
             " | keepExistingIds: " + pageInitData.getKeepExistingIds())
          
+         //If page is from cache the ids are still visible but the bindings between ids spans and their elements are lost
+         //so this have to recreated
+         if(pageInitData.getEvent() && pageInitData.getEvent().persisted)
+            this.initIdSpanElementBinding(pageInitData.getCurrentDoc(), pageData)
+            
          //Increment initCounter
          pageData.incrementInitCounter()
          
@@ -186,7 +215,6 @@ with(mouselessbrowsing){
          if(!MlbPrefs.disableAutomaticPageUpdateOnChange && pageInitData.installChangeListener)
             this.activateChangeListener(pageInitData)
 			
-//         alert('')
 		   if(MlbPrefs.debugPerf){
             var timeConsumed = perfTimer.stop()
             var debugMessage = "MLB time for"
