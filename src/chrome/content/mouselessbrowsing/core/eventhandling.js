@@ -464,7 +464,7 @@ with(mouselessbrowsing){
 		  */
 		isCaseOfExclusivlyUseOfNumpad: function(event){
 		    var keyCode = event.keyCode;
-		    var isNumpad = (keyCode>=96 && keyCode<=106) || (keyCode>=110 && keyCode<=111) 
+		    var isNumpad = (keyCode>=96 && keyCode<=106) || (keyCode==108) || (keyCode>=110 && keyCode<=111) 
 		    return MlbPrefs.isNumericIdType() && TabLocalPrefs.isExclusiveUseOfNumpad() && isNumpad;
 		},
 		

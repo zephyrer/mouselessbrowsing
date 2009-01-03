@@ -5,6 +5,9 @@ with(mouselessbrowsing){
       this.pageInitData = pageInitData
       this.pageData = pageInitData.pageData
       this.spanPrototype = null
+      this.currentSpanWidth = null
+      this.currentIdLength = null
+      this.spanHeight = null
    }
    
    //Static methods
@@ -52,17 +55,37 @@ with(mouselessbrowsing){
       
       insertIdSpan: function(newSpan, element, parentElement, spanPosition, styleArray){
          parentElement = parentElement?parentElement:element
+         
+         var leftMarginSet = false
+         var topMarginSet = false
 
+         //For performance reasons do as much of the style modifications on the span before inserting it
+         if(spanPosition!=SpanPosition.APPEND_TEXT && spanPosition!=SpanPosition.NATURAL_FLOW){
+            newSpan.style.position="relative"
+            //Set margin-top and width
+            if(this.spanHeight){
+               newSpan.style.marginTop = -this.spanHeight + "px"
+               topMarginSet = true
+            }
+            var textLength = newSpan.textContent.length
+            if(this.currentIdLength==textLength){
+               newSpan.style.marginLeft = -this.currentSpanWidth + "px"
+               leftMarginSet = true
+            }
+            
+            for (var i = 0; i < styleArray.length; i++) {
+               newSpan.style.setProperty(styleArray[i][0], styleArray[i][1], "important")   
+            }
+         }
+         
          if(spanPosition==SpanPosition.APPEND_TEXT){
             this.insertSpanForTextElement(newSpan, element)
-            //no further positioning
-            return
          }else if(parentElement==element)
             element.appendChild(newSpan)
          else
             DomUtils.insertAfter(newSpan, element)
 
-         if(SpanPosition.NATURAL_FLOW==spanPosition)//No special positioning is done
+         if(SpanPosition.NATURAL_FLOW==spanPosition || spanPosition==SpanPosition.APPEND_TEXT)//No special positioning is done
             return
             
          //Set link position relative but only if neither the link nor one of its descendants are positioned
@@ -72,6 +95,16 @@ with(mouselessbrowsing){
             parentElement.style.position="relative"
          }
 
+         //TODO try this to move up before inseration as it would speed up initialization
+         if(!topMarginSet){
+            this.spanHeight = newSpan.offsetHeight
+            newSpan.style.marginTop = (-newSpan.offsetHeight) + "px"
+         }
+         if(!leftMarginSet){
+            this.currentSpanWidth = newSpan.offsetWidth
+            this.currentIdLength = newSpan.textContent.length
+            newSpan.style.marginLeft = (-newSpan.offsetWidth) + "px"
+         }
          
          //If overlayed element is to small relative to the span do not 
          //TODO make configurable
@@ -81,10 +114,6 @@ with(mouselessbrowsing){
             spanPosition = SpanPosition.EAST_OUTSIDE
          }         
          
-         newSpan.style.position="relative"
-         newSpan.style.marginTop = (-newSpan.offsetHeight) + "px"
-         newSpan.style.marginLeft = (-newSpan.offsetWidth) + "px"
-
          if(spanPosition==SpanPosition.EAST_OUTSIDE || 
             spanPosition==SpanPosition.NORTH_EAST_OUTSIDE){
             var currentMarginRight = this.getComputedStyle(element).marginRight
@@ -92,10 +121,6 @@ with(mouselessbrowsing){
             element.style.marginRight = (newSpan.offsetWidth-currentMarginRight) + "px"
          }
          
-         for (var i = 0; i < styleArray.length; i++) {
-            newSpan.style.setProperty(styleArray[i][0], styleArray[i][1], "important")   
-         }
-
          this.positionIdSpan(newSpan, element, spanPosition)
       },
  
