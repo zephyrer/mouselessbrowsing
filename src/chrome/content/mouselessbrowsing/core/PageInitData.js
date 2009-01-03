@@ -7,12 +7,12 @@ with(mlb_common){
     *@param onpageshow2ndCall: Flag inidicating that this second cycle of initializing, the first is onDomContentLoaded
     *@param keepExsitingIds: Flag indicating that exisitng id spans should not be changed.
     */
-   function PageInitData(currentWin, onpageshow2ndCall, installChangeListener, keepExistingIds, eventType){
+   function PageInitData(currentWin, onpageshow2ndCall, installChangeListener, keepExistingIds, event){
       this.currentWin = currentWin;
       this.onpageshow2ndCall = onpageshow2ndCall
       this.installChangeListener = installChangeListener
       this.keepExistingIds = keepExistingIds
-      this.eventType = eventType
+      this.event = event
       this.pageData = null
    }
    
@@ -37,6 +37,10 @@ with(mlb_common){
          return this.currentWin.document
       },
       
+      getEvent: function(){
+         return this.event
+      },
+
       getIdSpan: function(element){
          return this.pageData.getIdSpanByElement(element)
       },

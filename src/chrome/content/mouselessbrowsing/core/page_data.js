@@ -60,10 +60,21 @@ with(mouselessbrowsing){
 			}
 		},
 		
-      getElementBySpan: function(refSpan){
-         if(!refSpan.hasAttribute(MlbCommon.MLB_BINDING_KEY_ATTR))
+      getElementBy: function(elementOrIdSpan, type){
+         if(!elementOrIdSpan.hasAttribute(MlbCommon.MLB_BINDING_KEY_ATTR))
             return null
-         return this.elementIdSpanMap[refSpan.getAttribute(MlbCommon.MLB_BINDING_KEY_ATTR)].element
+         //Check if refEntry is there as if page was cached the attribute is there but not entry any more
+         var refEntry = this.elementIdSpanMap[elementOrIdSpan.getAttribute(MlbCommon.MLB_BINDING_KEY_ATTR)]
+         if(!refEntry)
+            return null
+         if(type=="span")
+            return refEntry.idSpan
+         else
+            return refEntry.element
+      },
+
+      getElementBySpan: function(refSpan){
+         return this.getElementBy(refSpan, "element")
       },
       
 		getElementForId:function(id){
@@ -75,9 +86,7 @@ with(mouselessbrowsing){
 		},
 		
       getIdSpanByElement: function(refElement){
-         if(!refElement.hasAttribute(MlbCommon.MLB_BINDING_KEY_ATTR))
-            return null
-         return this.elementIdSpanMap[refElement.getAttribute(MlbCommon.MLB_BINDING_KEY_ATTR)].idSpan
+         return this.getElementBy(refElement, "span")
       },
 
 		getNextId:function(){
@@ -104,7 +113,7 @@ with(mouselessbrowsing){
 	         return this.replaceChar(id, indexInId, this.idChars.charAt(indexOfCharInChars+1));
 	      }
 		},
-
+      
       hasElementWithId: function(id){
 			if(this.useCharIds){
 				return this.idToElementMap[id.toUpperCase()]!=null

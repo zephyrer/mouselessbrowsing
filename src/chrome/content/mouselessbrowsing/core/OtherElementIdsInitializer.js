@@ -31,10 +31,15 @@ with(mouselessbrowsing){
             var idSpan = this.pageInitData.getIdSpan(otherElement)
             if(idSpan && idSpan.mlb_initCounter==currentInitCount)
                continue
-            if(this.isImageElement(otherElement, null)){
-               var spanPosition = SpanPosition.NORTH_EAST_INSIDE
+            var spanPosition = null
+            if(MlbPrefs.smartPositioning){
+               if(this.isImageElement(otherElement, null)){
+                  spanPosition = SpanPosition.NORTH_EAST_INSIDE
+               }else{
+                  spanPosition = SpanPosition.APPEND_TEXT
+               }
             }else{
-               var spanPosition = SpanPosition.APPEND_TEXT
+               spanPosition = SpanPosition.NATURAL_FLOW     
             }
             this.insertSpanForOtherElements(otherElement, idSpan, 
                MlbCommon.IdSpanTypes.OTHER, spanPosition)
@@ -58,10 +63,10 @@ with(mouselessbrowsing){
       
       //TODO make it correct
       isMarkableElement: function(element){
+         if(element.offsetWidth<2 || element.offsetHeight<2)
+            return false
          var style = this.getComputedStyle(element)
          if(!this.isTextElement(element) && style.backgroundImage=="none" && element.getElementsByTagName('img').length==0)
-            return false
-         if(element.offsetWidth<2 || element.offsetHeight<2)
             return false
          return true
       }

@@ -234,7 +234,7 @@
                      </columns>
                      <rows flex="1">
                         <row>
-                           <checkbox id="smartPositioning" label="&smartPositioning.label;" prefid="mouselessbrowsing.smartPositioning" oncommand="MLB_onSmartPosChange()"/>
+                           <checkbox id="smartPositioning" label="&smartPositioning.label;" prefid="mouselessbrowsing.smartPositioning" />
                         </row>
                         <!--TODO remove or put in-->
                         <!--row>

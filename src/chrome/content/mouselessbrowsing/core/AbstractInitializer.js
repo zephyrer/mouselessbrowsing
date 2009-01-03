@@ -225,9 +225,9 @@ with(mouselessbrowsing){
       
       isTextElement: function(element){
          var useComputedStyle = true
-         if(!DomUtils.isVisible)
+         if(!DomUtils.isVisible(element))
             useComputedStyle = false
-         return this.hasVisibleText(element, true, true)
+         return this.hasVisibleText(element, useComputedStyle, true)
       },
       
       positionIdSpan: function(idSpan, element, spanPosition){
