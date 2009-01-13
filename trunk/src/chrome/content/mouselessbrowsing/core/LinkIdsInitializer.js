@@ -114,11 +114,16 @@ with(mouselessbrowsing){
          if(link.className)
             return "true"
          
+         var imgElem = null
          var imgs = link.getElementsByTagName("img")
          if (imgs.length>0){
+            imgElem = imgs[0]
+         }else{
+            imgElem = link.style.backgroundImage?link:null
+         }
+         if(imgElem){
             //for performance reasons only the first one will be evalutated, as multiple img within a link is quite unlikley 
-            var img = imgs[0]
-            if(img.offsetWidth>1 && img.offsetHeight>1)
+            if(imgElem.offsetWidth>1 && imgElem.offsetHeight>1)
                return "true"
             else if (this.pageInitData.isOnDomContentLoaded())
                return "unsure";

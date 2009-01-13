@@ -83,7 +83,9 @@
          var tempScriptLoaderNS = new Object()
          this.loadScript(this.COMMON_CHROME_ULR + "/script/ScriptLoader.js", tempScriptLoaderNS)
          this.scriptLoader = tempScriptLoaderNS.ScriptLoader
-         var exclude = ["Shortcutmanager.js"]
+         //First load ObjectUtils as this is required during load for Inheritence
+         this.scriptLoader.loadScript(this.COMMON_CHROME_ULR+"lang/ObjectUtils.js", namespaceObj)
+         var exclude = ["Shortcutmanager.js", "ObjectUtils.js"]
          this.scriptLoader.loadScripts(this.COMMON_CHROME_ULR, namespaceObj, exclude, true)
       
 			//Init version

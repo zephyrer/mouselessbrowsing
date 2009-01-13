@@ -17,6 +17,9 @@ with(mouselessbrowsing){
          return
 //          MlbUtils.logDebugMessage(e.type  + "  " + node)
       Utils.executeDelayed(UPDATE_PAGE_TIMER_ID, 500, function(){
+         //Do not update invisble pages
+         if(content!=node.ownerDocument.defaultView.top)
+            return
          PageInitializer.updatePage(node.ownerDocument.defaultView.top)
       })
    }
