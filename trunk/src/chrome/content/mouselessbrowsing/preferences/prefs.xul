@@ -244,16 +244,19 @@
                            </hbox>
                         </row-->
                         <row>
-                           <checkbox id="status" label="&filterDuplicateLinks.label;" prefid="mouselessbrowsing.filterDuplicateLinks" />
+                           <checkbox label="&filterDuplicateLinks.label;" prefid="mouselessbrowsing.filterDuplicateLinks" />
                         </row>
                         <row>
-                           <checkbox id="status" label="&showKeybufferInStatusbar.label;" prefid="mouselessbrowsing.showKeybufferInStatusbar" />
+                           <checkbox label="&showTabIds.label;" prefid="mouselessbrowsing.showTabIds" />
                         </row>
                         <row>
-                           <checkbox id="status" label="&showMlbIconInStatusbar.label;" prefid="mouselessbrowsing.showMlbIconInStatusbar" />
+                           <checkbox label="&showKeybufferInStatusbar.label;" prefid="mouselessbrowsing.showKeybufferInStatusbar" />
                         </row>
                         <row>
-                           <checkbox id="status" label="&showMlbMenu.label;" prefid="mouselessbrowsing.showMlbMenu" />
+                           <checkbox label="&showMlbIconInStatusbar.label;" prefid="mouselessbrowsing.showMlbIconInStatusbar" />
+                        </row>
+                        <row>
+                           <checkbox label="&showMlbMenu.label;" prefid="mouselessbrowsing.showMlbMenu" />
                         </row>
                      </rows>
                   </grid>

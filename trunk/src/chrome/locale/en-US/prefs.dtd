@@ -28,6 +28,7 @@
 <!ENTITY groupbox.other-layout-config.label "Other Layout Configuration">
 <!ENTITY smartPositioning.label "Smart positioning of ids">
 <!ENTITY omitSmartPosForCheckboxAndRadio.label "Omit smart positioning of checkboxes and radio buttons (reduce initialization time)">
+<!ENTITY showTabIds.label "Show tab ids">
 <!ENTITY filterDuplicateLinks.label "Hide ids for image links for which an identical text link exists">
 <!ENTITY showKeybufferInStatusbar.label "Show keybuffer in statusbar">
 <!ENTITY showMlbIconInStatusbar.label "Show MLB Icon in statusbar">
