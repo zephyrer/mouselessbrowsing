@@ -44,6 +44,7 @@
 //      TODO remove or put in
 //      omitSmartPosForCheckboxAndRadio: null,
       filterDuplicateLinks: null,
+      showTabIds: null,
 		showKeybufferInStatusbar: null,
 		showMlbIconInStatusbar: null,
 		showMlbMenu: null,
@@ -67,6 +68,7 @@
             //      TODO remove or put in
 //				this.omitSmartPosForCheckboxAndRadio = Prefs.getBoolPref("mouselessbrowsing.omitSmartPosForCheckboxAndRadio");
 				this.filterDuplicateLinks = Prefs.getBoolPref("mouselessbrowsing.filterDuplicateLinks");
+				this.showTabIds = Prefs.getBoolPref("mouselessbrowsing.showTabIds");
 		      this.showKeybufferInStatusbar = Prefs.getBoolPref("mouselessbrowsing.showKeybufferInStatusbar");
 		      this.showMlbIconInStatusbar = Prefs.getBoolPref("mouselessbrowsing.showMlbIconInStatusbar");
 		      this.showMlbMenu = Prefs.getBoolPref("mouselessbrowsing.showMlbMenu");
@@ -161,6 +163,11 @@
          Prefs.setBoolPref("mouselessbrowsing.showMlbIconInStatusbar", show)
          this.showKeybufferInStatusbar=show
          Prefs.setBoolPref("mouselessbrowsing.showKeybufferInStatusbar", show) 
+      },
+      
+      setShowTabIdFlag: function(show){
+         this.showTabIds = show
+         Prefs.setBoolPref("mouselessbrowsing.showTabIds", show)
       },
       
       isEscKey: function(prefKey){

@@ -94,7 +94,7 @@ with(mouselessbrowsing){
 		//Function called on pageShow event
 		onPageShow: function(event){
 			var onpageshow2ndCall = !event.persisted && MlbPrefs.initOnDomContentLoaded
-
+//         MlbUtils.logDebugMessage('page persisted: ' + event.persisted)
 			var win = event.originalTarget.defaultView
 
          //Onpage show init starts from topwin if already initialized after DOMCOntentLoaded

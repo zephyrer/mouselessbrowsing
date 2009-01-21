@@ -15,6 +15,7 @@
     <script type="application/x-javascript" src="core/OtherElementIdsInitializer.js"></script>
     <script type="application/x-javascript" src="core/PageInitData.js"></script>
     <script type="application/x-javascript" src="core/page_initialization.js"></script>
+    <script type="application/x-javascript" src="core/TabIdHandler.js"></script>
     <script type="application/x-javascript" src="preferences/version_manager.js"></script>
     <script type="application/x-javascript" src="miscellaneous/google_project_helper.js"></script>
     <script type="application/x-javascript" src="miscellaneous/LayoutDebugger.js"></script>
@@ -36,6 +37,7 @@
     	<command id="mlb_giveFeedback_cmd" label="&giveFeedback.label;" oncommand="mouselessbrowsing.EventHandler.giveFeedback()" accesskey="&giveFeedback.accesskey;"/>
     	<command id="mlb_hideMenu_cmd" label="&hideMLBMenu.label;" oncommand="mouselessbrowsing.EventHandler.hideMlbMenu()" accesskey="&hideMLBMenu.accesskey;"/>
     	<command id="mlb_hideMlbStatusBar_cmd" label="&hideMLBStatusIcon.label;" oncommand="mouselessbrowsing.EventHandler.hideMlbStatusbar()" accesskey="&hideMLBStatusIcon.accesskey;"/>
+    	<command id="mlb_toogleTabIdVisibility_cmd" label="&toogleTabIdVisibility.label;" oncommand="mouselessbrowsing.TabIdHandler.toggleTabIdVisibility(event)"/>
     </commandset>
 
     <menupopup id="menu_ToolsPopup">
@@ -63,7 +65,10 @@
     		<menuitem command="mlb_giveFeedback_cmd"/>
     		<menuseparator/>
     		<menuitem command="mlb_hideMlbStatusBar_cmd"/>
-    	</menupopup>    	
+    	</menupopup>
+      <menupopup>
+         <menuitem id="mlb_showTabIdMI" anonid="mlb_showTabIdMI" command="mlb_toogleTabIdVisibility_cmd" type="checkbox" checked="true"/>
+      </menupopup>
     </popupset>
 
     <statusbar id="status-bar">

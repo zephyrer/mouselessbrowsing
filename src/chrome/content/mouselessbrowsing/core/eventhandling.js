@@ -33,7 +33,7 @@ with(mouselessbrowsing){
 		openInCoolirisPreviews: false,
 		
 		//Regexp for keybuffercontent to focus special tab
-		changeTabByNumberRegExp: /^0[1-9]$/,
+		changeTabByNumberRegExp: /^0[1-9]{1,}$/,
 		
 		globalIds: {
 			"0": "urlbar",
@@ -193,9 +193,10 @@ with(mouselessbrowsing){
 		shouldExecute: function(){
 			if(MlbUtils.getPageData() && //avoid error if page is changed in the meantime e.g. with history back
 			   MlbUtils.getPageData().hasElementWithId(this.keybuffer) ||
+            this.changeTabByNumberRegExp.test(this.keybuffer) ||
 				this.globalIds[this.keybuffer]!=null){
 				return true;
-			}else{
+         }else{
 				return false;
 			}
 		},
@@ -521,9 +522,10 @@ with(mouselessbrowsing){
 			var index = this.keybuffer.substring(1);
 			index = index-1;
 			var tabs = Application.activeWindow.tabs
-			if(index<=tabs.length){
+			if(index<tabs.length)
 				tabs[index].focus()
-			}
+         else
+            tabs[tabs.length-1].focus()
 		},
 		
 		stopEvent: function(event){

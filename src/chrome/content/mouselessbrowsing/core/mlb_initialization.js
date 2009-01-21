@@ -48,7 +48,8 @@ with(mouselessbrowsing){
 		},
 		
 		enableMLB: function (){
-		    this.initShortCuts();
+		    this.initShortCuts()
+          TabIdHandler.init(true)
 		    if(!this.eventHandlersActive){
 		       this.initEventHandlers("addEventListener");
 		       this.eventHandlersActive = true
@@ -76,6 +77,7 @@ with(mouselessbrowsing){
 		
 		disableMLB: function(){
 			//Remove event listener
+         TabIdHandler.init(false)
 			if(this.eventHandlersActive){
 			   this.initEventHandlers("removeEventListener")
 			   this.eventHandlersActive = false
