@@ -12,7 +12,7 @@ pref("mouselessbrowsing.smartPositioning", true);
 //Remove or put in
 //pref("mouselessbrowsing.omitSmartPosForCheckboxAndRadio", true);
 pref("mouselessbrowsing.filterDuplicateLinks", true);
-//pref("mouselessbrowsing.showTabIds", false);
+pref("mouselessbrowsing.showTabIds", true);
 pref("mouselessbrowsing.showKeybufferInStatusbar", true);
 pref("mouselessbrowsing.showMlbIconInStatusbar", true);
 pref("mouselessbrowsing.showMlbMenu", true);
