@@ -10,7 +10,7 @@ with(mlb_common){
    	versionComparator: Components.classes["@mozilla.org/xpcom/version-comparator;1"]
                    .getService(Components.interfaces.nsIVersionComparator),
    	
-      versionsToBeMigrated: ["0.5", "0.5.2"],
+      versionsToBeMigrated: ["0.5", "0.5.2Alpha_1"],
                    
    	doFirstInstallationMigration: function(){
          //Set different keys for toggleing Ids for Unix OS as "Decimal" key is "Separator" key on linux
@@ -105,8 +105,10 @@ with(mlb_common){
    		this.deleteObsoletePrefs()
    	},
       
-      migrateToVersion_0_5_2: function(){
+      migrateToVersion_0_5_2Alpha_1: function(){
          Application.prefs.setValue("mouselessbrowsing.executeAutomaticNew", Application.prefs.getValue("mouselessbrowsing.executeAutomatic", false))
+         //Reinit prefs
+         MlbPrefs.initPrefs();
       },
    	
    	showVersionInfoPage: function(){
