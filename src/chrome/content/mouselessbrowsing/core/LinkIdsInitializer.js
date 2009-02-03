@@ -83,7 +83,7 @@ with(mouselessbrowsing){
                imgElement = imgElements[0]
                parentElement = link
             }
-            this.insertIdSpan(newSpan, imgElement, parentElement, SpanPosition.NORTH_EAST_INSIDE, ImgOverlayStyles)
+            this.insertIdSpan(newSpan, imgElement, parentElement, SpanPosition.NORTH_EAST_INSIDE, AbstractInitializer.getImgOverlayStyles())
          }else{
             link.appendChild(newSpan)
          }

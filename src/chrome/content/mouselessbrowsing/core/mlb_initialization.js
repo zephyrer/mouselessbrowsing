@@ -60,6 +60,7 @@ with(mouselessbrowsing){
           var disableAllIds = Prefs.getBoolPref("mouselessbrowsing.disableAllIds");
           //Init the current page the others are only initialized on demand
           PageInitializer.init()
+          AbstractInitializer.init()
 
           //As only the current page will be entirely initialized for performance reasons
           //the visibility mode of the others must be adjusted 
