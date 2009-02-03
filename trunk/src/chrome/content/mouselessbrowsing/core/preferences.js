@@ -55,6 +55,9 @@
 		//Not configurable via prefs dialog 
 		debug: null,
       
+      isColorStyleDefined: false,
+      isBackgroundColorStyleDefined: false,
+      
 		initPrefs: function (){
 		    try{
 				//Checking actual preference settings
@@ -104,6 +107,8 @@
 		   this.styleForIdSpan = this.addImportantToStyles(Prefs.getCharPref("mouselessbrowsing.styleForIdSpan"), importantExceptions);
 		   //For Frame id spans all styles are set to !important 
 		   this.styleForFrameIdSpan = this.addImportantToStyles(Prefs.getCharPref("mouselessbrowsing.styleForFrameIdSpan"), {});
+         this.isColorStyleDefined = /(^\s*color\s*:)|(;\s*color\s*:)/i.test(this.styleForIdSpan)
+         this.isBackgroundColorStyleDefined = this.styleForIdSpan.toLowerCase().indexOf('background-color')!=-1
 		},
 		
 		/*

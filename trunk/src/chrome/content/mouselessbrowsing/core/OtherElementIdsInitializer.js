@@ -55,7 +55,7 @@ with(mouselessbrowsing){
             }
          }else{
             var newSpan = this.getNewSpan(spanType)
-            this.insertIdSpan(newSpan, element, element.parentNode, spanPosition, ImgOverlayStyles)
+            this.insertIdSpan(newSpan, element, element.parentNode, spanPosition, AbstractInitializer.getImgOverlayStyles())
             this.pageInitData.addElementIdSpanBinding(element, newSpan)
          }
          this.pageInitData.pageData.addElementWithId(element)

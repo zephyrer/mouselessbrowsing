@@ -60,7 +60,7 @@ with(mouselessbrowsing){
        * Separate method so it can be called twice in case of double initialization (see onpageshow2ndCall)
        */
       insertIdSpanForFormelements: function(element, idSpan){
-         var idSpanStyle = []
+         var idSpanStyle = {}
          var spanPosition = null
          //Calculate left and top
          if(element.hasAttribute('role') && this.isTextElement(element)){
@@ -72,14 +72,17 @@ with(mouselessbrowsing){
             MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.TEXTAREA) ||
             MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.IFRAME) ||
             (MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.SELECT) && element.size>1)){
-            idSpanStyle.push(["border-color", "#7F9DB9"])
+            idSpanStyle["border-color"] = "#7F9DB9"
             var compStyle = this.getComputedStyle(element)
-            idSpanStyle.push(["color", compStyle.color])
-            if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.IFRAME)){
-               //Because of scrollbars and the iframe has almost always background transparent
-               idSpanStyle.push(["background-color", "white"])
-            }else{
-               idSpanStyle.push(["background-color", compStyle.backgroundColor])
+            if(!MlbPrefs.isColorStyleDefined)
+               idSpanStyle["color"] = compStyle.color
+            if(!MlbPrefs.isBackgroundColorStyleDefined){
+               if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.IFRAME)){
+                  //Because of scrollbars and the iframe has almost always background transparent
+                  idSpanStyle["background-color"] = "white"
+               }else{
+                  idSpanStyle["background-color"] = compStyle.backgroundColor
+               }
             }
             spanPosition = SpanPosition.NORTH_EAST_INSIDE   
          }else if(MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.BUTTON) ||

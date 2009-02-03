@@ -11,6 +11,20 @@ with(mouselessbrowsing){
    }
    
    //Static methods
+   AbstractInitializer.imgOverlayStyles = null
+   
+   AbstractInitializer.init = function(){
+      this.imgOverlayStyles = new ImgOverlayStylesTemplate()
+      if(MlbPrefs.isColorStyleDefined)
+         delete this.imgOverlayStyles["color"]
+      if(MlbPrefs.isBackgroundColorStyleDefined)
+         delete this.imgOverlayStyles["background-color"]
+   },
+   
+   AbstractInitializer.getImgOverlayStyles = function(){
+      return this.imgOverlayStyles
+   },
+
       /*
     * Set special/orignal styles according visibility of id span
     * @param element: Formelement for which the style should be set/reset
@@ -31,7 +45,7 @@ with(mouselessbrowsing){
          element.style[styleEntry.style] = styleEntry.value
       }
    },
-
+   
    AbstractInitializer.prototype = {
       constructor: AbstractInitializer,
       AbstractInitializer: AbstractInitializer,
@@ -53,7 +67,7 @@ with(mouselessbrowsing){
           return this.spanPrototype.cloneNode(true)
       },
       
-      insertIdSpan: function(newSpan, element, parentElement, spanPosition, styleArray){
+      insertIdSpan: function(newSpan, element, parentElement, spanPosition, additionalStyles){
          parentElement = parentElement?parentElement:element
          
          var leftMarginSet = false
@@ -73,8 +87,8 @@ with(mouselessbrowsing){
                leftMarginSet = true
             }
             
-            for (var i = 0; i < styleArray.length; i++) {
-               newSpan.style.setProperty(styleArray[i][0], styleArray[i][1], "important")   
+            for (var styleProp in additionalStyles) {
+               newSpan.style.setProperty(styleProp, additionalStyles[styleProp], "important")   
             }
          }
          
@@ -310,10 +324,9 @@ with(mouselessbrowsing){
    }      
    Namespace.bindToNamespace("mouselessbrowsing", "SpanPosition", SpanPosition)
    
-   ImgOverlayStyles = [
-      ["background-color", "#EEF3F9"],
-      ["color", "black"],
-   ]
-   Namespace.bindToNamespace("mouselessbrowsing", "ImgOverlayStyles", ImgOverlayStyles)
+   function ImgOverlayStylesTemplate() {
+       this["background-color"] = "#EEF3F9"
+       this["color"] = "black"
+   }   
 })()
 }}
