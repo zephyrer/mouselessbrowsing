@@ -62,7 +62,7 @@ with(mlb_common){
       },
       
       isOnDomContentLoaded: function(){
-         return this.eventType==this.EventTypes.DOM_CONTENT_LOADED
+         return this.event && this.event.type==this.EventTypes.DOM_CONTENT_LOADED
       },
       
       EventTypes: {
