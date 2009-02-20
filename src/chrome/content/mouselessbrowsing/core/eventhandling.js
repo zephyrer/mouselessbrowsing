@@ -37,16 +37,7 @@ with(mouselessbrowsing){
 		
 		globalIds: {
 			"0": "urlbar",
-			"00": "searchbar",
-			"01": "changeTab",
-			"02": "changeTab",
-			"03": "changeTab",
-			"04": "changeTab",
-			"05": "changeTab",
-			"06": "changeTab",
-			"07": "changeTab",
-			"08": "changeTab",
-			"09": "changeTab"
+			"00": "searchbar"
 		},
 		
 		//Indicates wether Element should be selected and opens the context-menu
@@ -67,13 +58,13 @@ with(mouselessbrowsing){
 		   //Do nothing if
 		   if(!window.getBrowser() ||
             //Case Ids not visible		   		  
-		      TabLocalPrefs.getVisibilityMode()==MlbCommon.VisibilityModes.NONE ||
+		      (TabLocalPrefs.getVisibilityMode()==MlbCommon.VisibilityModes.NONE && !this.isSpecialIdEntering(event)) ||
 		      //Case char ids and modifier was pressed
             (MlbPrefs.isCharIdType() && (event.ctrlKey || event.altKey || event.metaKey)) ||
             
             (MlbPrefs.isNumericIdType() && MlbUtils.isWritableElement(event.originalTarget) && !this.eventStopped && !this.isOneOfConfiguredModifierCombination(event)) ||
             (MlbUtils.isWritableElement(event.originalTarget) && !this.eventStopped) ||
-		      !this.isCharCodeInIds(charString)){
+		      !(this.isCharCodeInIds(charString) || this.isSpecialIdEntering(event))){
 		    	return;
 		   }
  
@@ -93,7 +84,7 @@ with(mouselessbrowsing){
 			this.openInCoolirisPreviews = ShortcutManager.encodeEventModifier(event)==MlbPrefs.modifierForOpenInCoolirisPreviews
 			
          if(this.isExecuteAutomatic(event)){
-            if(MlbPrefs.executeInstantlyWhenIdUnique && MlbUtils.getPageData().isIdUnique(this.keybuffer))
+            if(this.isExecuteInstantly(event))
                this.executeAutomatic()
             else
 			      this.timerId = setTimeout("mouselessbrowsing.EventHandler.executeAutomatic()", MlbPrefs.delayForAutoExecute);
@@ -146,6 +137,28 @@ with(mouselessbrowsing){
          return (keyCode>=KeyEvent.DOM_VK_0 && keyCode<=KeyEvent.DOM_VK_9) ||
                  (keyCode>=KeyEvent.DOM_VK_NUMPAD0 && keyCode<=KeyEvent.DOM_VK_NUMPAD9)
 		},
+      
+      isExecuteInstantly: function(keypressEvent){
+         if(!MlbPrefs.executeInstantlyWhenIdUnique)
+            return false
+            
+         if(this.isSpecialIdEntering(keypressEvent)){
+            var tabId = this.keybuffer.substring(1)
+            if(StringUtils.isEmpty(tabId)){
+               return false
+            }
+            var searchedTabId = parseInt(tabId + "0", 10) 
+            var tabCount = Application.activeWindow.tabs.length
+            return searchedTabId > tabCount
+         }else{
+            return MlbUtils.getPageData() && MlbUtils.getPageData().isIdUnique(this.keybuffer)
+         }
+      },
+      
+      isSpecialIdEntering: function(keypressEvent){
+         return (this.keybuffer!="" && this.keybuffer.indexOf("0")==0 && StringUtils.isDigit(this.keybuffer)) || 
+                  (keypressEvent.charCode==KeyEvent.DOM_VK_0)
+      },
 		
 		handleEnter: function(){
 			var event = InitManager.getShortcutManager().getCurrentEvent();
@@ -454,10 +467,13 @@ with(mouselessbrowsing){
 		    if(this.isSuppressShortCut()){
 		    	return
 		    }
+          var event = InitManager.getShortcutManager().getCurrentEvent()
+          var eventWin = event.originalTarget.ownerDocument.defaultView
+          var winToScroll = eventWin.top==content?eventWin:content
 		    if(direction=="up")
-		        content.scrollBy(0, -MlbPrefs.pixelsToScroll);
+		        winToScroll.scrollBy(0, -MlbPrefs.pixelsToScroll);
 		    else
-		        content.scrollBy(0, MlbPrefs.pixelsToScroll);
+		        winToScroll.scrollBy(0, MlbPrefs.pixelsToScroll);
           
 		},
 		 /*
@@ -519,13 +535,17 @@ with(mouselessbrowsing){
 		},
 		
 		changeTabByNumber: function(){
-			var index = this.keybuffer.substring(1);
-			index = index-1;
 			var tabs = Application.activeWindow.tabs
-			if(index<tabs.length)
-				tabs[index].focus()
-         else
-            tabs[tabs.length-1].focus()
+			var requestedTab = parseInt(this.keybuffer.substring(1), 10);
+         var newActiveTab = null;
+			if(requestedTab <= tabs.length){
+            //Correct index as tabs are counted zero based but in MLB it is 1 based
+            newActiveTab = requestedTab-1
+         }else{
+            newActiveTab = tabs.length-1
+         }
+         //Application.activeWindow.tabs[newActiveTab].focus() is not working as content will not be focused afterwards
+         gBrowser.selectedTab = gBrowser.mTabs[newActiveTab]
 		},
 		
 		stopEvent: function(event){

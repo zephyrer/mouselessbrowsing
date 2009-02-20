@@ -123,12 +123,13 @@ with(mouselessbrowsing){
          }
          if(imgElem){
             //for performance reasons only the first one will be evalutated, as multiple img within a link is quite unlikley 
-            if(imgElem.offsetWidth>1 && imgElem.offsetHeight>1)
+            if( (imgElem.offsetWidth > 1) && (imgElem.offsetHeight > 1) ){
                return "true"
-            else if (this.pageInitData.isOnDomContentLoaded())
+            }else if (this.pageInitData.isOnDomContentLoaded()){
                return "unsure";
-            else
+            }else{
                return "false"
+            }
          }
 
          // empty link
