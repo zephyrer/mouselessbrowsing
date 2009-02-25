@@ -33,7 +33,7 @@ with(mouselessbrowsing){
 		openInCoolirisPreviews: false,
 		
 		//Regexp for keybuffercontent to focus special tab
-		changeTabByNumberRegExp: /^0[1-9]{1,}$/,
+		changeTabByNumberRegExp: /^0\d{1,}$/,
 		
 		globalIds: {
 			"0": "urlbar",
