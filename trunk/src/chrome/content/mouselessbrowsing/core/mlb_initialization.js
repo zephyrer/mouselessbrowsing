@@ -26,11 +26,16 @@ with(mouselessbrowsing){
    
 	var InitManager = {
 		eventHandlersActive: false,
-      scm: new ShortcutManager(window, "keydown"),
+      //07.03.2009: As Shortcutmanager had bug it ignores the suppressShortcutKeys param
+      //As this bug is fixed the suppressShortcutKeys is set to false to keep backward compatibility
+      //TODO: make it right!!
+      scm: new ShortcutManager(window, "keydown", false),
 		
 		init: function(event){
 		   MlbPrefs.initPrefs();
          VersionManager.doMigration()
+         //Reinit prefs as something could have changed
+		   MlbPrefs.initPrefs();
          if(MLB_prefObserver==null){
             this.registerObservers();
          }
