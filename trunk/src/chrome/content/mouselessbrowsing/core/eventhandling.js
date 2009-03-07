@@ -57,11 +57,11 @@ with(mouselessbrowsing){
 
 		   //Do nothing if
 		   if(!window.getBrowser() ||
-            //Case Ids not visible		   		  
+            //Case: Ids not visible and no special id (e.g tabid) is entered		   		  
 		      (TabLocalPrefs.getVisibilityMode()==MlbCommon.VisibilityModes.NONE && !this.isSpecialIdEntering(event)) ||
-		      //Case char ids and modifier was pressed
+		      //Case: char ids and modifier was pressed
             (MlbPrefs.isCharIdType() && (event.ctrlKey || event.altKey || event.metaKey)) ||
-            
+            //Case: 
             (MlbPrefs.isNumericIdType() && MlbUtils.isWritableElement(event.originalTarget) && !this.eventStopped && !this.isOneOfConfiguredModifierCombination(event)) ||
             (MlbUtils.isWritableElement(event.originalTarget) && !this.eventStopped) ||
 		      !(this.isCharCodeInIds(charString) || this.isSpecialIdEntering(event))){
@@ -441,6 +441,7 @@ with(mouselessbrowsing){
 		        !this.isCaseOfExclusivlyUseOfNumpad(event);
 		},
 		
+      /*TODO Implement is wrong!!*/
 		isNonPrintableKey: function(event){
 			var keyCode = event.keyCode;
 			if((keyCode>=112 && keyCode<=123) || keyCode<49)
@@ -474,7 +475,6 @@ with(mouselessbrowsing){
 		        winToScroll.scrollBy(0, -MlbPrefs.pixelsToScroll);
 		    else
 		        winToScroll.scrollBy(0, MlbPrefs.pixelsToScroll);
-          
 		},
 		 /*
 		  * Checks wether the actual-keystroke should be suppressed
