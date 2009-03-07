@@ -22,6 +22,8 @@ with(mlb_common){
             MlbUtils.logDebugMessage("Shortcut for toggling ids changed for Linux host system")
          }
          MlbUtils.logDebugMessage("VersionManager.doFirstInstallationMigration done")
+         //Do setup a little bit later so the main window is already open
+         setTimeout(Utils.bind(this.setup, this), 500)
       },
       
       doMigration: function(){
@@ -109,6 +111,12 @@ with(mlb_common){
          Application.prefs.setValue("mouselessbrowsing.executeAutomaticNew", Application.prefs.getValue("mouselessbrowsing.executeAutomatic", false))
          //Reinit prefs
          MlbPrefs.initPrefs();
+      },
+      
+      setup: function(){
+         var setupDialog = new Dialog(MlbCommon.MLB_CHROME_URL+"/preferences/setup/setup.xul", "setupdialog", true, window)
+         setupDialog.show()
+         Utils.notifyObservers(MlbCommon.MLB_PREF_OBSERVER);
       },
    	
    	showVersionInfoPage: function(){
