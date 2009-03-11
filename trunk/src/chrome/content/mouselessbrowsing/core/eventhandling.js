@@ -9,8 +9,14 @@ with(mlb_common){
 with(mouselessbrowsing){
 (function(){
    
+   const isWindowsOS = Utils.getOperationSystem()==OperationSystem.WINDOWS
+   
    var EventHandler = {
-		//Keybuffer
+      
+      //Current onkeydown event for use in onkeypress
+      currentOnKeydownEvent: null,
+      
+      //Keybuffer
 		keybuffer: "",
 		
 		//Flag indicating whether a event was stopped
@@ -23,7 +29,12 @@ with(mouselessbrowsing){
 		//TimerId for reseting blocking of keyboard input
 		blockKeyboardInputTimerId: null,
 		
-		//Flag for openening link in new tab
+      //Flag for remembering whether the previous event
+      //was alt + numpad; only used on WINNT as
+      //there Alt+numpad produce extra key event
+		lastEventWasAltNumpad0To9: false,
+
+      //Flag for openening link in new tab
 		openInNewTab: false,
 		
 		//Flag for openening link in new tab
@@ -54,18 +65,33 @@ with(mouselessbrowsing){
 		   var keyCode = event.which;
 		   var charCode = event.charCode
 		   var charString = String.fromCharCode(charCode).toUpperCase()
+         
+         var hasModifier = ShortcutManager.hasModifier(event)
+         var isSpecialIdEntering = this.isSpecialIdEntering(event)
+         var isWritableElement = MlbUtils.isWritableElement(event.originalTarget)
+         var isOneOfConfiguredModifierCombination = this.isOneOfConfiguredModifierCombination(event)
+         var isNummericIdType = MlbPrefs.isNumericIdType()
+         var isCharIdType = !isNummericIdType
+         var isDigit = keyCode >= KeyEvent.DOM_VK_0 && keyCode <= KeyEvent.DOM_VK_9
+         var idsNotVisible = TabLocalPrefs.getVisibilityMode()==MlbCommon.VisibilityModes.NONE
 
-		   //Do nothing if
+         //Do nothing if
 		   if(!window.getBrowser() ||
-            //Case: Ids not visible and no special id (e.g tabid) is entered		   		  
-		      (TabLocalPrefs.getVisibilityMode()==MlbCommon.VisibilityModes.NONE && !this.isSpecialIdEntering(event)) ||
+            //Case: numeric ids and no digit pressed (only for performance reasons made explicit at the beginning
+            (isNummericIdType && !isDigit) ||
+            //Case: avoid overriding of e.g. changing tabs with Ctlr+<number> Bug #18
+            (isNummericIdType && hasModifier && !isOneOfConfiguredModifierCombination) ||
+            //Case: Focus is in editable field and event was not stopped
+            (isWritableElement && !this.eventStopped) ||
 		      //Case: char ids and modifier was pressed
-            (MlbPrefs.isCharIdType() && (event.ctrlKey || event.altKey || event.metaKey)) ||
-            //Case: 
-            (MlbPrefs.isNumericIdType() && MlbUtils.isWritableElement(event.originalTarget) && !this.eventStopped && !this.isOneOfConfiguredModifierCombination(event)) ||
-            (MlbUtils.isWritableElement(event.originalTarget) && !this.eventStopped) ||
-		      !(this.isCharCodeInIds(charString) || this.isSpecialIdEntering(event))){
-		    	return;
+            (isCharIdType && hasModifier) ||
+            //Case: entered char is not in defined char set
+		      (isCharIdType && !(this.isCharCodeInIds(charString) || isSpecialIdEntering)) || 
+            //Case: Ids not visible and no special id (e.g tabid) is entered		   		  
+		      (idsNotVisible && !isSpecialIdEntering) ||
+            //Case: event is one triggered by Alt+numpad on windows		   		  
+            (isWindowsOS && this.isAltPlusNumpad0To9(event, this.currentOnKeydownEvent))){
+		    	     return
 		   }
  
 		   //With new keystroke clear old timer
@@ -79,9 +105,10 @@ with(mouselessbrowsing){
 			}
 			
 			//Set flag whether link should be opened in new tab or in cooliris preview
-			this.openInNewTab = ShortcutManager.encodeEventModifier(event)==MlbPrefs.modifierForOpenInNewTab
-			this.openInNewWindow= ShortcutManager.encodeEventModifier(event)==MlbPrefs.modifierForOpenInNewWindow
-			this.openInCoolirisPreviews = ShortcutManager.encodeEventModifier(event)==MlbPrefs.modifierForOpenInCoolirisPreviews
+         var encodedEventModifier = ShortcutManager.encodeEventModifier(event)
+			this.openInNewTab = encodedEventModifier == MlbPrefs.modifierForOpenInNewTab
+			this.openInNewWindow = encodedEventModifier == MlbPrefs.modifierForOpenInNewWindow
+			this.openInCoolirisPreviews = encodedEventModifier == MlbPrefs.modifierForOpenInCoolirisPreviews
 			
          if(this.isExecuteAutomatic(event)){
             if(this.isExecuteInstantly(event))
@@ -93,14 +120,23 @@ with(mouselessbrowsing){
 			}
 		},
 		
+      /*
+       * Stopps the keydown event in certain cases to avoid default behavior
+       */
 		onkeydown: function(event){
+         //Set current onkeydown for later use in onkeypress
+         //Used to fix Bug #31
+         this.currentOnKeydownEvent = event
+         
+         var isOneOfConfiguredModifierCombination = this.isOneOfConfiguredModifierCombination(event)
+         
 			//Case excl. use of numpad, second part is to avoid overwriting of change tab 
-         if((this.isCaseOfExclusivlyUseOfNumpad(event) && (!event.ctrlKey||this.isOneOfConfiguredModifierCombination(event)))
+         if(this.isCaseOfExclusivlyUseOfNumpad(event) ||
             //Case Digit + modifier 
-            || (MlbPrefs.isNumericIdType() && this.isDigitPressed(event) && this.isOneOfConfiguredModifierCombination(event) 
-               && !this.isAltCtrlInEditableField(event))
-            //Case input is blocked for MLB
-            || this.blockKeyboardInputForMLBActive){
+            (MlbPrefs.isNumericIdType() && this.isDigitPressed(event) && isOneOfConfiguredModifierCombination 
+             && !this.isAltCtrlInEditableField(event)) ||
+               //Case input is blocked for MLB 
+             this.blockKeyboardInputForMLBActive){
                this.stopEvent(event)
                this.eventStopped=true
                //Fix for Bug Id 13 and Workaround for FF Bug 291082; 
@@ -115,6 +151,45 @@ with(mouselessbrowsing){
          	this.setTimerForBlockKeyboardInputReset()
          }
 		},
+      
+      /*
+       * Not in use yet
+       * Used to solve bug #52 but there is not onkeyup event for alt key if it pressed in 
+       * combination with other key!
+       * So no constitent behavior could be implemented
+       */
+      onkeyup: function(event){
+         var keyCode = event.keyCode
+         if((keyCode != KeyEvent.DOM_VK_CONTROL && keyCode != KeyEvent.DOM_VK_ALT) || this.keybuffer.length==0){
+            return
+         }
+         this.executeAutomatic()
+      },
+      
+      //TODO commenting
+      //As in case of Alt+numpad event no keydown is fired the key down event is the one from the
+      //previous event, therefore for the evaluation of whether the current event should be 
+      //discarted the current keypress event must be used
+      isAltPlusNumpad0To9: function(keypressEvent, keydownEvent){
+         //First determine if the current event should be discarted
+         var noModifierPressed = !ShortcutManager.hasModifier(keypressEvent)
+         if(noModifierPressed && this.lastEventWasAltNumpad0To9){
+            //in this case the provided keyDownEvent is the one from the last event!
+            //as for alt+numpad no keydown event is fired!
+            this.lastEventWasAltNumpad0To9 = false
+            return true
+         }
+         
+         //Set the "last event flag"
+         var isOnlyAltModifier = keydownEvent.altKey && !(keydownEvent.ctrlKey || keydownEvent.metaKey)
+         var isNumpad0To9 = keydownEvent.keyCode >= KeyEvent.DOM_VK_NUMPAD0 && keydownEvent.keyCode <= KeyEvent.DOM_VK_NUMPAD9 
+         if(isOnlyAltModifier && isNumpad0To9){
+            this.lastEventWasAltNumpad0To9 = true
+         }else{
+            this.lastEventWasAltNumpad0To9 = false
+         }
+         return false
+      },
 		
       isOneOfConfiguredModifierCombination: function(event) {
 			var encodedModifierCode = ShortcutManager.encodeEventModifier(event)
@@ -132,8 +207,8 @@ with(mouselessbrowsing){
 			return MlbUtils.isWritableElement(event.originalTarget) &&  ShortcutManager.isModifierCombination(event, ShortcutManager.CTRL_ALT)
 		},
 		
-		isDigitPressed: function(event){
-         var keyCode = event.which
+		isDigitPressed: function(keyDownEvent){
+         var keyCode = keyDownEvent.which
          return (keyCode>=KeyEvent.DOM_VK_0 && keyCode<=KeyEvent.DOM_VK_9) ||
                  (keyCode>=KeyEvent.DOM_VK_NUMPAD0 && keyCode<=KeyEvent.DOM_VK_NUMPAD9)
 		},
@@ -190,16 +265,11 @@ with(mouselessbrowsing){
 		
 		isExecuteAutomatic: function(event){
 		    //Always if Ctrl or Alt-Key was Pressed
-		    if (event.ctrlKey || event.altKey){
-		       return true
-		    }else if(MlbPrefs.executeAutomaticEnabled==false){
+		   if (event.ctrlKey || event.altKey || MlbPrefs.executeAutomaticEnabled==true){
+             return true
+		    }else {
 		       return false
-		    }else if(this.isCaseOfExclusivlyUseOfNumpad(event) ||
-		             !MlbUtils.isWritableElement(event.originalTarget.srcElement)){
-		       return true
-		    }else{
-		       return false
-		    }
+          }
 		},
 			
 		
@@ -430,13 +500,14 @@ with(mouselessbrowsing){
 		/*
 		 * Some shortcuts will be suppressed if they have no modifier
 		 * and a textfield or selectbox is focused
+       * TODO check implementation, it's probably wrong
 		 */
 		isSuppressShortCut: function(){
 		    var event = InitManager.getShortcutManager().getCurrentEvent();
 		    if(this.isNonPrintableKey(event))
 		    	return false;
-		    var modifierPressed = event.altKey || event.ctrlKey
-		    return !modifierPressed && 
+          var noModifierPressed = !ShortcutManager.hasModifier(event)
+		    return noModifierPressed && 
 		        MlbUtils.isWritableElement(event.originalTarget) && 
 		        !this.isCaseOfExclusivlyUseOfNumpad(event);
 		},
@@ -451,7 +522,9 @@ with(mouselessbrowsing){
 		},
 		
 		resetVars: function(){
+         this.currentOnKeydownEvent=null
 		   this.keybuffer="";
+         this.lastEventWasAltNumpad0To9=false
 		   this.openInNewTab=false;
 		   this.openInNewWindow=false;
 		   this.openInCoolirisPreviews=false;
@@ -481,8 +554,12 @@ with(mouselessbrowsing){
 		  */
 		isCaseOfExclusivlyUseOfNumpad: function(event){
 		    var keyCode = event.keyCode;
-		    var isNumpad = (keyCode>=96 && keyCode<=106) || (keyCode==108) || (keyCode>=110 && keyCode<=111) 
-		    return MlbPrefs.isNumericIdType() && TabLocalPrefs.isExclusiveUseOfNumpad() && isNumpad;
+          var noModifierPressed = !ShortcutManager.hasModifier(event)
+          //As ADD and SUBSTRACT are also on main part of the keyboard they will not be treated as numpad keys
+		    var isNumpad = (keyCode >= KeyEvent.DOM_VK_NUMPAD0 && keyCode <= KeyEvent.DOM_VK_NUMPAD9) || 
+                         (keyCode == KeyEvent.DOM_VK_MULTIPLY) || (keyCode == KeyEvent.DOM_VK_SEPARATOR) || 
+                         (keyCode == KeyEvent.DOM_VK_DECIMAL) || (keyCode == KeyEvent.DOM_VK_DIVIDE) 
+		    return MlbPrefs.isNumericIdType() && TabLocalPrefs.isExclusiveUseOfNumpad() && noModifierPressed && isNumpad;
 		},
 		
       /*

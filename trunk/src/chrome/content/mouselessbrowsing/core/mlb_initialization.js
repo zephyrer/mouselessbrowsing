@@ -17,6 +17,8 @@ with(mouselessbrowsing){
    //EventHandler
    var mainKeyPressHandler = {handleEvent: function(event){EventHandler.onkeypress(event)}};
    var mainKeyDownHandler = {handleEvent: function(event){EventHandler.onkeydown(event)}}
+   //Used to solve bug #52
+   //var mainKeyUpHandler = {handleEvent: function(event){EventHandler.onkeyup(event)}}
    var mainDomContentLoadedHandler = {handleEvent: function(event){PageInitializer.onDOMContentLoaded(event)}}
    var mainPageShowHander = {handleEvent: function(event){PageInitializer.onPageShow(event)}}
    var googleProjectHelperHandler = {handleEvent: function(event){GoogleProjectHelper.onPageShow(event)}}
@@ -110,6 +112,8 @@ with(mouselessbrowsing){
 			//key event listener
 			window[addOrRemoveListenerFunction]("keypress", mainKeyPressHandler, true);  
          window[addOrRemoveListenerFunction]("keydown", mainKeyDownHandler, true);
+         //Used to solve bug #52
+//       window[addOrRemoveListenerFunction]("keyup", mainKeyUpHandler, true);
          
          //load event listener
    		tabbrowser[addOrRemoveListenerFunction]("DOMContentLoaded", mainDomContentLoadedHandler, true);
