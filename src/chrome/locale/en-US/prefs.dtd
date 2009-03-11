@@ -70,7 +70,6 @@
 <!ENTITY pixelsToScroll.label "Pixels to scroll when pressing shortcuts">
 <!ENTITY maxIdNumber.label "Maximum number of ids">
 <!ENTITY modifierForWritableElement.label "Modifier for enabling ids within editable elements">
-<!ENTITY modifierForWritableElement.label "-1">
 <!ENTITY modifierForOpenInNewTab.label "Modifier for opening links in new tab">
 <!ENTITY modifierForOpenInNewWindow.label "Modifier for opening links in new window">
 <!ENTITY modifierForOpenInCooirisPreview.label "Modifier for opening links in Cooliris Preview">
