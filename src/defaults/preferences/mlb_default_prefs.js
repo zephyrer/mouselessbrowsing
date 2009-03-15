@@ -35,7 +35,7 @@ pref("mouselessbrowsing.enableLinkIds", true);
 pref("mouselessbrowsing.enableOtherIds", true);
 pref("mouselessbrowsing.enableFormElementIds", true);
 pref("mouselessbrowsing.styleForIdSpan", "font-family:arial, sans-serif; font-size:xx-small; line-height:130%;\nborder-width:1px; border-style:solid;-moz-border-radius:2px;\npadding:0px 2px 0px 2px;\nvertical-align:center;\nmargin-left:2px; \nmax-width:20px; max-height:10px;\noverflow:visible;float:none;");
-pref("mouselessbrowsing.styleForFrameIdSpan", "position:absolute; top:0; left:0;\nfont-size:xx-small;line-height:130%;;\nborder-color:black; border-width:1px; border-style:solid;\n-moz-border-radius:2px;\npadding:0px 2px 0px 2px;\nz-index:500;\nbackground-color:#D6E3FE;");
+pref("mouselessbrowsing.styleForFrameIdSpan", "position:fixed; top:0; left:0;\nfont-size:xx-small;line-height:130%;;\nborder-color:black; border-width:1px; border-style:solid;\n-moz-border-radius:2px;\npadding:0px 2px 0px 2px;\nz-index:500;\nbackground-color:#D6E3FE;");
 pref("mouselessbrowsing.keys.clearKeybuffer", "432"); //Esc
 pref("mouselessbrowsing.keys.historyBack", "1776");   //Divide
 pref("mouselessbrowsing.keys.historyForward", "1696"); //Multiply
