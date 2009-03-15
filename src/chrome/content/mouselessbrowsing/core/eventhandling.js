@@ -467,9 +467,12 @@ with(mouselessbrowsing){
    		    for(var i=0; i<spans.snapshotLength; i++){
       		     var span = spans.snapshotItem(i)
                  span.style.display = "none";
-                 var elementForSpan = pageData.getElementBySpan(span)
-                 if(elementForSpan!=null){
-                    AbstractInitializer.setElementStyle(elementForSpan, false)
+                 //TODO side effect of Easygreasy is that on pages where eg scripts runs page data is null on history back
+                 if(pageData){
+                    var elementForSpan = pageData.getElementBySpan(span)
+                    if(elementForSpan!=null){
+                       AbstractInitializer.setElementStyle(elementForSpan, false)
+                    }
                  }
    		    }
    		    var frames = winObj.frames;
@@ -531,6 +534,7 @@ with(mouselessbrowsing){
 		   this.updateStatuspanel("");
 			this.openContextMenu = false;
 			clearTimeout(this.timerId);
+         this.resetBlockKeyboardInput()
 			this.clearTimerForBlockKeyboardInput()
 		},
 		
