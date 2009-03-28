@@ -7,12 +7,13 @@ with(mlb_common){
     *@param onpageshow2ndCall: Flag inidicating that this second cycle of initializing, the first is onDomContentLoaded
     *@param keepExsitingIds: Flag indicating that exisitng id spans should not be changed.
     */
-   function PageInitData(currentWin, onpageshow2ndCall, installChangeListener, keepExistingIds, event){
+   function PageInitData(currentWin, onpageshow2ndCall, installChangeListener, keepExistingIds, event, rebindElementsToIds){
       this.currentWin = currentWin;
       this.onpageshow2ndCall = onpageshow2ndCall
       this.installChangeListener = installChangeListener
       this.keepExistingIds = keepExistingIds
       this.event = event
+      this.rebindElementsToIds = arguments.length>=6?rebindElementsToIds:false
       this.pageData = null
    }
    
@@ -61,13 +62,25 @@ with(mlb_common){
          this.pageData = pageData
       },
       
+      isRebindElementsToIds: function(){
+         return this.rebindElementsToIds
+      },
+
+      isOnPageshow: function(){
+         return this.event && this.event.type==this.EventTypes.PAGE_SHOW
+      },
+
       isOnDomContentLoaded: function(){
          return this.event && this.event.type==this.EventTypes.DOM_CONTENT_LOADED
       },
       
+      isPagePersisted: function(){
+         return this.event && this.event.persisted   
+      },
+      
       EventTypes: {
           DOM_CONTENT_LOADED: "DOMContentLoaded",
-          ON_PAGE_SHOW:"onpageshow",
+          PAGE_SHOW:"pageshow",
           TOGGLING_IDS:"togglinids"     
       }
    }
