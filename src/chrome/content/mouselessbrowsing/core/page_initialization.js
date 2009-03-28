@@ -32,20 +32,10 @@ with(mouselessbrowsing){
    }
 
    var PageInitializer = {
-		
-      disableMlb: function(){
-         Firefox.iterateAllBrowsers(function(browser){
-            if(MlbUtils.getPageData(browser.contentWindow))
-               PageInitializer.deactivateChangeListener(browser.contentWindow)
-         })
-      },
-
-      //Called after update of Prefs
-		init: function(){
-         this.deactivateChangeListener(content)
-         MlbUtils.setPageData(content, null)
+      
+      cleanUpPage: function(winObj){
          //Clean up documents for reevalutation
-         DomUtils.iterateWindows(content, function(subwin){
+         DomUtils.iterateWindows(winObj, function(subwin){
             //Remove spans
             var spans = XPathUtils.getElements("//span[@" + MlbCommon.ATTR_ID_SPAN_FLAG + "]", subwin.document)
             for (var i = 0; i < spans.length; i++) {
@@ -63,6 +53,23 @@ with(mouselessbrowsing){
                elems[i].removeAttribute(MlbCommon.MLB_BINDING_KEY_ATTR)
             }
          })
+      },
+		
+      disableMlb: function(){
+         Firefox.iterateAllBrowsers(function(browser){
+            if(MlbUtils.getPageData(browser.contentWindow))
+               PageInitializer.deactivateChangeListener(browser.contentWindow)
+         })
+      },
+
+      //Called after update of Prefs
+		init: function(){
+         this.deactivateChangeListener(content)
+         MlbUtils.setPageData(content, null)
+         
+         //Clean up documents for reevalutation
+         this.cleanUpPage(content)
+         
          TabLocalPrefs.applySiteRules(content)
          this.updatePage(content);
 		},
@@ -104,8 +111,11 @@ with(mouselessbrowsing){
          if(!topWinIsInitialized && win!=win.top && MlbPrefs.initOnDomContentLoaded){
             return
          }
+         
+         var rebindElementsToIds = event.persisted || (!MlbUtils.getPageData() && this.hasIdSpans(win.top))
+         
          //After topwin is initialized ids has always to be regenerated entirely as with frameset no top win will be loaded any more
-			this.prepareInitialization(event, onpageshow2ndCall, true, !event.persisted);
+			this.prepareInitialization(event, onpageshow2ndCall, true, !event.persisted, rebindElementsToIds);
          if(win==win.top){
             win.mlb_initialized=true
          }
@@ -114,13 +124,13 @@ with(mouselessbrowsing){
 		//Function called on DOMContentLoaded event
 		onDOMContentLoaded: function(event){
 			if(MlbPrefs.initOnDomContentLoaded){
-			   this.prepareInitialization(event, false, false, true);
+			   this.prepareInitialization(event, false, false, true, false);
 			}
 		},
 		
-		prepareInitialization: function(event, onpageshow2ndCall, installChangeListener, keepExisitingIds){
+		prepareInitialization: function(event, onpageshow2ndCall, installChangeListener, keepExisitingIds, rebindElementsToIds){
          var win = event.originalTarget.defaultView
-         var pageInitData = new PageInitData(win, onpageshow2ndCall, installChangeListener, keepExisitingIds, event)
+         var pageInitData = new PageInitData(win, onpageshow2ndCall, installChangeListener, keepExisitingIds, event, rebindElementsToIds)
          
          //Apply URL exceptions
          //Could not be in initPage as it should not be executed on toggleing
@@ -144,7 +154,7 @@ with(mouselessbrowsing){
             
             return;
          }
-
+         
          this.initPage(pageInitData)
 		},
 
@@ -191,8 +201,12 @@ with(mouselessbrowsing){
          
          //If page is from cache the ids are still visible but the bindings between ids spans and their elements are lost
          //so this have to recreated
-         if(pageInitData.getEvent() && pageInitData.getEvent().persisted)
+         //In some cases the persited flag is false even the html is cached i.e.
+         //mlb attributes and spans are in page
+         //See issus #109
+         if(pageInitData.isRebindElementsToIds()){
             this.initIdSpanElementBinding(pageInitData.getCurrentDoc(), pageData)
+         }
             
          //Increment initCounter
          pageData.incrementInitCounter()
@@ -343,16 +357,31 @@ with(mouselessbrowsing){
 			DomUtils.iterateWindows(winObj, function(subWin){
             if(found)
                return
-   			var spans = subWin.document.getElementsByTagName("span");
+   			var spans = XPathUtils.getElements("//span[@" + MlbCommon.ATTR_ID_SPAN_FLAG + "]", subWin.document)
    		   for(var i=0; i<spans.length; i++){
-   		       if(MlbUtils.isIdSpan(spans[i]) && spans[i].style.display=="inline"){
+   		       if(spans[i].style.display=="inline"){
                   found = true
+                  break
                 }
    		    }
 			})
          return found
 		},
-		
+
+      hasIdSpans: function(winObj){
+         var found = false
+			DomUtils.iterateWindows(winObj, function(subWin){
+            if(found)
+               return
+            var doc = subWin.document
+   			var idSpanNumber = doc.evaluate("count(//span[@MLB_idSpanFlag])", doc, null, XPathResult.NUMBER_TYPE, null).numberValue;
+            if(idSpanNumber>0){
+               found = true
+            }
+			})
+         return found
+		},
+      
       //For future use
       getWindowData: function(win, key){
          if(!win._mouselessStorage || !win._mouselessStorage[key])
