@@ -11,7 +11,7 @@
    		if(win==null || win.location==null || win.location.href != "http://code.google.com/p/mouselessbrowsing/issues/entry"){
    			return
    		}
-   		var config = "\nClient Configuration (automaitcally added by MLB)\nOS: "
+   		var config = "\nClient Configuration (automatically added by MLB)\nOS: "
    		config += Components.classes["@mozilla.org/xre/app-info;1"]
                          .getService(Components.interfaces.nsIXULRuntime).OS;
          var ffInfo = Components.classes["@mozilla.org/xre/app-info;1"]
