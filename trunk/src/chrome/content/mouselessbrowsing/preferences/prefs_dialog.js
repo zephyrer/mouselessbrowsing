@@ -95,7 +95,9 @@ function MLB_setStyleDefault(styleTextboxId){
 function MLB_setPreviewForIds(styleTextboxId){
 	var styleTextbox = document.getElementById(styleTextboxId);
 	var previewSpan = document.getElementById(styleTextbox.getAttribute('previewSpanId'));
-	previewSpan.style.cssText=styleTextbox.value
+   var newCss = styleTextbox.value
+   newCss = newCss.replace(/position\s*:\s*fixed/, "position:relative")
+	previewSpan.style.cssText = newCss
 }
 
 function MLB_addSiteRule(){
