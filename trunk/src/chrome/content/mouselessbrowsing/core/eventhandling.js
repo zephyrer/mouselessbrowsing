@@ -803,7 +803,7 @@ with(mouselessbrowsing){
 		},
 		
       openConfiguration: function(event){
-      	if(event!=null && event.button!=0){
+      	if(event!=null && (event.button!=0 || event.detail == 2)){
       	  return
       	}
          openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "mlb_prefs", "chrome, centerscreen").focus()
