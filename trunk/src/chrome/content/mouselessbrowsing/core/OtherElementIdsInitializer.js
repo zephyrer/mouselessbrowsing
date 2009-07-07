@@ -20,17 +20,25 @@ with(mouselessbrowsing){
             this.insertSpanForOtherElements(embeddedObject, this.pageInitData.getIdSpan(embeddedObject), 
                MlbCommon.IdSpanTypes.OTHER, SpanPosition.NORTH_EAST_OUTSIDE)
          }
-         var otherElements = XPathUtils.getElements("//*[@onclick] | //*[@onmousedown] | //*[@onmouseup]| //*[@onmouseover]", this.pageInitData.getCurrentDoc())
+         var xPathExp = "//*[(@onclick or @onmousedown or @onmouseup or @onmouseover) and " +
+                           "not(@role='presentation' or @role='wairole:presentation')]"
+         var otherElements = XPathUtils.getElements(xPathExp, this.pageInitData.getCurrentDoc())
          var currentInitCount = this.pageInitData.getInitCounter()
          for (var i = 0; i < otherElements.length; i++) {
             var otherElement = otherElements[i]
-            if(DomUtils.getElementsByTagNameAndAttribute(otherElement, "span", MlbCommon.ATTR_ID_SPAN_FLAG, "true").length>0 ||
-               !this.isMarkableElement(otherElement)){
+            var idSpan = this.pageInitData.getIdSpan(otherElement)
+            //These continue conditions are neccessary as event handlers for the same element could be located on multiple levels 
+            //(not only on the element itself)  
+            if(idSpan){//If the element already has an associated id span
+               if(idSpan.mlb_initCounter==currentInitCount){//and if the element was already updated in this update cycle
+                  continue
+               }
+            //The element hasn't got an associated id span but a descendend element could already have
+            }else if(DomUtils.getElementsByTagNameAndAttribute(otherElement, "span", MlbCommon.ATTR_ID_SPAN_FLAG, "true").length>0 ||
+               !this.isMarkableElement(otherElement)){//or the element is not markable
                continue
             }
-            var idSpan = this.pageInitData.getIdSpan(otherElement)
-            if(idSpan && idSpan.mlb_initCounter==currentInitCount)
-               continue
+
             var spanPosition = null
             if(MlbPrefs.smartPositioning){
                if(this.isImageElement(otherElement, null)){
