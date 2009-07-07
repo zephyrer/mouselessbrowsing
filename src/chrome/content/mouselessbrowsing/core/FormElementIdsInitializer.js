@@ -13,7 +13,8 @@ with(mouselessbrowsing){
       */
       _initIds: function (){
          var doc = this.pageInitData.getCurrentDoc()
-         var xPathExp = "//input | //select | //textarea | //button | //iframe | //*[contains(@role,'button')] | //*[@role='menuitem']"
+         var xPathExp = "//input | //select | //textarea | //button | //iframe | //*[@role='button' or @role='wairole:button' or" 
+         xPathExp += "@role='menuitem' or @role='wairole:menuitem' or @role='treeitem' or @role='wairole:treeitem']"
          var snapshot = doc.evaluate(xPathExp, doc, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)
          for (var i = 0; i < snapshot.snapshotLength; i++) {
             var element = snapshot.snapshotItem(i)

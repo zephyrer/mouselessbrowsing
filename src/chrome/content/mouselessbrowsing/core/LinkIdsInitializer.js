@@ -21,7 +21,7 @@ with(mouselessbrowsing){
             xpathExp += "[not(@" + MlbCommon.MLB_BINDING_KEY_ATTR +")]"          
          }
          //ARI syntax
-         xpathExp += "|//*[@role='link']"
+         xpathExp += "|//*[@role='link'or @role='wairole:link']"
          
          var doc = this.pageInitData.getCurrentDoc()
          var links = XPathUtils.getElements(xpathExp, doc, XPathResult.ORDERED_NODE_ITERATOR_TYPE)
@@ -140,7 +140,7 @@ with(mouselessbrowsing){
          return "true";
       },
       
-      preprocessLinks: function(links){
+      preprocessLinks: function(links, pageInitData){
          var filteredLinks = new Array()
          var hrefToLinkMap = {}
          var topWin = this.pageInitData.getCurrentTopWin()
@@ -173,12 +173,21 @@ with(mouselessbrowsing){
                   hrefToLinkMap[href] = link
                }else {
                   var otherIsImage = this.isImageElement(sameHrefLink)
+                  //If link already has id span this has to be hidden
+                  var filteredLink = null
                   if(isImageLink && !otherIsImage){
                      link.setAttribute(MlbCommon.ATTR_IGNORE_ELEMENT, true)
+                     filteredLink = link
                      continue
                   }else if(!isImageLink && otherIsImage){
                      sameHrefLink.setAttribute(MlbCommon.ATTR_IGNORE_ELEMENT, true)
-                     hrefToLinkMap[href] = link
+                     hrefToLinkMap[href] = filteredLink = sameHrefLink
+                  }
+                  if(filteredLink){
+                     var idSpan = this.pageInitData.getIdSpan(filteredLink)
+                     if(idSpan){
+                        idSpan.style.display = "none";
+                     }
                   }
                }
             }
