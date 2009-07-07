@@ -6,3 +6,9 @@
 <!ENTITY modifierML.menuitem.ctrl-alt.label "Ctrl-Alt">
 <!ENTITY modifierForWritableElement.label "Modifier for enabling ids within editable elements">
 <!ENTITY modifierForOpenInNewTab.label "Modifier for opening links in new tab">
+<!ENTITY typeaheadfindsetup.description "You have enabled 'Find As You Type'. This will interfere with Mouseless Browsing as any keystroke will be interpreted as a search request and opens the search bar.There are two solutions for this problem: You can either disable 'Find As You Type' or you can configure Mouseless Browsing in a way that the numpad is exclusively used for entering ids.">
+<!ENTITY typeaheadfindsetup.solutionML.label "Solution">
+<!ENTITY typeaheadfindsetup.menuitem.deactivateFindAsYouType.label "Deactivate 'Find As You Type'">
+<!ENTITY typeaheadfindsetup.menuitem.useNumpadExclusively.label "Use the numpad exclusively for Mouseless Browsing">
+ 
+
