@@ -168,7 +168,8 @@ with(mouselessbrowsing){
             
             var href = link.href
             //Filter if
-            if(MlbPrefs.filterDuplicateLinks && //it is enabled 
+            if(MlbPrefs.filterDuplicateLinks && //it is enabled
+               href && //href is defined
                href!="#" && //it is not a dummy link
                !href.indexOf('javascript:')==0){//it is not a javascript link
                var sameHrefLink = hrefToLinkMap[href]
