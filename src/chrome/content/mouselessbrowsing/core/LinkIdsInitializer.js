@@ -170,8 +170,7 @@ with(mouselessbrowsing){
             //Filter if
             if(MlbPrefs.filterDuplicateLinks && //it is enabled
                href && //href is defined
-               href!="#" && //it is not a dummy link
-               !href.indexOf('javascript:')==0){//it is not a javascript link
+               href.indexOf('http')==0){//only for http links and not for javascript links e.g.
                var sameHrefLink = hrefToLinkMap[href]
                if(!sameHrefLink){
                   hrefToLinkMap[href] = link
