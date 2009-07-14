@@ -71,7 +71,6 @@ with(mouselessbrowsing){
       
       handleDOMAttrModified: function(event){
          var tagName = event.originalTarget.tagName.toLowerCase()
-         MlbUtils.logDebugMessage(event.attrName + "  " + event.newValue + "  " + tagName + "  " + event.originalTarget.tagName)
          //Do nothing if
          if(event.attrName!="label" || // not a label attr. is changed
             TAB_ID_REGEXP.test(event.newValue) || // the tab already has an id 
