@@ -32,7 +32,7 @@ with(mouselessbrowsing){
          var maxIdNumber = MlbPrefs.maxIdNumber
 
          for (var i = 0; i < filteredLinks.length; i++) {
-            if (this.pageInitData.pageData.counter >= maxIdNumber) {
+            if (this.pageData.isMaxId(maxIdNumber)) {
                break;
             }
 

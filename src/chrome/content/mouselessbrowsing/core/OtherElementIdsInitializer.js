@@ -12,11 +12,16 @@ with(mouselessbrowsing){
       constructor: OtherElementIdsInitializer,
 
       _initIds: function(){
+         var maxIdNumber = MlbPrefs.maxIdNumber
          var embeddedObjects = XPathUtils.getElements("//object | //embed", this.pageInitData.getCurrentDoc())
          for (var i = 0; i < embeddedObjects.length; i++) {
             var embeddedObject = embeddedObjects[i]
             if(embeddedObject.offsetWidht<2 || embeddedObject.offsetHeight<2)
                continue
+               
+            if (this.pageData.isMaxId(maxIdNumber)) {
+               return;
+            }
             this.insertSpanForOtherElements(embeddedObject, this.pageInitData.getIdSpan(embeddedObject), 
                MlbCommon.IdSpanTypes.OTHER, SpanPosition.NORTH_EAST_OUTSIDE)
          }
@@ -49,8 +54,10 @@ with(mouselessbrowsing){
             }else{
                spanPosition = SpanPosition.NATURAL_FLOW     
             }
-            this.insertSpanForOtherElements(otherElement, idSpan, 
-               MlbCommon.IdSpanTypes.OTHER, spanPosition)
+            if (this.pageData.isMaxId(maxIdNumber)) {
+               return;
+            }
+            this.insertSpanForOtherElements(otherElement, idSpan, MlbCommon.IdSpanTypes.OTHER, spanPosition)
          }
       },
       
