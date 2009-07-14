@@ -52,6 +52,7 @@
 <!ENTITY mouselessbrowsing.keys.openInNewWindowPostfixKey "Postfix-key to open link in new window">
 <!ENTITY mouselessbrowsing.keys.openInCoolirisPreviewsPostfixKey "Postfix-key to open link in Cooliris Preview">
 <!ENTITY mouselessbrowsing.keys.selectLink "Postfix-key to select a link">
+<!ENTITY mouselessbrowsing.keys.openContextMenu "Postfix-key to open the context menu">
 <!ENTITY mouselessbrowsing.keys.historyBack "History back">
 <!ENTITY mouselessbrowsing.keys.historyForward "History forward">
 <!ENTITY mouselessbrowsing.keys.scrollDown "Scroll down">

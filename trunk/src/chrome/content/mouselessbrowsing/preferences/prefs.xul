@@ -409,6 +409,10 @@
                      <listcell label="&mouselessbrowsing.keys.selectLink;"/>
                      <listcell />
                   </listitem>
+                  <listitem prefid="mouselessbrowsing.keys.openContextMenu">
+                     <listcell label="&mouselessbrowsing.keys.openContextMenu;"/>
+                     <listcell />
+                  </listitem>
                   <listitem prefid="mouselessbrowsing.keys.historyBack">
                      <listcell label="&mouselessbrowsing.keys.historyBack;"/>
                      <listcell />

@@ -51,9 +51,6 @@ with(mouselessbrowsing){
 			"00": "searchbar"
 		},
 		
-		//Indicates wether Element should be selected and opens the context-menu
-		openContextMenu: false,
-		
 		//Timer-id from setTimeout(..) for clearing the this.keybuffer
 		timerId: null,
 		
@@ -532,7 +529,6 @@ with(mouselessbrowsing){
 		   this.openInNewWindow=false;
 		   this.openInCoolirisPreviews=false;
 		   this.updateStatuspanel("");
-			this.openContextMenu = false;
 			clearTimeout(this.timerId);
          this.resetBlockKeyboardInput()
 			this.clearTimerForBlockKeyboardInput()
@@ -635,16 +631,13 @@ with(mouselessbrowsing){
 		},
 		
 		selectLink: function(){
-		   if(this.keybuffer==""){
-            return;
+		   var element = this.getTargetElement()
+         if(!element){
+            return
          }
-         var pageData = MlbUtils.getPageData() 
-         var element = pageData.getElementForId(this.keybuffer);   
-		    if(element==null)
-		        return;
-		    var tagName = element.tagName.toLowerCase();
-		    if(tagName!="a")
-		        return;
+		   var tagName = element.tagName.toLowerCase();
+		   if(tagName!="a")
+		       return;
 		 	//Select Link
 		   element.focus();
 		   var doc = element.ownerDocument;
@@ -653,6 +646,7 @@ with(mouselessbrowsing){
 		   //Create new Range
 		   var range = doc.createRange();
 		   range.selectNode(element);
+         var pageData = MlbUtils.getPageData()
 		   range.setEndBefore(pageData.getIdSpanByElement(element))
 			//Set new Selection
 			selection.removeAllRanges();
@@ -661,6 +655,24 @@ with(mouselessbrowsing){
 			this.resetVars();
          
 		},
+      
+      openContextMenu: function(){
+         var element = this.getTargetElement()
+         if(!element){
+            return
+         }
+         element.focus()
+         document.getElementById('contentAreaContextMenu').openPopup(element, "after_end", null, null,true)
+         this.resetVars();
+      },
+      
+      getTargetElement: function(){
+         if(this.keybuffer==""){
+            return null;
+         }
+         var pageData = MlbUtils.getPageData() 
+         return pageData.getElementForId(this.keybuffer);   
+      },
 		
 		onElementFocusEvent: function(event){
 			var focusedElement = event.originalTarget
