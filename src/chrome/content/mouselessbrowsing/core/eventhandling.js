@@ -45,7 +45,7 @@ with(mouselessbrowsing){
 		
 		//Regexp for keybuffercontent to focus special tab
 		changeTabByNumberRegExp: /^0\d{1,}$/,
-		
+      
 		globalIds: {
 			"0": "urlbar",
 			"00": "searchbar"
@@ -229,7 +229,7 @@ with(mouselessbrowsing){
       
       isSpecialIdEntering: function(keypressEvent){
          return (this.keybuffer!="" && this.keybuffer.indexOf("0")==0 && StringUtils.isDigit(this.keybuffer)) || 
-                  (keypressEvent.charCode==KeyEvent.DOM_VK_0)
+                  ((MlbPrefs.enableSpecialIds || MlbPrefs.enableTabIds) && keypressEvent.charCode==KeyEvent.DOM_VK_0)
       },
 		
 		handleEnter: function(){
@@ -271,6 +271,10 @@ with(mouselessbrowsing){
 			
 		
 		shouldExecute: function(){
+         //Issus 99
+         if((this.keybuffer == "0" || this.keybuffer=="00") && !MlbPrefs.enableSpecialIds){
+            return false
+         }
 			if(MlbUtils.getPageData() && //avoid error if page is changed in the meantime e.g. with history back
 			   MlbUtils.getPageData().hasElementWithId(this.keybuffer) ||
             this.changeTabByNumberRegExp.test(this.keybuffer) ||
@@ -522,8 +526,6 @@ with(mouselessbrowsing){
 		},
 		
 		resetVars: function(){
-         this.currentOnKeydownEvent=null
-		   this.keybuffer="";
          this.lastEventWasAltNumpad0To9=false
 		   this.openInNewTab=false;
 		   this.openInNewWindow=false;
@@ -532,7 +534,24 @@ with(mouselessbrowsing){
 			clearTimeout(this.timerId);
          this.resetBlockKeyboardInput()
 			this.clearTimerForBlockKeyboardInput()
+         this.specialCtrlPlus0Handling(this.currentOnKeydownEvent, this.keybuffer)
+         this.currentOnKeydownEvent=null
+		   this.keybuffer="";
 		},
+      
+      specialCtrlPlus0Handling: function(keyDownEvent, keybuffer){
+         var isOnlyCtrl0Presed = keyDownEvent.ctrlKey && 
+                              (keyDownEvent.keyCode==KeyEvent.DOM_VK_0 || keyDownEvent.keyCode==KeyEvent.DOM_VK_NUMPAD0) &&
+                              keybuffer=="0"
+         if(!isOnlyCtrl0Presed){//early return only for performance reason
+            return
+         }
+         var keyResetZoom = byId('key_fullZoomReset')
+         var isCtrl0AssignedToZoomReset = keyResetZoom.getAttribute("key")=="0" && keyResetZoom.getAttribute('modifiers')=="accel"  
+         if(!MlbPrefs.enableSpecialIds && this.eventStopped && isCtrl0AssignedToZoomReset){
+            FullZoom.reset()
+         }
+      },
 		
 		/*
 		 * scrolling up/down

@@ -52,6 +52,9 @@
 		styleForIdSpan: null,
 		styleForFrameIdSpan: null,
 		toggleExlNumpadWithDoubleStrokeNumKey: null,
+      enableSpecialIds:null,
+      enableTabIds:null,
+      
 		//Not configurable via prefs dialog 
 		debug: null,
       
@@ -71,7 +74,6 @@
             //      TODO remove or put in
 //				this.omitSmartPosForCheckboxAndRadio = Prefs.getBoolPref("mouselessbrowsing.omitSmartPosForCheckboxAndRadio");
 				this.filterDuplicateLinks = Prefs.getBoolPref("mouselessbrowsing.filterDuplicateLinks");
-				this.showTabIds = Prefs.getBoolPref("mouselessbrowsing.showTabIds");
 		      this.showKeybufferInStatusbar = Prefs.getBoolPref("mouselessbrowsing.showKeybufferInStatusbar");
 		      this.showMlbIconInStatusbar = Prefs.getBoolPref("mouselessbrowsing.showMlbIconInStatusbar");
 		      this.showMlbMenu = Prefs.getBoolPref("mouselessbrowsing.showMlbMenu");
@@ -84,6 +86,10 @@
       		this.modifierForOpenInNewWindow = Prefs.getCharPref("mouselessbrowsing.modifierForOpenInNewWindow");
       		this.modifierForOpenInCoolirisPreviews = Prefs.getCharPref("mouselessbrowsing.modifierForOpenInCoolirisPreviews");
       		this.toggleExlNumpadWithDoubleStrokeNumKey = Prefs.getBoolPref("mouselessbrowsing.toggleExlNumpadWithDoubleStrokeNumKey");
+            this.enableSpecialIds = Prefs.getBoolPref("mouselessbrowsing.enableSpecialIds");
+            this.enableTabIds = Prefs.getBoolPref("mouselessbrowsing.enableTabIds");
+				this.showTabIds = this.enableTabIds?Prefs.getBoolPref("mouselessbrowsing.showTabIds"):false;
+
 		      if(this.isCharIdType()){
 			      this.idChars = Prefs.getCharPref("mouselessbrowsing.idChars");
 		      }else{
