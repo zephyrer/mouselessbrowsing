@@ -34,10 +34,11 @@ with(mouselessbrowsing){
 
    TabIdHandler.prototype = {
       init: function(mlbActive){
-         if(mlbActive)
+         if(mlbActive && MlbPrefs.enableTabIds)
             this.displayShowTabIdMI()
          else
             this.hideShowTabIdMI()
+
          if(mlbActive && MlbPrefs.showTabIds)
             this.enableTabIds()
          else

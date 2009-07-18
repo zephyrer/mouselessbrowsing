@@ -26,6 +26,7 @@ function doOnload(){
 	MLB_setPreviewForIds("styleForIdSpan")
 	MLB_setPreviewForIds("styleForFrameIdSpan")
 	MLB_initForCoolirisPreview()
+   MLB_onCommandEnableTabIds()
 //   MLB_onSmartPosChange()
 	byId('siteRulesLB').addEventListener("select", MLB_onSelectSiteRule, false)
 	PrefUtils.initElementHelp('jsStrings', 'helpDescriptionTB')
@@ -252,6 +253,17 @@ function MLB_saveKeyListbox(){
       var prefId = keyItem.getAttribute('prefid')
    	Prefs.setCharPref(prefId, keyItem.getAttribute(COMBINED_KEY_CODE_ATTR))
    }
+}
+
+function MLB_onCommandEnableTabIds(){
+   var tabIdsEnabled = byId('enableTabIdsCB').checked
+   var showTabIdCB = byId('showTabIdsCB')
+   if(tabIdsEnabled){
+      showTabIdCB.disabled = false
+   }else{
+      showTabIdCB.disabled = true
+   }
+      
 }
 
 function byId(elementId){

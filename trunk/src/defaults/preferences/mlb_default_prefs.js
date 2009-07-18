@@ -56,6 +56,8 @@ pref("mouselessbrowsing.keys.openConfig", "1239"); //Ctrl+Alt+Shift+M
 pref("mouselessbrowsing.keys.addSiteRule", "1319");//Ctrl+Alt+Shift+R
 pref("mouselessbrowsing.keys.toggleEnableDisableMLB", "1761");//Alt + Decimal
 pref("mouselessbrowsing.toggleExlNumpadWithDoubleStrokeNumKey", true);
+pref("mouselessbrowsing.enableSpecialIds", false);
+pref("mouselessbrowsing.enableTabIds", true);
 pref("mouselessbrowsing.version", "");
 pref("mouselessbrowsing.debug", false);
 pref("mouselessbrowsing.debug.perf", false);
