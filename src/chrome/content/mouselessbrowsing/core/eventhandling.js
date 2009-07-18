@@ -540,14 +540,14 @@ with(mouselessbrowsing){
 		},
       
       specialCtrlPlus0Handling: function(keyDownEvent, keybuffer){
-         var isOnlyCtrl0Presed = keyDownEvent.ctrlKey && 
+         var isOnlyCtrl0Presed = keyDownEvent && keyDownEvent.ctrlKey && 
                               (keyDownEvent.keyCode==KeyEvent.DOM_VK_0 || keyDownEvent.keyCode==KeyEvent.DOM_VK_NUMPAD0) &&
                               keybuffer=="0"
          if(!isOnlyCtrl0Presed){//early return only for performance reason
             return
          }
          var keyResetZoom = byId('key_fullZoomReset')
-         var isCtrl0AssignedToZoomReset = keyResetZoom.getAttribute("key")=="0" && keyResetZoom.getAttribute('modifiers')=="accel"  
+         var isCtrl0AssignedToZoomReset = keyResetZoom && keyResetZoom.getAttribute("key")=="0" && keyResetZoom.getAttribute('modifiers')=="accel"  
          if(!MlbPrefs.enableSpecialIds && this.eventStopped && isCtrl0AssignedToZoomReset){
             FullZoom.reset()
          }
