@@ -156,8 +156,6 @@ with(mouselessbrowsing){
 		    
 		    this.setShortcut("mouselessbrowsing.keys.selectLink", "mouselessbrowsing.EventHandler.selectLink()");
 
-          this.setShortcut("mouselessbrowsing.keys.openContextMenu", "mouselessbrowsing.EventHandler.openContextMenu()");
-
 		    this.setShortcut(MlbPrefs.BLOCK_KEYBOARD_INDPUT_PREF_ID, "mouselessbrowsing.EventHandler.toggleBlockKeyboardInputForMLB()");
 
 		    this.setShortcut(MlbPrefs.BLUR_ACTIVE_ELEMENT_KEY_PREF_ID, "mouselessbrowsing.EventHandler.blurActiveElement()");

@@ -9,12 +9,6 @@ with(mouselessbrowsing){
    function TabIdHandler(){
       this.showTabIdMIAdded = false
       this.showTabIdMI = null
-      //Fetch label which is put on the tab for signaling it is loading
-      try{
-         this.loadingLabel = getBrowser().mStringBundle.getString("tabs.loading")
-      }catch(e){
-         Utils.logError(e)
-      }
    }
    
    TabIdHandler.instance = null
@@ -34,11 +28,10 @@ with(mouselessbrowsing){
 
    TabIdHandler.prototype = {
       init: function(mlbActive){
-         if(mlbActive && MlbPrefs.enableTabIds)
+         if(mlbActive)
             this.displayShowTabIdMI()
          else
             this.hideShowTabIdMI()
-
          if(mlbActive && MlbPrefs.showTabIds)
             this.enableTabIds()
          else
@@ -72,11 +65,8 @@ with(mouselessbrowsing){
       
       handleDOMAttrModified: function(event){
          var tagName = event.originalTarget.tagName.toLowerCase()
-         //Do nothing if
-         if(event.attrName!="label" || // not a label attr. is changed
-            TAB_ID_REGEXP.test(event.newValue) || // the tab already has an id 
-            event.newValue == this.loadingLabel || // the value to be set is "Loading..." as there are depending conditions in the tabbrowser.xml 
-            (tagName!="tab" && tagName!="xul:tab")) //target is tab element
+         if(event.attrName!="label" || TAB_ID_REGEXP.test(event.newValue) || 
+            (tagName!="tab" && tagName!="xul:tab"))
             return
          var tab = event.originalTarget
          this.setTabId(tab, tab._tPos+1)
@@ -109,7 +99,7 @@ with(mouselessbrowsing){
          tabContainer[functionName]("TabOpen", this, false)
          tabContainer[functionName]("TabClose", this, false)
          tabContainer[functionName]("TabMove", this, false)
-         tabContainer[functionName]("DOMAttrModified", this, true)
+         tabContainer[functionName]("DOMAttrModified", this, false)
       },
       
       initTabs: function(){

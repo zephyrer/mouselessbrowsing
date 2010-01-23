@@ -116,10 +116,6 @@ with(mlb_common){
       setup: function(){
          var setupDialog = new Dialog(MlbCommon.MLB_CHROME_URL+"/preferences/setup/setup.xul", "setupdialog", true, window)
          setupDialog.show()
-         if(Application.prefs.getValue("accessibility.typeaheadfind", true)){
-            var setupDialog = new Dialog(MlbCommon.MLB_CHROME_URL+"/preferences/setup/TypeFindAheadSetup.xul", "typeaheadsetup", true, window)
-            setupDialog.show()
-         }
          Utils.notifyObservers(MlbCommon.MLB_PREF_OBSERVER);
       },
    	
