@@ -806,12 +806,12 @@ with(mouselessbrowsing){
       	if(event!=null && event.button!=0){
       	  return
       	}
-         openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "mlb_prefs", "chrome, centerscreen").focus()
+         openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "mlb_prefs", "chrome, centerscreen")
       },
 
 		addSiteRule:function(){
 			var urlbar = document.getElementById("urlbar")
-			openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "mlb_prefs", "chrome, centerscreen", urlbar.value).focus()
+			openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "mlb_prefs", "chrome, centerscreen", urlbar.value)
 		},
 		
 		reportBug: function(){
