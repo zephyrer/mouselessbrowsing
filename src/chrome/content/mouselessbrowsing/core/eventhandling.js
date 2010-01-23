@@ -45,11 +45,14 @@ with(mouselessbrowsing){
 		
 		//Regexp for keybuffercontent to focus special tab
 		changeTabByNumberRegExp: /^0\d{1,}$/,
-      
+		
 		globalIds: {
 			"0": "urlbar",
 			"00": "searchbar"
 		},
+		
+		//Indicates wether Element should be selected and opens the context-menu
+		openContextMenu: false,
 		
 		//Timer-id from setTimeout(..) for clearing the this.keybuffer
 		timerId: null,
@@ -229,7 +232,7 @@ with(mouselessbrowsing){
       
       isSpecialIdEntering: function(keypressEvent){
          return (this.keybuffer!="" && this.keybuffer.indexOf("0")==0 && StringUtils.isDigit(this.keybuffer)) || 
-                  ((MlbPrefs.enableSpecialIds || MlbPrefs.enableTabIds) && keypressEvent.charCode==KeyEvent.DOM_VK_0)
+                  (keypressEvent.charCode==KeyEvent.DOM_VK_0)
       },
 		
 		handleEnter: function(){
@@ -271,10 +274,6 @@ with(mouselessbrowsing){
 			
 		
 		shouldExecute: function(){
-         //Issus 99
-         if((this.keybuffer == "0" || this.keybuffer=="00") && !MlbPrefs.enableSpecialIds){
-            return false
-         }
 			if(MlbUtils.getPageData() && //avoid error if page is changed in the meantime e.g. with history back
 			   MlbUtils.getPageData().hasElementWithId(this.keybuffer) ||
             this.changeTabByNumberRegExp.test(this.keybuffer) ||
@@ -526,32 +525,18 @@ with(mouselessbrowsing){
 		},
 		
 		resetVars: function(){
+         this.currentOnKeydownEvent=null
+		   this.keybuffer="";
          this.lastEventWasAltNumpad0To9=false
 		   this.openInNewTab=false;
 		   this.openInNewWindow=false;
 		   this.openInCoolirisPreviews=false;
 		   this.updateStatuspanel("");
+			this.openContextMenu = false;
 			clearTimeout(this.timerId);
          this.resetBlockKeyboardInput()
 			this.clearTimerForBlockKeyboardInput()
-         this.specialCtrlPlus0Handling(this.currentOnKeydownEvent, this.keybuffer)
-         this.currentOnKeydownEvent=null
-		   this.keybuffer="";
 		},
-      
-      specialCtrlPlus0Handling: function(keyDownEvent, keybuffer){
-         var isOnlyCtrl0Presed = keyDownEvent && keyDownEvent.ctrlKey && 
-                              (keyDownEvent.keyCode==KeyEvent.DOM_VK_0 || keyDownEvent.keyCode==KeyEvent.DOM_VK_NUMPAD0) &&
-                              keybuffer=="0"
-         if(!isOnlyCtrl0Presed){//early return only for performance reason
-            return
-         }
-         var keyResetZoom = byId('key_fullZoomReset')
-         var isCtrl0AssignedToZoomReset = keyResetZoom && keyResetZoom.getAttribute("key")=="0" && keyResetZoom.getAttribute('modifiers')=="accel"  
-         if(!MlbPrefs.enableSpecialIds && this.eventStopped && isCtrl0AssignedToZoomReset){
-            FullZoom.reset()
-         }
-      },
 		
 		/*
 		 * scrolling up/down
@@ -650,13 +635,16 @@ with(mouselessbrowsing){
 		},
 		
 		selectLink: function(){
-		   var element = this.getTargetElement()
-         if(!element){
-            return
+		   if(this.keybuffer==""){
+            return;
          }
-		   var tagName = element.tagName.toLowerCase();
-		   if(tagName!="a")
-		       return;
+         var pageData = MlbUtils.getPageData() 
+         var element = pageData.getElementForId(this.keybuffer);   
+		    if(element==null)
+		        return;
+		    var tagName = element.tagName.toLowerCase();
+		    if(tagName!="a")
+		        return;
 		 	//Select Link
 		   element.focus();
 		   var doc = element.ownerDocument;
@@ -665,7 +653,6 @@ with(mouselessbrowsing){
 		   //Create new Range
 		   var range = doc.createRange();
 		   range.selectNode(element);
-         var pageData = MlbUtils.getPageData()
 		   range.setEndBefore(pageData.getIdSpanByElement(element))
 			//Set new Selection
 			selection.removeAllRanges();
@@ -674,24 +661,6 @@ with(mouselessbrowsing){
 			this.resetVars();
          
 		},
-      
-      openContextMenu: function(){
-         var element = this.getTargetElement()
-         if(!element){
-            return
-         }
-         element.focus()
-         document.getElementById('contentAreaContextMenu').openPopup(element, "after_end", null, null,true)
-         this.resetVars();
-      },
-      
-      getTargetElement: function(){
-         if(this.keybuffer==""){
-            return null;
-         }
-         var pageData = MlbUtils.getPageData() 
-         return pageData.getElementForId(this.keybuffer);   
-      },
 		
 		onElementFocusEvent: function(event){
 			var focusedElement = event.originalTarget
@@ -834,15 +803,15 @@ with(mouselessbrowsing){
 		},
 		
       openConfiguration: function(event){
-      	if(event!=null && (event.button!=0 || event.detail == 2)){
+      	if(event!=null && event.button!=0){
       	  return
       	}
-         openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "mlb_prefs", "chrome, centerscreen").focus()
+         openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "mlb_prefs", "chrome, centerscreen")
       },
 
 		addSiteRule:function(){
 			var urlbar = document.getElementById("urlbar")
-			openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "mlb_prefs", "chrome, centerscreen", urlbar.value).focus()
+			openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "mlb_prefs", "chrome, centerscreen", urlbar.value)
 		},
 		
 		reportBug: function(){

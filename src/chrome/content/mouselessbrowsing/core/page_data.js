@@ -1,8 +1,8 @@
 with(mouselessbrowsing){
 (function(){
    //Constructor
-   function PageData(){ 
-      
+	function PageData(){	
+		
       this.changeListener = null
       
       //id to object/span map
@@ -17,14 +17,14 @@ with(mouselessbrowsing){
       this.nextKeepExistingIds = true
       
       this.initResetableMembers()
-   }
+	}
    
    //Static create method to enable hooking of layout debugger
    PageData.createPageData = function(){
       return new PageData()
    }
-   
-   PageData.prototype =  {
+	
+	PageData.prototype =  {
 
       getNextKeepExistingIds: function(){
          return this.nextKeepExistingIds
@@ -54,12 +54,12 @@ with(mouselessbrowsing){
       },
       
       addElementWithId: function(element){
-         this.elementsWithId[this.counter] = element;
-         if(this.useCharIds){
-            this.idToElementMap[this.currentId] = element;
-         }
-      },
-      
+			this.elementsWithId[this.counter] = element;
+			if(this.useCharIds){
+				this.idToElementMap[this.currentId] = element;
+			}
+		},
+		
       getElementBy: function(elementOrIdSpan, type){
          if(!elementOrIdSpan.hasAttribute(MlbCommon.MLB_BINDING_KEY_ATTR))
             return null
@@ -77,50 +77,50 @@ with(mouselessbrowsing){
          return this.getElementBy(refSpan, "element")
       },
       
-      getElementForId:function(id){
-         if(this.useCharIds){
-            return this.idToElementMap[id.toUpperCase()]
-         }else{
-            return this.elementsWithId[id]
-         }
-      },
-      
+		getElementForId:function(id){
+			if(this.useCharIds){
+				return this.idToElementMap[id.toUpperCase()]
+			}else{
+				return this.elementsWithId[id]
+			}
+		},
+		
       getIdSpanByElement: function(refElement){
          return this.getElementBy(refElement, "span")
       },
 
-      getNextId:function(){
-         this.counter = this.counter+1
-         if(this.useCharIds){
-            this.currentId = this.getNextCharId(this.currentId, this.currentId.length-1)
-            return this.currentId
-         }else{
-            return this.counter
-         }
-      },
-      
-      getNextCharId: function(id, indexInId){
-         if(indexInId==-1) {
-            return this.idChars.charAt(0)+ id;
-         }
-         charAtIndex = id.charAt(indexInId);
-         indexOfCharInChars = this.idChars.indexOf(charAtIndex);
-         newValue = "";
-         if(indexOfCharInChars==this.idChars.length-1) {
-            newValue = this.replaceChar(id, indexInId, this.idChars.charAt(0));
-            return this.getNextCharId(newValue, indexInId-1);
-         }else {
-            return this.replaceChar(id, indexInId, this.idChars.charAt(indexOfCharInChars+1));
-         }
-      },
+		getNextId:function(){
+			this.counter = this.counter+1
+			if(this.useCharIds){
+				this.currentId = this.getNextCharId(this.currentId, this.currentId.length-1)
+				return this.currentId
+			}else{
+				return this.counter
+			}
+		},
+		
+		getNextCharId: function(id, indexInId){
+	      if(indexInId==-1) {
+	         return this.idChars.charAt(0)+ id;
+	      }
+	      charAtIndex = id.charAt(indexInId);
+	      indexOfCharInChars = this.idChars.indexOf(charAtIndex);
+	      newValue = "";
+	      if(indexOfCharInChars==this.idChars.length-1) {
+	         newValue = this.replaceChar(id, indexInId, this.idChars.charAt(0));
+	         return this.getNextCharId(newValue, indexInId-1);
+	      }else {
+	         return this.replaceChar(id, indexInId, this.idChars.charAt(indexOfCharInChars+1));
+	      }
+		},
       
       hasElementWithId: function(id){
-         if(this.useCharIds){
-            return this.idToElementMap[id.toUpperCase()]!=null
-         }else{
-            return this.elementsWithId[id]!=null
-         }
-      },
+			if(this.useCharIds){
+				return this.idToElementMap[id.toUpperCase()]!=null
+			}else{
+				return this.elementsWithId[id]!=null
+			}
+		},
       
       incrementInitCounter: function(){
          return ++this.initCounter
@@ -159,26 +159,22 @@ with(mouselessbrowsing){
          else
             return true
       },
-      
-      isMaxId: function(maxIds){
-         return this.counter >= maxIds
-      },
 
       replaceChar: function(value, index, newChar) {
-         result = "";
-         if(index!=0) {
-            result = value.substring(0, index);
-         }
-         result = result + newChar;
-         if(index!=value.length-1) {
-            result = result + value.substring(index+1);
-         }
-         return result;
-      }
+	      result = "";
+	      if(index!=0) {
+	         result = value.substring(0, index);
+	      }
+	      result = result + newChar;
+	      if(index!=value.length-1) {
+	         result = result + value.substring(index+1);
+	      }
+	      return result;
+	   }
       
-   }
-   
-   var NS = mlb_common.Namespace;
-   NS.bindToNamespace("mouselessbrowsing", "PageData", PageData)
+	}
+	
+	var NS = mlb_common.Namespace;
+	NS.bindToNamespace("mouselessbrowsing", "PageData", PageData)
 })()
 }

@@ -43,7 +43,6 @@ pref("mouselessbrowsing.keys.openInNewTabPostfixKey", "1712"); //Plus
 pref("mouselessbrowsing.keys.openInNewWindowPostfixKey", "1776"); //Divide
 pref("mouselessbrowsing.keys.openInCoolirisPreviewsPostfixKey", "1696"); //Subtract
 pref("mouselessbrowsing.keys.selectLink", "260"); //Shift
-pref("mouselessbrowsing.keys.openContextMenu", "0"); //None
 pref("mouselessbrowsing.keys.scrollDown", "1712"); //Plus
 pref("mouselessbrowsing.keys.scrollUp", "1744");   //Subtract
 pref("mouselessbrowsing.keys.blurActiveElement", "0"); //None
@@ -56,8 +55,6 @@ pref("mouselessbrowsing.keys.openConfig", "1239"); //Ctrl+Alt+Shift+M
 pref("mouselessbrowsing.keys.addSiteRule", "1319");//Ctrl+Alt+Shift+R
 pref("mouselessbrowsing.keys.toggleEnableDisableMLB", "1761");//Alt + Decimal
 pref("mouselessbrowsing.toggleExlNumpadWithDoubleStrokeNumKey", true);
-pref("mouselessbrowsing.enableSpecialIds", false);
-pref("mouselessbrowsing.enableTabIds", true);
 pref("mouselessbrowsing.version", "");
 pref("mouselessbrowsing.debug", false);
 pref("mouselessbrowsing.debug.perf", false);
