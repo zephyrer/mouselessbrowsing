@@ -1,10 +1,11 @@
 /*
  * Util-Functions of MLB
- * Rudolf Noé
+ * Rudolf Noe
  * 31.12.2007 
  */
 (function(){
 	
+   const TEXT_INPUT_TYPES = ['text', 'date', 'datetime', 'datetime-local', 'month', 'time', 'week', 'number', 'range', 'email', 'url', 'search', 'tel', 'color'];
 	//Imports
 	var MlbCommon = mouselessbrowsing.MlbCommon
 	var MlbPrefs = mouselessbrowsing.MlbPrefs
@@ -13,6 +14,8 @@
 	var COOLIRIS_PREVIEWS_GUI_ID = "{CE6E6E3B-84DD-4cac-9F63-8D2AE4F30A4B}"
 	
 	var MlbUtils = {
+      coolirisPreviewsInstalled: false,
+      
       /*
        * Returns an array with all window object of all frames included in the provided win (inkl. the provided win itself)
        */
@@ -35,9 +38,33 @@
          return win.top._mlbPageData
       },
       
+      getVisibleTabs: function(){
+         if(this.isFirefox4()){
+            return getBrowser().visibleTabs;
+         }else{
+            var tabNodeList = getBrowser().mTabs;
+            var tabs = new Array(tabNodeList.length);
+            for(var i = 0; i<tabNodeList.length; i++){
+               tabs[i] = tabNodeList.item(i);
+            }
+            return tabs;
+         }
+      },
+      
+      init: function(){
+          //Init
+         if(MlbUtils.isFirefox4()){
+            AddonManager.getAddonByID(COOLIRIS_PREVIEWS_GUI_ID, function(addon){
+               MlbUtils.coolirisPreviewsInstalled = (addon && !addon.userDisabled) 
+            })
+         }else{
+            this.coolirisPreviewsInstalled = Utils.isExtensionInstalledAndEnabled(COOLIRIS_PREVIEWS_GUI_ID) 
+         }
+      },
+      
 		isElementOfType: function(element, type){
 			if(this.ElementTypes.TEXT==type){
-				return XMLUtils.isTagName(element, "INPUT") && "text"==element.type
+				return XMLUtils.isTagName(element, "INPUT") && TEXT_INPUT_TYPES.indexOf(element.type)!=-1
 			}else if (this.ElementTypes.PASSWORD==type){
             return XMLUtils.isTagName(element, "INPUT") && "password"==element.type
 			}else if(this.ElementTypes.TEXTAREA==type){
@@ -67,7 +94,7 @@
 		},
 		
 		isCoolirisPreviewsInstalled: function(){
-			return Utils.isExtensionInstalledAndEnabled(COOLIRIS_PREVIEWS_GUI_ID)
+			return this.coolirisPreviewsInstalled
 		},
 		
       isEditableIFrame: function(element){
@@ -77,6 +104,10 @@
          }else{
          	return false
          }
+      },
+      
+      isFirefox4: function(){
+         return mlb_common.ServiceRegistry.getVersionComparator().compare("4.0a1", Application.version) <= 0
       },
       
       
@@ -148,6 +179,7 @@
          TEXTAREA: "TEXTAREA"
       }
 	}
+   
 	var NS = mlb_common.Namespace
 	NS.bindToNamespace("mouselessbrowsing", "MlbUtils", MlbUtils)
 })()

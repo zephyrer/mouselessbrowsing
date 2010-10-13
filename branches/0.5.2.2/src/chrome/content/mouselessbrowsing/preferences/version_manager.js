@@ -7,8 +7,6 @@ with(mlb_common){
 	
    var VersionManager = { 
    	VERSION_PREF: "mouselessbrowsing.version",
-   	versionComparator: Components.classes["@mozilla.org/xpcom/version-comparator;1"]
-                   .getService(Components.interfaces.nsIVersionComparator),
    	
       versionsToBeMigrated: ["0.5", "0.5.2Alpha_1"],
                    
@@ -35,8 +33,8 @@ with(mlb_common){
             migrated = true
             this.doMigrationToCurrentVersion()
          }
+         Prefs.setCharPref(this.VERSION_PREF, MlbCommon.MLB_VERSION)
          if(migrated){
-      		Prefs.setCharPref(this.VERSION_PREF, Utils.getExtension(MlbCommon.MLB_GUI_ID).version)
       		setTimeout(mouselessbrowsing.VersionManager.showVersionInfoPage, 1000)
          }
    	},
@@ -45,7 +43,7 @@ with(mlb_common){
          var currentVersion = Prefs.getCharPref(this.VERSION_PREF)
          for (var i = 0; i < this.versionsToBeMigrated.length; i++) {
             var version = this.versionsToBeMigrated[i]
-            if(this.versionComparator.compare(version, currentVersion)>0){
+            if(ServiceRegistry.getVersionComparator().compare(version, currentVersion)>0){
                var mirgationFunctionName = "migrateToVersion_" + version.replace(/\./g,"_") 
                this[mirgationFunctionName]()
                MlbUtils.logDebugMessage("Successfully migrated to version " + version)
@@ -69,9 +67,9 @@ with(mlb_common){
       hasVersionToBeMigrated: function(){
          if(this.isFirstInstallation())
             return false
-   		var newInstalledVersion = Utils.getExtension(MlbCommon.MLB_GUI_ID).version
+   		var newInstalledVersion = MlbCommon.MLB_VERSION
    		var currentVersion = Prefs.getCharPref(this.VERSION_PREF)
-   		if(this.versionComparator.compare(newInstalledVersion, currentVersion)>0){
+   		if(ServiceRegistry.getVersionComparator().compare(newInstalledVersion, currentVersion)>0){
    			return true
    		}else{
    			return false

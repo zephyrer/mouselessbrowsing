@@ -5,14 +5,27 @@
 	var Prefs = mlb_common.Prefs
 	var Utils = mlb_common.Utils
 
-	function TabLocalPrefs() {
-		this.init()
+	function TabLocalPrefs(win) {
+      this.exclusiveUseOfNumpad = null;
+      this.idsForLinksEnabled = false;
+      this.idsForImgLinksEnabled = false;
+      this.idsForFormElementsEnabled = false;
+      this.idsForFramesEnabled = false;
+      this.idsForOtherElementsEnabled = false;
+      this.prefsBackup = null;
+      this.previousVisibilityMode = null;
+      this.showIdsOnDemand = null;
+      //Todo remove; only for debug purposes
+      this.win = win;
+      this.visibilityMode = null; 
+		this.init();
 	}
 	
 	//Static member variables
 	TabLocalPrefs.observedPropExclusiveUseOfNumpad = Prefs.getBoolPref("mouselessbrowsing.exclusiveNumpad");
 
 	function getPrefs(contentWin) {
+      //TODO Replace default with Assert as getPrefs will always be called with param (since 0.5.3)
 		var browser = gBrowser.mCurrentBrowser
 		if (contentWin != null) {
 			var browsers = gBrowser._browsers
@@ -26,7 +39,7 @@
 			}
 		}
 		if (browser.mouselssbrowsing_tab_data == null) {
-			browser.mouselssbrowsing_tab_data = new TabLocalPrefs()
+			browser.mouselssbrowsing_tab_data = new TabLocalPrefs(contentWin)
 		}
 		return browser.mouselssbrowsing_tab_data
 	}
@@ -104,12 +117,6 @@
 		return getPrefs(win).idsForOtherElementsEnabled
 	}
 
-   TabLocalPrefs.initVisibilityModeAndShowIdPrefs = function (visibilityMode){
-   	var tabLocalPrefs = getPrefs()
-   	tabLocalPrefs.setVisibilityMode(visibilityMode)
-   	tabLocalPrefs.initShowIdPrefs()
-   }
-   
    TabLocalPrefs.applySiteRules = function (contentWin){
    	var tabLocalPrefs = getPrefs(contentWin)
    	tabLocalPrefs.applySiteRules(contentWin)
@@ -149,6 +156,15 @@
 			this.initShowIdPrefs();
 			this.prefsBackup = null
 		},
+      
+      initVisibilityModeAndShowIdPrefs: function(visibilityMode){
+         this.setVisibilityMode(visibilityMode)
+         this.initShowIdPrefs()
+      },
+      
+      isExclusiveUseOfNumpad: function(){
+         return this.exclusiveUseOfNumpad;
+      },
 
 		isDisableAllIds : function() {
 			return !this.idsForLinksEnabled && !this.idsForImgLinksEnabled
@@ -156,6 +172,14 @@
 					&& !this.idsForFramesEnabled
                && !this.idsForOtherElementsEnabled
 		},
+      
+      getPreviousVisibilityMode: function(){
+         return this.previousVisibilityMode;
+      },
+      
+      getVisibilityMode: function(){
+         return this.visibilityMode 
+      },
 
 		setVisibilityMode : function(visibilityMode, previousVisibilityMode) {
 			if(previousVisibilityMode==null){
@@ -234,7 +258,7 @@
 			if(this.prefsBackup!=null){
 				this.prefsBackup.exclusiveUseOfNumpad = !this.exclusiveUseOfNumpad
 			}
-			this.exclusiveUseOfNumpad = !this.exclusiveUseOfNumpad
+			this.exclusiveUseOfNumpad = TabLocalPrefs.observedPropExclusiveUseOfNumpad = !this.exclusiveUseOfNumpad
 		}
 	}
 
