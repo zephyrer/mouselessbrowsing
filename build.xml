@@ -6,7 +6,7 @@
 	<property name="build_dir" location="./build" />
 	<property name="dist_dir" location="./dist" />
 	<property name="backup_dir" location="../backup" />
-	<property name="version" value="0_5_2"/>
+	<property name="version" value="0_5_3"/>
 	<property name="version_file_name" value="${ant.project.name}_${version}.xpi"/>
 
 	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" name="gcupload"/>
@@ -15,7 +15,7 @@
 		<delete>
 			<fileset dir="${dist_dir}" includes="*"/>
 		</delete>
-		<zip destfile="${dist_dir}/${version_file_name}" update="true" basedir="${src_dir}" includes="**"/>
+		<zip destfile="${dist_dir}/${version_file_name}" update="true" basedir="${src_dir}" includes="**" excludes="**/Shortcutmanager.js, **/JSerial.js"/>
 		<!-- Make backup-copy -->
 		<copy todir="${backup_dir}/src">
 			<fileset dir="${src_dir}"/>
