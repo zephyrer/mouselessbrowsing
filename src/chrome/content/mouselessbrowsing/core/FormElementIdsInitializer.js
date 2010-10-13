@@ -92,7 +92,7 @@ with(mouselessbrowsing){
             //Pos in middle next to button
             spanPosition = SpanPosition.EAST_OUTSIDE
          }else{
-            throw new Error('unknown element type for element ' + element.tagName)
+            throw new Error('unknown element type for element ' + element.tagName + " " + element.name)
          }
          idSpan.setAttribute("mlb_span_position", spanPosition)
          this.insertIdSpan(idSpan, element, element.parentNode, spanPosition, idSpanStyle)   

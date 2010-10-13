@@ -2,7 +2,7 @@
 
   Mouseless Browsing 
   Version 0.5
-  Created by Rudolf Noé
+  Created by Rudolf Noe
   01.01.2008
 */
 //Import for binding
@@ -96,6 +96,9 @@ function MLB_setPreviewForIds(styleTextboxId){
 	var styleTextbox = document.getElementById(styleTextboxId);
 	var previewSpan = document.getElementById(styleTextbox.getAttribute('previewSpanId'));
 	previewSpan.style.cssText=styleTextbox.value
+   if(styleTextboxId=="styleForFrameIdSpan"){
+      previewSpan.style.position = "static"
+   }
 }
 
 function MLB_addSiteRule(){

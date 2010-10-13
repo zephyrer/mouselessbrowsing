@@ -2,7 +2,7 @@
  * Mouseless Browsing 
  * This files contains all the event-handling and actions
  * Version 0.5
- * Created by Rudolf Noé
+ * Created by Rudolf Noe
  * 31.12.2007
  */
 with(mlb_common){
@@ -28,6 +28,9 @@ with(mouselessbrowsing){
 		
 		//TimerId for reseting blocking of keyboard input
 		blockKeyboardInputTimerId: null,
+      
+      //current tab local prefs
+      currentTabLocalPrefs: null,
 		
       //Flag for remembering whether the previous event
       //was alt + numpad; only used on WINNT as
@@ -73,7 +76,7 @@ with(mouselessbrowsing){
          var isNummericIdType = MlbPrefs.isNumericIdType()
          var isCharIdType = !isNummericIdType
          var isDigit = keyCode >= KeyEvent.DOM_VK_0 && keyCode <= KeyEvent.DOM_VK_9
-         var idsNotVisible = TabLocalPrefs.getVisibilityMode()==MlbCommon.VisibilityModes.NONE
+         var idsNotVisible = this.currentTabLocalPrefs.getVisibilityMode()==MlbCommon.VisibilityModes.NONE
 
          //Do nothing if
 		   if(!window.getBrowser() ||
@@ -223,7 +226,7 @@ with(mouselessbrowsing){
                return false
             }
             var searchedTabId = parseInt(tabId + "0", 10) 
-            var tabCount = Application.activeWindow.tabs.length
+            var tabCount = MlbUtils.getVisibleTabs().length
             return searchedTabId > tabCount
          }else{
             return MlbUtils.getPageData() && MlbUtils.getPageData().isIdUnique(this.keybuffer)
@@ -244,7 +247,7 @@ with(mouselessbrowsing){
          this.resetVars();
          return ShortcutManager.DO_NOT_SUPPRESS_KEY
 		},
-
+      
 		/*
 		    Autoexecution function when pressed ctrl-key
 		*/
@@ -349,7 +352,7 @@ with(mouselessbrowsing){
    		    	return
 		      }else if (element.target!=null && element.target.length>0  
 		                && !this.isTargetInCurrentWin(currentWin.top, element.target)){//Extra handling as FF does not open link if it not within the same window
-		      	var tabs = Application.activeWindow.tabs
+		      	var tabs = MlbUtils.getVisibleTabs().length
 		      	for (var i = 0; i < tabs.length; i++) {
 		      		var tab = tabs[i]
 		      		if(tab.document.defaultView.name==element.target){
@@ -399,10 +402,10 @@ with(mouselessbrowsing){
 		 */
 		toggleIds: function(){
 			if(this.isSuppressShortCut()){
-				return
+				return ShortcutManager.DO_NOT_SUPPRESS_KEY
 			}
-			var currentVisibilityMode = TabLocalPrefs.getVisibilityMode()
-			var previousVisibilityMode = TabLocalPrefs.getPreviousVisibilityMode()
+			var currentVisibilityMode = this.currentTabLocalPrefs.getVisibilityMode()
+			var previousVisibilityMode = this.currentTabLocalPrefs.getPreviousVisibilityMode()
 			var resultingVisibilityMode = null;
 			if((currentVisibilityMode==MlbCommon.VisibilityModes.CONFIG || currentVisibilityMode==MlbCommon.VisibilityModes.ALL)){
 			   if(this.getPageInitializer().hasVisibleIdSpans(content)){
@@ -427,7 +430,7 @@ with(mouselessbrowsing){
 		 * all elements
 		 */
 		toggleAllIds: function(){
-         var currentVisibilityMode = TabLocalPrefs.getVisibilityMode()
+         var currentVisibilityMode = this.currentTabLocalPrefs.getVisibilityMode()
 		   var resultingVisibilityMode = null
 		   if(currentVisibilityMode==MlbCommon.VisibilityModes.NONE || currentVisibilityMode==MlbCommon.VisibilityModes.CONFIG){
 		    	resultingVisibilityMode=MlbCommon.VisibilityModes.ALL;
@@ -442,7 +445,7 @@ with(mouselessbrowsing){
 		 * Initiates the update of the id spans after toggling the ids
 		 */
 		updateIdsAfterToggling: function(visibilityMode, currentVisibilityMode){
-	      TabLocalPrefs.initVisibilityModeAndShowIdPrefs(visibilityMode);
+	      this.currentTabLocalPrefs.initVisibilityModeAndShowIdPrefs(visibilityMode);
          //Hide all as the 
 			if(visibilityMode==MlbCommon.VisibilityModes.NONE){
             this.getPageInitializer().deactivateChangeListener(content)
@@ -490,7 +493,7 @@ with(mouselessbrowsing){
 		 */ 
 		moveHistory: function(direction){
 			if(this.isSuppressShortCut()){
-				return
+				return ShortcutManager.DO_NOT_SUPPRESS_KEY
 			}
 		    //Due to fact ff crashes otherwise a setTimeout must be applied
 		    if(direction=="forward")
@@ -500,6 +503,14 @@ with(mouselessbrowsing){
 		    
 		},
 		
+      moveHistoryBack: function(){
+         return this.moveHistory("back");
+      },
+
+      moveHistoryForward: function(){
+         return this.moveHistory("forward");
+      },
+      
 		/*
 		 * Some shortcuts will be suppressed if they have no modifier
 		 * and a textfield or selectbox is focused
@@ -538,12 +549,12 @@ with(mouselessbrowsing){
 			this.clearTimerForBlockKeyboardInput()
 		},
 		
-		/*
+      /*
 		 * scrolling up/down
 		 */
-		scrollUpDown: function(direction){
+		scroll: function(direction){
 		    if(this.isSuppressShortCut()){
-		    	return
+		    	return ShortcutManager.DO_NOT_SUPPRESS_KEY
 		    }
           var event = InitManager.getShortcutManager().getCurrentEvent()
           var eventWin = event.originalTarget.ownerDocument.defaultView
@@ -553,6 +564,15 @@ with(mouselessbrowsing){
 		    else
 		        winToScroll.scrollBy(0, MlbPrefs.pixelsToScroll);
 		},
+
+      scrollDown: function(){
+         return this.scroll("down");
+      },
+
+      scrollUp: function(){
+         return this.scroll("up");
+      },
+      
 		 /*
 		  * Checks wether the actual-keystroke should be suppressed
 		  */
@@ -563,8 +583,38 @@ with(mouselessbrowsing){
 		    var isNumpad = (keyCode >= KeyEvent.DOM_VK_NUMPAD0 && keyCode <= KeyEvent.DOM_VK_NUMPAD9) || 
                          (keyCode == KeyEvent.DOM_VK_MULTIPLY) || (keyCode == KeyEvent.DOM_VK_SEPARATOR) || 
                          (keyCode == KeyEvent.DOM_VK_DECIMAL) || (keyCode == KeyEvent.DOM_VK_DIVIDE) 
-		    return MlbPrefs.isNumericIdType() && TabLocalPrefs.isExclusiveUseOfNumpad() && noModifierPressed && isNumpad;
+		    return MlbPrefs.isNumericIdType() && this.currentTabLocalPrefs.isExclusiveUseOfNumpad() && 
+                              this.currentTabLocalPrefs.getVisibilityMode()!= MlbCommon.VisibilityModes.NONE && 
+                              noModifierPressed && isNumpad;
 		},
+      
+      /*
+       * Eventhandling for selecting a tab
+       */
+      onTabSelect: function(event){
+         this.currentTabLocalPrefs = TabLocalPrefs.getPrefs(content)
+      },
+      
+      openLinkInNewCoolirisPreview: function(event){
+         if(this.isSuppressShortCut()){
+            return ShortcutManager.DO_NOT_SUPPRESS_KEY
+         }
+         this.openLinkInOtherLocationViaPostfixKey(event, MlbCommon.OpenLinkLocations.COOLIRIS_PREVIEW);
+      },
+
+      openLinkInNewTab: function(event){
+         if(this.isSuppressShortCut()){
+            return ShortcutManager.DO_NOT_SUPPRESS_KEY
+         }
+         this.openLinkInOtherLocationViaPostfixKey(event, MlbCommon.OpenLinkLocations.TAB);
+      },
+
+      openLinkInNewWindow: function(event){
+         if(this.isSuppressShortCut()){
+            return ShortcutManager.DO_NOT_SUPPRESS_KEY
+         }
+         this.openLinkInOtherLocationViaPostfixKey(event, MlbCommon.OpenLinkLocations.WINDOW);
+      },
 		
       /*
        * Opens Link in a new tab
@@ -607,7 +657,7 @@ with(mouselessbrowsing){
 		         this.toggleExclusiveUseOfNumpadSecondCall=true;
 		        setTimeout("mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpadSecondCall=false", 1000);
 		    }else{
-		        TabLocalPrefs.toggleExclusiveUseOfNumpad()
+		        this.currentTabLocalPrefs.toggleExclusiveUseOfNumpad()
 		    }
 		},
 		
@@ -616,7 +666,7 @@ with(mouselessbrowsing){
 		},
 		
 		changeTabByNumber: function(){
-			var tabs = Application.activeWindow.tabs
+			var tabs = MlbUtils.getVisibleTabs()
 			var requestedTab = parseInt(this.keybuffer.substring(1), 10);
          var newActiveTab = null;
 			if(requestedTab <= tabs.length){
@@ -626,7 +676,7 @@ with(mouselessbrowsing){
             newActiveTab = tabs.length-1
          }
          //Application.activeWindow.tabs[newActiveTab].focus() is not working as content will not be focused afterwards
-         gBrowser.selectedTab = gBrowser.mTabs[newActiveTab]
+         getBrowser().selectedTab =tabs[newActiveTab]
 		},
 		
 		stopEvent: function(event){
@@ -771,39 +821,9 @@ with(mouselessbrowsing){
 			return false
 		},
 
-		//TODO Remove tab numbering stuff
-		/*
-		 * (Re) numbers the tabs
-		 */
-		numberTabs: function(){
-			if(!MlbPrefs.showTabIds){
-				return
-			}
-			var tabs = Application.activeWindow.tabs
-			for(var i=0; i<tabs.length; i++) {
-				var tab = tabs[i]._getTab()
-				if(tab==null){
-					return
-				}
-				tab.label = this.createTabIdText(i) + tabs[i].document.title
-			}
-		},
-		
-		renumberTab:function(event){
-         if(!MlbPrefs.showTabIds){
-            return
-         }
-			var activeTabIndex = Application.activeWindow.activeTab.index
-			var activeTab = Application.activeWindow.tabs[activeTabIndex]._getTab()
-			activeTab.label = this.createTabIdText(activeTabIndex) + activeTab.label  
-		},
-		
-		createTabIdText: function(index){
-			return "[0" + (index+1) + "] "
-		},
-		
       openConfiguration: function(event){
-      	if(event!=null && event.button!=0){
+         //If click on icon only single left click opens configuration
+      	if(event!=null && ((event.button && event.button!=0) || event.detail>1)){
       	  return
       	}
          openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "mlb_prefs", "chrome, centerscreen")

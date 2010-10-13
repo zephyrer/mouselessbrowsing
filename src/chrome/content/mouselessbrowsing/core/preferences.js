@@ -1,7 +1,7 @@
 /*
  * Mouseless Browsing 
  * Version 0.5
- * Created by Rudolf Noé
+ * Created by Rudolf Noe
  * 30.12.2007
  */
 
@@ -97,7 +97,7 @@
 		      this.debugPerf = Prefs.getBoolPref(this.DEBUG_PERF_PREF_ID) 
 		      
 		    }catch(e){
-		    	 alert(e)
+		    	 alert("Error during initialization of Prefs:" + e)
 		    	 throw e
 		    }
 		},

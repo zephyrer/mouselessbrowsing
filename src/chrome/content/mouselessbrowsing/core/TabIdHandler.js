@@ -8,7 +8,9 @@ with(mouselessbrowsing){
    
    function TabIdHandler(){
       this.showTabIdMIAdded = false
+      //Menuitem and separator
       this.showTabIdMI = null
+      this.showTabIdMS = null
    }
    
    TabIdHandler.instance = null
@@ -46,11 +48,16 @@ with(mouselessbrowsing){
        },
       
       displayShowTabIdMI: function(){
+         var tabContextMenu
          if(!this.showTabIdMIAdded){
-            var tabContextMenu = document.getAnonymousElementByAttribute(gBrowser, "anonid", "tabContextMenu")
+            if(MlbUtils.isFirefox4()){
+               tabContextMenu = gBrowser.tabContextMenu
+            }else{
+               tabContextMenu = document.getAnonymousElementByAttribute(gBrowser, "anonid", "tabContextMenu")
+            }
             var separator = document.createElement("menuseparator")
             separator.setAttribute('anonid', SHOW_TAB_ID_MS)
-            tabContextMenu.appendChild(separator)
+            this.showTabIdMS = tabContextMenu.appendChild(separator)
             this.showTabIdMI = tabContextMenu.appendChild(DomUtils.removeElement(byId(SHOW_TAB_ID_MI)))
             this.showTabIdMIAdded = true
          }
@@ -58,31 +65,48 @@ with(mouselessbrowsing){
       },
       
       enableTabIds: function(){
-         this.initTabs()
          this.addOrRemoveEventListeners("add")
          this.showTabIdMI.setAttribute('checked', 'true')
+         this.initTabs();
       },
       
       handleDOMAttrModified: function(event){
-         var tagName = event.originalTarget.tagName.toLowerCase()
-         if(event.attrName!="label" || TAB_ID_REGEXP.test(event.newValue) || 
-            (tagName!="tab" && tagName!="xul:tab"))
+         var tagName = event.originalTarget.localName.toLowerCase()
+         if(event.attrName!="label" || TAB_ID_REGEXP.test(event.newValue) ||
+            tagName != "tab"){
             return
+         }
          var tab = event.originalTarget
-         this.setTabId(tab, tab._tPos+1)
+
+         //As of FF4 one could not use the _tPos member any more
+         var tabs = MlbUtils.getVisibleTabs()
+         var index = null;
+         if(MlbUtils.isFirefox4()){
+            index = getBrowser().visibleTabs.indexOf(tab) + 1
+         }else{
+            index = tab._tPos+1;
+         }
+         this.setTabId(tab, index)
       },
       
       handleTabClose: function(event){
-         //must be executed delayed as it won't work otherwise
-         Utils.executeDelayed("MLB_TAB_CLOSE", 0, this.initTabs, this)
+         this.initTabsDelayed(0)
+      },
+
+      handleTabHide: function(event){
+         this.initTabsDelayed();
       },
 
       handleTabOpen: function(event){
-         this.initTabs()
+         this.initTabsDelayed();
       },
       
       handleTabMove: function(event){
-         this.initTabs()
+         this.initTabsDelayed();
+      },
+
+      handleTabShow: function(event){
+         this.initTabsDelayed();
       },
       
       hideShowTabIdMI: function(){
@@ -95,25 +119,41 @@ with(mouselessbrowsing){
       
       addOrRemoveEventListeners: function(addOrRemove){
          var functionName = addOrRemove + "EventListener"
-         var tabContainer = getBrowser()
-         tabContainer[functionName]("TabOpen", this, false)
+         var tabContainer = Firefox.getTabContainer();
          tabContainer[functionName]("TabClose", this, false)
+         tabContainer[functionName]("TabOpen", this, false)
          tabContainer[functionName]("TabMove", this, false)
+         tabContainer[functionName]("TabHide", this, false)
+         tabContainer[functionName]("TabShow", this, false)
+         //TabAttrModified could not be used as it is not called after restart of FF
          tabContainer[functionName]("DOMAttrModified", this, false)
       },
       
       initTabs: function(){
-         var tabs = getBrowser().mTabs
+         var tabs = null;
+         if(MlbUtils.isFirefox4()){
+            tabs = getBrowser().visibleTabs;
+         }else{
+            tabs = getBrowser().mTabs;
+         }
          for (var i = 0; i < tabs.length; i++) {
             this.setTabId(tabs[i], i+1)
          }
       },
       
+      initTabsDelayed: function(delay){
+         var delay = delay!=null?delay:100;
+         Utils.executeDelayed("MLB_TAB_INIT", delay, this.initTabs, this);
+      },
+      
+      removeTabId: function(tab){
+         tab.setAttribute('label', tab.getAttribute('label').replace(TAB_ID_REGEXP, ""))
+      },
+      
       removeTabIds: function(){
          var tabs = getBrowser().mTabs
          for (var i = 0; i < tabs.length; i++) {
-            var tab = tabs[i]
-            tab.setAttribute('label', tab.getAttribute('label').replace(TAB_ID_REGEXP, ""))
+            this.removeTabId(tabs[i])
          }
       },
       
@@ -127,8 +167,8 @@ with(mouselessbrowsing){
       },
       
       setCollapsedOnShowTabIdMI: function(collapsed){
-         document.getAnonymousElementByAttribute(gBrowser, "anonid", SHOW_TAB_ID_MI).collapsed = collapsed
-         document.getAnonymousElementByAttribute(gBrowser, "anonid", SHOW_TAB_ID_MS).collapsed = collapsed
+         this.showTabIdMS.collapsed = collapsed
+         this.showTabIdMI.collapsed = collapsed
       },
       
       toggleTabIdVisibility: function(){

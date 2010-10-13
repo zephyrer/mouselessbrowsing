@@ -1,7 +1,7 @@
 /*
  * Mouseless Browsing 
  * Version 0.5
- * Created by Rudolf Noé
+ * Created by Rudolf Noe
  * 30.12.2007
  */
 
@@ -23,18 +23,18 @@ with(mouselessbrowsing){
    var mainPageShowHander = {handleEvent: function(event){PageInitializer.onPageShow(event)}}
    var googleProjectHelperHandler = {handleEvent: function(event){GoogleProjectHelper.onPageShow(event)}}
    var focusHandler = {handleEvent: function(event){EventHandler.onElementFocusEvent(event)}}
-   var tabSelectHandler = {handleEvent: function(event){mouselessbrowsing.TabLocalPrefs.onTabSelect()}}
+   var tabSelectHandlerTabPrefs = {handleEvent: function(event){mouselessbrowsing.TabLocalPrefs.onTabSelect()}}
+   var tabSelectHandlerEventHandler = {handleEvent: function(event){EventHandler.onTabSelect()}}
    
    
 	var InitManager = {
 		eventHandlersActive: false,
-      //07.03.2009: As Shortcutmanager had bug it ignores the suppressShortcutKeys param
-      //As this bug is fixed the suppressShortcutKeys is set to false to keep backward compatibility
-      //TODO: make it right!!
-      scm: new ShortcutManager(window, "keydown", false),
+
+      scm: new ShortcutManager(window, "keydown", true),
 		
 		init: function(event){
 		   MlbPrefs.initPrefs();
+         MlbUtils.init();
          VersionManager.doMigration()
          //Reinit prefs as something could have changed
 		   MlbPrefs.initPrefs();
@@ -47,6 +47,7 @@ with(mouselessbrowsing){
 			}else{
 				this.enableMLB()
 			}
+		   this.initMenu();
 		   this.initStatusbar();
          if(Application.prefs.getValue("mouselessbrowsing.debug.layoutdebugger", false)){
             LayoutDebugger.init()
@@ -62,7 +63,6 @@ with(mouselessbrowsing){
 		       this.eventHandlersActive = true
 		    }
 		    TabLocalPrefs.initPrefs()
-		    this.initMenu();
           var showIdsOnDemand = Prefs.getBoolPref("mouselessbrowsing.showIdsOnDemand");
           var disableAllIds = Prefs.getBoolPref("mouselessbrowsing.disableAllIds");
           //Init the current page the others are only initialized on demand
@@ -91,7 +91,7 @@ with(mouselessbrowsing){
 			   this.eventHandlersActive = false
 			}
 			//Add single shortcut for enabling MLB
-			this.setShortcut("mouselessbrowsing.keys.toggleEnableDisableMLB", "mouselessbrowsing.InitManager.toggleEnableDisableMLB()");
+			this.setShortcut("mouselessbrowsing.keys.toggleEnableDisableMLB", InitManager.toggleEnableDisableMLB, InitManager);
 		   PageInitializer.disableMlb()
 			EventHandler.disableMlb()
 		},
@@ -125,67 +125,72 @@ with(mouselessbrowsing){
 			getBrowser()[addOrRemoveListenerFunction]("blur", focusHandler, true);
          
 			//Tab select listener
-			getBrowser().tabContainer[addOrRemoveListenerFunction]("TabSelect", tabSelectHandler,false);
+			getBrowser().tabContainer[addOrRemoveListenerFunction]("TabSelect", tabSelectHandlerTabPrefs,false);
+			getBrowser().tabContainer[addOrRemoveListenerFunction]("TabSelect", tabSelectHandlerEventHandler,false);
 		},
 		
 		initShortCuts: function (){
+          var eh = mouselessbrowsing.EventHandler 
 		    //Shortcut for Enter
-		    this.scm.addShortcut(208, "mouselessbrowsing.EventHandler.handleEnter()", null, MlbCommon.SCM_CLIENT_ID);
+		    this.scm.addShortcut(208, eh.handleEnter, eh, MlbCommon.SCM_CLIENT_ID);
 		    
-          this.setShortcut("mouselessbrowsing.keys.openInNewTabPostfixKey", "mouselessbrowsing.EventHandler.openLinkInOtherLocationViaPostfixKey(event, mouselessbrowsing.MlbCommon.OpenLinkLocations.TAB)");
+          this.setShortcut("mouselessbrowsing.keys.openInNewTabPostfixKey", eh.openLinkInNewTab, eh);
 
-          this.setShortcut("mouselessbrowsing.keys.openInNewWindowPostfixKey", "mouselessbrowsing.EventHandler.openLinkInOtherLocationViaPostfixKey(event, mouselessbrowsing.MlbCommon.OpenLinkLocations.WINDOW)");
+          this.setShortcut("mouselessbrowsing.keys.openInNewWindowPostfixKey", eh.openLinkInNewWindow, eh);
+          
+          //TODO will probably never be enabled
+          if(MlbUtils.isCoolirisPreviewsInstalled()){
+            this.setShortcut("mouselessbrowsing.keys.openInCoolirisPreviewsPostfixKey", eh.openLinkInNewCoolirisPreview, eh);
+          }
 
-          this.setShortcut("mouselessbrowsing.keys.openInCoolirisPreviewsPostfixKey", "mouselessbrowsing.EventHandler.openLinkInOtherLocationViaPostfixKey(event, mouselessbrowsing.MlbCommon.OpenLinkLocations.COOLIRIS_PREVIEW)");
-
-		    this.setShortcut("mouselessbrowsing.keys.toggleMLB", "mouselessbrowsing.EventHandler.toggleIds()");
+		    this.setShortcut("mouselessbrowsing.keys.toggleMLB", eh.toggleIds, eh);
 		    
-			 this.setShortcut("mouselessbrowsing.keys.toggleAllIds", "mouselessbrowsing.EventHandler.toggleAllIds()");
+			 this.setShortcut("mouselessbrowsing.keys.toggleAllIds", eh.toggleAllIds, eh);
 
-         this.setShortcut("mouselessbrowsing.keys.updatePage", function(){PageInitializer.updatePage(); return ShortcutManager.SUPPRESS_KEY});
+         this.setShortcut("mouselessbrowsing.keys.updatePage", function(){PageInitializer.updatePage(); return ShortcutManager.SUPPRESS_KEY}, null);
          
-         this.setShortcut("mouselessbrowsing.keys.historyBack", "mouselessbrowsing.EventHandler.moveHistory('back')");
+         this.setShortcut("mouselessbrowsing.keys.historyBack", eh.moveHistoryBack, eh);
 		
-		    this.setShortcut("mouselessbrowsing.keys.historyForward", "mouselessbrowsing.EventHandler.moveHistory('forward')");
+		    this.setShortcut("mouselessbrowsing.keys.historyForward", eh.moveHistoryForward, eh);
 		    
-		    this.setShortcut("mouselessbrowsing.keys.clearKeybuffer", "mouselessbrowsing.EventHandler.resetVars()");
+		    this.setShortcut("mouselessbrowsing.keys.clearKeybuffer", eh.resetVars, eh);
 		    
-		    this.setShortcut("mouselessbrowsing.keys.scrollDown", "mouselessbrowsing.EventHandler.scrollUpDown('down')");
+		    this.setShortcut("mouselessbrowsing.keys.scrollDown", eh.scrollDown, eh);
 		    
-		    this.setShortcut("mouselessbrowsing.keys.scrollUp", "mouselessbrowsing.EventHandler.scrollUpDown('up')");
+		    this.setShortcut("mouselessbrowsing.keys.scrollUp", eh.scrollUp, eh);
 		    
-		    this.setShortcut("mouselessbrowsing.keys.selectLink", "mouselessbrowsing.EventHandler.selectLink()");
+		    this.setShortcut("mouselessbrowsing.keys.selectLink", eh.selectLink, eh);
 
-		    this.setShortcut(MlbPrefs.BLOCK_KEYBOARD_INDPUT_PREF_ID, "mouselessbrowsing.EventHandler.toggleBlockKeyboardInputForMLB()");
+		    this.setShortcut(MlbPrefs.BLOCK_KEYBOARD_INDPUT_PREF_ID, eh.toggleBlockKeyboardInputForMLB, eh);
 
-		    this.setShortcut(MlbPrefs.BLUR_ACTIVE_ELEMENT_KEY_PREF_ID, "mouselessbrowsing.EventHandler.blurActiveElement()");
+		    this.setShortcut(MlbPrefs.BLUR_ACTIVE_ELEMENT_KEY_PREF_ID, eh.blurActiveElement, eh);
 		    
-		    this.setShortcut("mouselessbrowsing.keys.openConfig", "mouselessbrowsing.EventHandler.openConfiguration()");
+		    this.setShortcut("mouselessbrowsing.keys.openConfig", eh.openConfiguration, eh);
 		    var combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.openConfig");
 			 var openConfigBC = document.getElementById("mlb_openConfig_bc");
 			 openConfigBC.setAttribute('acceltext', KeyInputbox.getStringForCombinedKeyCode(combinedKeyCode))
 
-		    this.setShortcut("mouselessbrowsing.keys.addSiteRule", "mouselessbrowsing.EventHandler.addSiteRule()");
+		    this.setShortcut("mouselessbrowsing.keys.addSiteRule", eh.addSiteRule, eh);
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.addSiteRule");
 			 var addUrlRuleBC = document.getElementById("mlb_addUrlRule_bc");
 			 addUrlRuleBC.setAttribute('acceltext', KeyInputbox.getStringForCombinedKeyCode(combinedKeyCode))
 
 		    //Toggling exclusive use with double stroke of numpad-key
 			 if(MlbPrefs.toggleExlNumpadWithDoubleStrokeNumKey){
-		       this.scm.addShortcut(2304, "mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpad();", null, MlbCommon.SCM_CLIENT_ID);
+		       this.scm.addShortcut(2304, eh.toggleExclusiveUseOfNumpad, eh, MlbCommon.SCM_CLIENT_ID);
 			 }
 		
 		    combinedKeyCode = Prefs.getCharPref("mouselessbrowsing.keys.toggleExlusiveUseOfNumpad");
 		    if(combinedKeyCode!="2304" && combinedKeyCode!="0")
-			    this.scm.addShortcut(combinedKeyCode, "mouselessbrowsing.TabLocalPrefs.toggleExclusiveUseOfNumpad();",  null, MlbCommon.SCM_CLIENT_ID);
+			    this.scm.addShortcut(combinedKeyCode, TabLocalPrefs.toggleExclusiveUseOfNumpad, TabLocalPrefs, MlbCommon.SCM_CLIENT_ID);
 		    
-			 this.setShortcut("mouselessbrowsing.keys.toggleEnableDisableMLB", "mouselessbrowsing.InitManager.toggleEnableDisableMLB()");
+			 this.setShortcut("mouselessbrowsing.keys.toggleEnableDisableMLB", InitManager.toggleEnableDisableMLB, InitManager);
 		},
 		
-		setShortcut: function(prefsKey, jsCode){
+		setShortcut: function(prefsKey, functionPtn, thisObj){
 			var combinedKeyCode = Prefs.getCharPref(prefsKey);
 			if(combinedKeyCode!="0"){
-				this.scm.addShortcut(combinedKeyCode, jsCode, null, MlbCommon.SCM_CLIENT_ID);
+				this.scm.addShortcut(combinedKeyCode, functionPtn, thisObj, MlbCommon.SCM_CLIENT_ID);
 			}
 		},
 		
@@ -197,6 +202,7 @@ with(mouselessbrowsing){
 			}else{
 				mlbMenu.style.display="none"
 			}
+         document.getElementById('mlb_disableMLB_bc').setAttribute("checked", MlbPrefs.disableMLB?"true":"false")
 		},
 		
 		initStatusbar:function(){
@@ -242,7 +248,6 @@ with(mouselessbrowsing){
 		},
 		
 		toggleEnableDisableMLB: function(){
-			MlbUtils.logDebugMessage('init on toggling')
 			Prefs.setBoolPref("mouselessbrowsing.disableMLB", !MlbPrefs.disableMLB)
 			this.init()
 		},

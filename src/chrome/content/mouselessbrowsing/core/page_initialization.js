@@ -1,7 +1,7 @@
 /*
  * Mouseless Browsing 
  * Version 0.5
- * Created by Rudolf Noé
+ * Created by Rudolf Noe
  * 31.12.2007
  */
 with(mlb_common){
@@ -130,6 +130,13 @@ with(mouselessbrowsing){
 		
 		prepareInitialization: function(event, onpageshow2ndCall, installChangeListener, keepExisitingIds, rebindElementsToIds){
          var win = event.originalTarget.defaultView
+         
+         //If a new tab is opened about:blank is the first location which is loaded
+         //No Init neccessary
+         if(win.location.href=="about:blank"){
+            return
+         }
+         
          var pageInitData = new PageInitData(win, onpageshow2ndCall, installChangeListener, keepExisitingIds, event, rebindElementsToIds)
          
          //Apply URL exceptions
