@@ -144,9 +144,10 @@ with(mouselessbrowsing){
          TabLocalPrefs.applySiteRules(win)
          
          //Is MLB activated?
-         if(TabLocalPrefs.isShowIdsOnDemand(win)){
+         var currentVisibilityMode = TabLocalPrefs.getVisibilityMode(win)
+         if(TabLocalPrefs.isShowIdsOnDemand(win) ||
+            currentVisibilityMode==MlbCommon.VisibilityModes.NONE){
             //Set the visibility modes so that with toggeling the ids will become visible
-         	var currentVisibilityMode = TabLocalPrefs.getVisibilityMode(win)
          	if(currentVisibilityMode!=MlbCommon.VisibilityModes.NONE){
                TabLocalPrefs.setVisibilityMode(win, MlbCommon.VisibilityModes.NONE);
          	}
