@@ -76,7 +76,7 @@ with(mouselessbrowsing){
          var isNummericIdType = MlbPrefs.isNumericIdType()
          var isCharIdType = !isNummericIdType
          var isDigit = keyCode >= KeyEvent.DOM_VK_0 && keyCode <= KeyEvent.DOM_VK_9
-         var idsNotVisible = this.currentTabLocalPrefs.getVisibilityMode()==MlbCommon.VisibilityModes.NONE
+         var idsNotVisible = this.getCurrentTabLocalPrefs().getVisibilityMode()==MlbCommon.VisibilityModes.NONE
 
          //Do nothing if
 		   if(!window.getBrowser() ||
@@ -404,8 +404,8 @@ with(mouselessbrowsing){
 			if(this.isSuppressShortCut()){
 				return ShortcutManager.DO_NOT_SUPPRESS_KEY
 			}
-			var currentVisibilityMode = this.currentTabLocalPrefs.getVisibilityMode()
-			var previousVisibilityMode = this.currentTabLocalPrefs.getPreviousVisibilityMode()
+			var currentVisibilityMode = this.getCurrentTabLocalPrefs().getVisibilityMode()
+			var previousVisibilityMode = this.getCurrentTabLocalPrefs().getPreviousVisibilityMode()
 			var resultingVisibilityMode = null;
 			if((currentVisibilityMode==MlbCommon.VisibilityModes.CONFIG || currentVisibilityMode==MlbCommon.VisibilityModes.ALL)){
 			   if(this.getPageInitializer().hasVisibleIdSpans(content)){
@@ -430,7 +430,7 @@ with(mouselessbrowsing){
 		 * all elements
 		 */
 		toggleAllIds: function(){
-         var currentVisibilityMode = this.currentTabLocalPrefs.getVisibilityMode()
+         var currentVisibilityMode = this.getCurrentTabLocalPrefs().getVisibilityMode()
 		   var resultingVisibilityMode = null
 		   if(currentVisibilityMode==MlbCommon.VisibilityModes.NONE || currentVisibilityMode==MlbCommon.VisibilityModes.CONFIG){
 		    	resultingVisibilityMode=MlbCommon.VisibilityModes.ALL;
@@ -445,7 +445,7 @@ with(mouselessbrowsing){
 		 * Initiates the update of the id spans after toggling the ids
 		 */
 		updateIdsAfterToggling: function(visibilityMode, currentVisibilityMode){
-	      this.currentTabLocalPrefs.initVisibilityModeAndShowIdPrefs(visibilityMode);
+	      this.getCurrentTabLocalPrefs().initVisibilityModeAndShowIdPrefs(visibilityMode);
          //Hide all as the 
 			if(visibilityMode==MlbCommon.VisibilityModes.NONE){
             this.getPageInitializer().deactivateChangeListener(content)
@@ -583,8 +583,8 @@ with(mouselessbrowsing){
 		    var isNumpad = (keyCode >= KeyEvent.DOM_VK_NUMPAD0 && keyCode <= KeyEvent.DOM_VK_NUMPAD9) || 
                          (keyCode == KeyEvent.DOM_VK_MULTIPLY) || (keyCode == KeyEvent.DOM_VK_SEPARATOR) || 
                          (keyCode == KeyEvent.DOM_VK_DECIMAL) || (keyCode == KeyEvent.DOM_VK_DIVIDE) 
-		    return MlbPrefs.isNumericIdType() && this.currentTabLocalPrefs.isExclusiveUseOfNumpad() && 
-                              this.currentTabLocalPrefs.getVisibilityMode()!= MlbCommon.VisibilityModes.NONE && 
+		    return MlbPrefs.isNumericIdType() && this.getCurrentTabLocalPrefs().isExclusiveUseOfNumpad() && 
+                              this.getCurrentTabLocalPrefs().getVisibilityMode()!= MlbCommon.VisibilityModes.NONE && 
                               noModifierPressed && isNumpad;
 		},
       
@@ -592,7 +592,7 @@ with(mouselessbrowsing){
        * Eventhandling for selecting a tab
        */
       onTabSelect: function(event){
-         this.currentTabLocalPrefs = TabLocalPrefs.getPrefs(content)
+         this.setCurrentTabLocalPrefs();
       },
       
       openLinkInNewCoolirisPreview: function(event){
@@ -657,7 +657,7 @@ with(mouselessbrowsing){
 		         this.toggleExclusiveUseOfNumpadSecondCall=true;
 		        setTimeout("mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpadSecondCall=false", 1000);
 		    }else{
-		        this.currentTabLocalPrefs.toggleExclusiveUseOfNumpad()
+		        this.getCurrentTabLocalPrefs().toggleExclusiveUseOfNumpad()
 		    }
 		},
 		
@@ -861,6 +861,17 @@ with(mouselessbrowsing){
       
       setResetTimer: function(){
          this.timerId = setTimeout("mouselessbrowsing.EventHandler.resetVars()", MlbPrefs.delayForAutoExecute);
+      },
+      
+      getCurrentTabLocalPrefs: function(){
+         if(this.currentTabLocalPrefs==null){
+            this.setCurrentTabLocalPrefs()
+         }
+         return this.currentTabLocalPrefs
+      },
+      
+      setCurrentTabLocalPrefs: function(){
+         this.currentTabLocalPrefs = TabLocalPrefs.getPrefs(content)
       }
       
    }
