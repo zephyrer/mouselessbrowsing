@@ -73,17 +73,24 @@ with(mouselessbrowsing){
          var idsNotVisible = TabLocalPrefs.getVisibilityMode()==MlbCommon.VisibilityModes.NONE
 
          //Do nothing if
-		   if(!window.getBrowser() ||
-            //Case: numeric ids and no digit pressed (only for performance reasons made explicit at the beginning
-            (isNummericIdType && !isDigit) ||
-            //Case: avoid overriding of e.g. changing tabs with Ctlr+<number> Bug #18
-            (isNummericIdType && hasModifier && !isOneOfConfiguredModifierCombination) ||
-            //Case: Focus is in editable field and event was not stopped
-            (isWritableElement && !this.eventStopped) ||
-		      //Case: char ids and modifier was pressed
-            (isCharIdType && hasModifier) ||
+		   if(!window.getBrowser()){
+            return
+         }
+         if(isNummericIdType){
+            if(!isDigit || //Case: numeric ids and no digit pressed (only for performance reasons made explicit at the beginning)
+               //Case: avoid overriding of e.g. changing tabs with Ctlr+<number> Bug #18
+               (hasModifier && !isOneOfConfiguredModifierCombination)){
+                  return
+               }
+         }else{
+            //Char-Id-Type
+            if(hasModifier ||  //Case: char ids and modifier was pressed
             //Case: entered char is not in defined char set
-		      (isCharIdType && !(this.isCharCodeInIds(charString) || isSpecialIdEntering)) || 
+		      (!this.isCharCodeInIds(charString) && !isSpecialIdEntering)){
+               return
+            }
+         } 
+         if((isWritableElement && !this.eventStopped) || //Case: Focus is in editable field and event was not stopped
             //Case: Ids not visible and no special id (e.g tabid) is entered		   		  
 		      (idsNotVisible && !isSpecialIdEntering) ||
             //Case: event is one triggered by Alt+numpad on windows		   		  
@@ -837,12 +844,12 @@ with(mouselessbrowsing){
       	if(event!=null && (event.button!=0 || event.detail == 2)){
       	  return
       	}
-         openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "mlb_prefs", "chrome, centerscreen").focus()
+         openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "mlb_prefs", "chrome, centerscreen")
       },
 
 		addSiteRule:function(){
 			var urlbar = document.getElementById("urlbar")
-			openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "mlb_prefs", "chrome, centerscreen", urlbar.value).focus()
+			openDialog(MlbCommon.MLB_CHROME_URL+"/preferences/prefs.xul", "mlb_prefs", "chrome, centerscreen", urlbar.value)
 		},
 		
 		reportBug: function(){
