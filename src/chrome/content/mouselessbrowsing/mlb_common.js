@@ -7,7 +7,7 @@
 		COMMON_CHROME_ULR: "chrome://mouselessbrowsing/content/common/",
 		
 		MLB_GUI_ID: "{c0bcf963-624b-47fe-aa78-8cc02434cf32}",
-		MLB_VERSION: null,
+		MLB_VERSION: "0.5.3.1Build201012152230",
 		MLB_CHROME_URL: "chrome://mouselessbrowsing/content/mouselessbrowsing",
 		MLB_PREF_OBSERVER: "MLB_PREF_OBSERVER",
 		
@@ -88,8 +88,6 @@
          var exclude = ["Shortcutmanager.js", "ObjectUtils.js"]
          this.scriptLoader.loadScripts(this.COMMON_CHROME_ULR, namespaceObj, exclude, true)
       
-			//Init version
-			this.MLB_VERSION = mlb_common.Utils.getExtension(this.MLB_GUI_ID).version
 		}
 	}
 	
