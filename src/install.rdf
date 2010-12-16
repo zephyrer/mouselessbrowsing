@@ -4,7 +4,7 @@
 
 		<em:id>mouseless@mouseless.de</em:id>
 		<em:name>Mouseless Browsing</em:name>
-		<em:version>0.5.3Build20090712</em:version>
+		<em:version>0.5.3Build20091101</em:version>
 		<em:description>Browse the web without the mouse :-)</em:description>
 		<em:creator>Rudolf Noe</em:creator>
 		<em:homepageURL>www.mouseless.de</em:homepageURL>
@@ -20,7 +20,7 @@
 			<Description>
 				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
 				<em:minVersion>3.0</em:minVersion>
-				<em:maxVersion>3.5.*</em:maxVersion>
+				<em:maxVersion>3.6.*</em:maxVersion>
 			</Description>
 		</em:targetApplication>
 	</Description>
