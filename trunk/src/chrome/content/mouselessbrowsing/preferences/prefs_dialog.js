@@ -2,7 +2,7 @@
 
   Mouseless Browsing 
   Version 0.5
-  Created by Rudolf Noé
+  Created by Rudolf Noe
   01.01.2008
 */
 //Import for binding
@@ -26,7 +26,6 @@ function doOnload(){
 	MLB_setPreviewForIds("styleForIdSpan")
 	MLB_setPreviewForIds("styleForFrameIdSpan")
 	MLB_initForCoolirisPreview()
-   MLB_onCommandEnableTabIds()
 //   MLB_onSmartPosChange()
 	byId('siteRulesLB').addEventListener("select", MLB_onSelectSiteRule, false)
 	PrefUtils.initElementHelp('jsStrings', 'helpDescriptionTB')
@@ -96,9 +95,10 @@ function MLB_setStyleDefault(styleTextboxId){
 function MLB_setPreviewForIds(styleTextboxId){
 	var styleTextbox = document.getElementById(styleTextboxId);
 	var previewSpan = document.getElementById(styleTextbox.getAttribute('previewSpanId'));
-   var newCss = styleTextbox.value
-   newCss = newCss.replace(/position\s*:\s*fixed/, "position:relative")
-	previewSpan.style.cssText = newCss
+	previewSpan.style.cssText=styleTextbox.value
+   if(styleTextboxId=="styleForFrameIdSpan"){
+      previewSpan.style.position = "static"
+   }
 }
 
 function MLB_addSiteRule(){
@@ -253,17 +253,6 @@ function MLB_saveKeyListbox(){
       var prefId = keyItem.getAttribute('prefid')
    	Prefs.setCharPref(prefId, keyItem.getAttribute(COMBINED_KEY_CODE_ATTR))
    }
-}
-
-function MLB_onCommandEnableTabIds(){
-   var tabIdsEnabled = byId('enableTabIdsCB').checked
-   var showTabIdCB = byId('showTabIdsCB')
-   if(tabIdsEnabled){
-      showTabIdCB.disabled = false
-   }else{
-      showTabIdCB.disabled = true
-   }
-      
 }
 
 function byId(elementId){

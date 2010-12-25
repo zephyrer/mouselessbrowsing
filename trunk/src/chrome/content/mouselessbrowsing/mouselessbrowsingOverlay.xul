@@ -26,12 +26,14 @@
     	<stringbundle id="mouselessbrowsingOverlaySB" src="chrome://mouselessbrowsing/locale/mouselessbrowsingOverlay.properties"/>
     </stringbundleset>
     <broadcasterset>
+    	<broadcaster id="mlb_disableMLB_bc" checked=""/>
     	<broadcaster id="mlb_openConfig_bc" acceltext=""/>
     	<broadcaster id="mlb_addUrlRule_bc" acceltext=""/>
     </broadcasterset>
     <commandset>
     	<command id="mlb_openConfig_cmd" label="&openConfiguration.label;" oncommand="mouselessbrowsing.EventHandler.openConfiguration()" accesskey="&openConfiguration.accesskey;" />
     	<command id="mlb_addUrlRule_cmd" label="&addUrlRule.label;" oncommand="mouselessbrowsing.EventHandler.addSiteRule()" accesskey="&addUrlRule.accesskey;"/>
+    	<command id="mlb_disableMLB_cmd" label="&disableMLB.label;" oncommand="mouselessbrowsing.InitManager.toggleEnableDisableMLB()" accesskey="&disableMLB.accesskey;"/>
     	<command id="mlb_mlbHelp_cmd" label="&help.label;" oncommand="mouselessbrowsing.MlbUtils.showMlbHelp()" accesskey="&help.accesskey;"/>
     	<command id="mlb_reportBug_cmd" label="&reportBug.label;" oncommand="mouselessbrowsing.EventHandler.reportBug()" accesskey="&reportBug.accesskey;"/>
     	<command id="mlb_giveFeedback_cmd" label="&giveFeedback.label;" oncommand="mouselessbrowsing.EventHandler.giveFeedback()" accesskey="&giveFeedback.accesskey;"/>
@@ -43,6 +45,8 @@
     <menupopup id="menu_ToolsPopup">
     	<menu id="mlb_tools_menu" label="Mouseless Browsing" insertbefore="sanitizeSeparator" accesskey="m" >
          <menupopup>
+            <menuitem command="mlb_disableMLB_cmd" type="checkbox" observes="mlb_disableMLB_bc"/>
+            <menuseparator/>
             <menuitem command="mlb_openConfig_cmd" observes="mlb_openConfig_bc"/>
             <menuitem command="mlb_addUrlRule_cmd" observes="mlb_addUrlRule_bc"/>
             <menuseparator/>
@@ -57,6 +61,8 @@
 
     <popupset>
     	<menupopup id="mlb_status_context">
+         <menuitem command="mlb_disableMLB_cmd" type="checkbox" observes="mlb_disableMLB_bc"/>
+    		<menuseparator/>
     		<menuitem command="mlb_openConfig_cmd" observes="mlb_openConfig_bc"/>
     		<menuitem command="mlb_addUrlRule_cmd" observes="mlb_addUrlRule_bc"/>
     		<menuseparator/>
@@ -72,7 +78,7 @@
     </popupset>
 
     <statusbar id="status-bar">
-         <statusbarpanel id="mlb-status-panel" onclick="mouselessbrowsing.EventHandler.openConfiguration(event)" >
+         <statusbarpanel id="mlb-status-panel" onclick="mouselessbrowsing.EventHandler.openConfiguration(event)">
            <hbox crop="end">
       	    <image id="mlb-status-image" src="chrome://mouselessbrowsing/skin/MLB.ico" context="mlb_status_context" style="width:16px"/>
    	       <image id="mlb-status-exl-numpad-image" src="chrome://mouselessbrowsing/skin/MLB_ExlNumpad.ico" style="width:16px"/>

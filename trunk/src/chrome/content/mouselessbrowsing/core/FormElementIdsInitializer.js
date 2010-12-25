@@ -13,8 +13,7 @@ with(mouselessbrowsing){
       */
       _initIds: function (){
          var doc = this.pageInitData.getCurrentDoc()
-         var xPathExp = "//input | //select | //textarea | //button | //iframe | //*[@role='button' or @role='wairole:button' or" 
-         xPathExp += "@role='menuitem' or @role='wairole:menuitem' or @role='treeitem' or @role='wairole:treeitem']"
+         var xPathExp = "//input | //select | //textarea | //button | //iframe | //*[contains(@role,'button')] | //*[@role='menuitem']"
          var snapshot = doc.evaluate(xPathExp, doc, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)
          for (var i = 0; i < snapshot.snapshotLength; i++) {
             var element = snapshot.snapshotItem(i)
@@ -93,7 +92,7 @@ with(mouselessbrowsing){
             //Pos in middle next to button
             spanPosition = SpanPosition.EAST_OUTSIDE
          }else{
-            throw new Error('unknown element type for element ' + element.tagName)
+            throw new Error('unknown element type for element ' + element.tagName + " " + element.name)
          }
          idSpan.setAttribute("mlb_span_position", spanPosition)
          this.insertIdSpan(idSpan, element, element.parentNode, spanPosition, idSpanStyle)   

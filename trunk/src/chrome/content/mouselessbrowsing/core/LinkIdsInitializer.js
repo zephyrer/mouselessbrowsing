@@ -21,7 +21,7 @@ with(mouselessbrowsing){
             xpathExp += "[not(@" + MlbCommon.MLB_BINDING_KEY_ATTR +")]"          
          }
          //ARI syntax
-         xpathExp += "|//*[@role='link'or @role='wairole:link']"
+         xpathExp += "|//*[@role='link']"
          
          var doc = this.pageInitData.getCurrentDoc()
          var links = XPathUtils.getElements(xpathExp, doc, XPathResult.ORDERED_NODE_ITERATOR_TYPE)
@@ -32,7 +32,7 @@ with(mouselessbrowsing){
          var maxIdNumber = MlbPrefs.maxIdNumber
 
          for (var i = 0; i < filteredLinks.length; i++) {
-            if (this.pageData.isMaxId(maxIdNumber)) {
+            if (this.pageInitData.pageData.counter >= maxIdNumber) {
                break;
             }
 
@@ -140,7 +140,7 @@ with(mouselessbrowsing){
          return "true";
       },
       
-      preprocessLinks: function(links, pageInitData){
+      preprocessLinks: function(links){
          var filteredLinks = new Array()
          var hrefToLinkMap = {}
          var topWin = this.pageInitData.getCurrentTopWin()
@@ -167,30 +167,18 @@ with(mouselessbrowsing){
             }
             
             var href = link.href
-            //Filter if
-            if(MlbPrefs.filterDuplicateLinks && //it is enabled
-               href && //href is defined
-               href.indexOf('http')==0){//only for http links and not for javascript links e.g.
+            if(MlbPrefs.filterDuplicateLinks && href!="#"){
                var sameHrefLink = hrefToLinkMap[href]
                if(!sameHrefLink){
                   hrefToLinkMap[href] = link
                }else {
                   var otherIsImage = this.isImageElement(sameHrefLink)
-                  //If link already has id span this has to be hidden
-                  var filteredLink = null
                   if(isImageLink && !otherIsImage){
                      link.setAttribute(MlbCommon.ATTR_IGNORE_ELEMENT, true)
-                     filteredLink = link
                      continue
                   }else if(!isImageLink && otherIsImage){
                      sameHrefLink.setAttribute(MlbCommon.ATTR_IGNORE_ELEMENT, true)
-                     hrefToLinkMap[href] = filteredLink = sameHrefLink
-                  }
-                  if(filteredLink){
-                     var idSpan = this.pageInitData.getIdSpan(filteredLink)
-                     if(idSpan){
-                        idSpan.style.display = "none";
-                     }
+                     hrefToLinkMap[href] = link
                   }
                }
             }
