@@ -6,7 +6,7 @@
 	<property name="build_dir" location="./build" />
 	<property name="dist_dir" location="./dist" />
 	<property name="backup_dir" location="../backup" />
-	<property name="version" value="0_5_3_1Build201012152230"/>
+	<property name="version" value="0_5_3_1Build201012251500"/>
 	<property name="version_file_name" value="${ant.project.name}_${version}.xpi"/>
 
 	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" name="gcupload"/>
