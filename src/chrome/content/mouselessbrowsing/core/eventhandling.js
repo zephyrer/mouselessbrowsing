@@ -596,21 +596,21 @@ with(mouselessbrowsing){
       },
       
       openLinkInNewCoolirisPreview: function(event){
-         if(this.isSuppressShortCut()){
+         if(this.isSuppressShortCut() && this.keybuffer.length == 0){
             return ShortcutManager.DO_NOT_SUPPRESS_KEY
          }
          this.openLinkInOtherLocationViaPostfixKey(event, MlbCommon.OpenLinkLocations.COOLIRIS_PREVIEW);
       },
 
       openLinkInNewTab: function(event){
-         if(this.isSuppressShortCut()){
+         if(this.isSuppressShortCut() && this.keybuffer.length == 0){
             return ShortcutManager.DO_NOT_SUPPRESS_KEY
          }
          this.openLinkInOtherLocationViaPostfixKey(event, MlbCommon.OpenLinkLocations.TAB);
       },
 
       openLinkInNewWindow: function(event){
-         if(this.isSuppressShortCut()){
+         if(this.isSuppressShortCut() && this.keybuffer.length == 0){
             return ShortcutManager.DO_NOT_SUPPRESS_KEY
          }
          this.openLinkInOtherLocationViaPostfixKey(event, MlbCommon.OpenLinkLocations.WINDOW);
