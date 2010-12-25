@@ -1,7 +1,7 @@
 /*
  * Mouseless Browsing 
  * Version 0.5
- * Created by Rudolf Noé
+ * Created by Rudolf Noe
  * 31.12.2007
 */
 (function(){

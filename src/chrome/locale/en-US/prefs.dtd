@@ -3,7 +3,6 @@
 <!ENTITY tab.styles.label "Styles">
 <!ENTITY tab.url_rules.label "URL Rules">
 <!ENTITY tab.keys.label "Keys">
-<!ENTITY tab.advancedOptions.label "Advanced Options">
 <!ENTITY groupbox.general_options.label "General Options">
 <!ENTITY disableMLB.label "Disable Mouseless Browsing">
 <!ENTITY showIdsOnDemand.label "Show ids only on demand">
@@ -53,7 +52,6 @@
 <!ENTITY mouselessbrowsing.keys.openInNewWindowPostfixKey "Postfix-key to open link in new window">
 <!ENTITY mouselessbrowsing.keys.openInCoolirisPreviewsPostfixKey "Postfix-key to open link in Cooliris Preview">
 <!ENTITY mouselessbrowsing.keys.selectLink "Postfix-key to select a link">
-<!ENTITY mouselessbrowsing.keys.openContextMenu "Postfix-key to open the context menu">
 <!ENTITY mouselessbrowsing.keys.historyBack "History back">
 <!ENTITY mouselessbrowsing.keys.historyForward "History forward">
 <!ENTITY mouselessbrowsing.keys.scrollDown "Scroll down">
@@ -90,6 +88,3 @@
 <!ENTITY keys.assignBU.accesskey "g">
 <!ENTITY keys.removeBU.accesskey "r">
 <!ENTITY keys.restore_defaultBU.accesskey "f">
-<!ENTITY groupbox.specialIds.label "Special Ids">
-<!ENTITY enableSpecialIds.label "Enable special ids ('0' for addressbar and '00' for searchbar)">
-<!ENTITY enableTabIds.label "Enable tab ids">
