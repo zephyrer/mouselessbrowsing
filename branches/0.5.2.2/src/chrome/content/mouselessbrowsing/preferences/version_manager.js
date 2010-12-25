@@ -112,9 +112,14 @@ with(mlb_common){
       },
       
       setup: function(){
-         var setupDialog = new Dialog(MlbCommon.MLB_CHROME_URL+"/preferences/setup/setup.xul", "setupdialog", true, window)
+         var setupDialog = new Dialog(MlbCommon.MLB_CHROME_URL+"/preferences/setup/setup.xul", "setupdialog", false, window)
+         var callBackHandler = {
+            handleDialogAccept: function(){
+               Utils.notifyObservers(MlbCommon.MLB_PREF_OBSERVER);
+            }
+         }
+         setupDialog.addEventListener(callBackHandler)
          setupDialog.show()
-         Utils.notifyObservers(MlbCommon.MLB_PREF_OBSERVER);
       },
    	
    	showVersionInfoPage: function(){
