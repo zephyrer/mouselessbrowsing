@@ -686,7 +686,7 @@ with(mouselessbrowsing){
 		
 		selectLink: function(){
 		   if(this.keybuffer==""){
-            return;
+            return ShortcutManager.DO_NOT_SUPPRESS_KEY;
          }
          var pageData = MlbUtils.getPageData() 
          var element = pageData.getElementForId(this.keybuffer);   
