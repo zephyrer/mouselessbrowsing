@@ -11,6 +11,7 @@
 		<em:iconURL>chrome://mouselessbrowsing/skin/MLB.ico</em:iconURL>
 		<em:aboutURL/>
       <em:optionsURL>chrome://mouselessbrowsing/content/mouselessbrowsing/preferences/prefs.xul</em:optionsURL>		
+      <em:unpack>true</em:unpack>
 		<em:file>
 			<Description about="urn:mozilla:extension:file:mouselessbrowsing.jar">
 				<em:package>content/mouselessbrowsing/</em:package>
