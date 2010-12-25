@@ -59,7 +59,6 @@
 			<tab label="&tab.styles.label;" />
 			<tab label="&tab.url_rules.label;" id="siteruletab" />
 			<tab label="&tab.keys.label;" />
-			<tab label="&tab.advancedOptions.label;" />
 		</tabs>
 		<tabpanels>
 			<tabpanel>
@@ -248,6 +247,9 @@
                            <checkbox label="&filterDuplicateLinks.label;" prefid="mouselessbrowsing.filterDuplicateLinks" />
                         </row>
                         <row>
+                           <checkbox label="&showTabIds.label;" prefid="mouselessbrowsing.showTabIds" />
+                        </row>
+                        <row>
                            <checkbox label="&showKeybufferInStatusbar.label;" prefid="mouselessbrowsing.showKeybufferInStatusbar" />
                         </row>
                         <row>
@@ -407,10 +409,6 @@
                      <listcell label="&mouselessbrowsing.keys.selectLink;"/>
                      <listcell />
                   </listitem>
-                  <listitem prefid="mouselessbrowsing.keys.openContextMenu">
-                     <listcell label="&mouselessbrowsing.keys.openContextMenu;"/>
-                     <listcell />
-                  </listitem>
                   <listitem prefid="mouselessbrowsing.keys.historyBack">
                      <listcell label="&mouselessbrowsing.keys.historyBack;"/>
                      <listcell />
@@ -455,20 +453,6 @@
                   <button label="&keys.removeBU.label;" accesskey="&keys.removeBU.accesskey;" oncommand="MLB_onCommandRemoveShortcut()" observes="keyListboxBC"></button>
                   <button label="&keys.restore_defaultBU.label;" accesskey="&keys.restore_defaultBU.accesskey;" oncommand="MLB_onCommandRestoreDefault()" observes="keyListboxBC"></button>
                </hbox>              
-            </vbox>
-         </tabpanel>
-         <tabpanel>
-            <vbox flex="1">
-               <groupbox>
-                  <caption label="&groupbox.specialIds.label;"/>
-                  <checkbox label="&enableSpecialIds.label;" prefid="mouselessbrowsing.enableSpecialIds"/>
-                  <checkbox id="enableTabIdsCB" label="&enableTabIds.label;" prefid="mouselessbrowsing.enableTabIds" 
-                            oncommand="MLB_onCommandEnableTabIds()"/>
-                  <hbox>
-                     <spacer width="20px"/>
-                     <checkbox id="showTabIdsCB" label="&showTabIds.label;" prefid="mouselessbrowsing.showTabIds" />                     
-                  </hbox>
-               </groupbox>
             </vbox>
          </tabpanel>
 		</tabpanels>
