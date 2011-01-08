@@ -7,7 +7,7 @@
 		COMMON_CHROME_ULR: "chrome://mouselessbrowsing/content/common/",
 		
 		MLB_GUI_ID: "{c0bcf963-624b-47fe-aa78-8cc02434cf32}",
-		MLB_VERSION: "0.5.3.1Build201012251600",
+		MLB_VERSION: "0.5.3.1Build201101051500",
 		MLB_CHROME_URL: "chrome://mouselessbrowsing/content/mouselessbrowsing",
 		MLB_PREF_OBSERVER: "MLB_PREF_OBSERVER",
 		
@@ -79,14 +79,25 @@
          //Create Namespace object for mouseless
          var namespaceObj = window['mlb_common'] = new Object()
          
-         //Load script loader all the rest
-         var tempScriptLoaderNS = new Object()
-         this.loadScript(this.COMMON_CHROME_ULR + "/script/ScriptLoader.js", tempScriptLoaderNS)
-         this.scriptLoader = tempScriptLoaderNS.ScriptLoader
-         //First load ObjectUtils as this is required during load for Inheritence
-         this.scriptLoader.loadScript(this.COMMON_CHROME_ULR+"lang/ObjectUtils.js", namespaceObj)
-         var exclude = ["Shortcutmanager.js", "ObjectUtils.js"]
-         this.scriptLoader.loadScripts(this.COMMON_CHROME_ULR, namespaceObj, exclude, true)
+         try{
+            //Load script loader all the rest
+            var tempScriptLoaderNS = new Object()
+            this.loadScript(this.COMMON_CHROME_ULR + "script/ScriptLoader.js", tempScriptLoaderNS)
+            this.scriptLoader = tempScriptLoaderNS.ScriptLoader
+            //First load ObjectUtils as this is required during load for Inheritence
+            this.scriptLoader.loadScript(this.COMMON_CHROME_ULR+"lang/ObjectUtils.js", namespaceObj)
+            var exclude = ["Shortcutmanager.js", "ObjectUtils.js"]
+            this.scriptLoader.loadScripts(this.COMMON_CHROME_ULR, namespaceObj, exclude, true)
+         }catch(e){
+            var msg = "Error during initalization of Mouseless Browsing.\n" +
+                      "Please file bug report under: " +
+                      "\nhttp://code.google.com/p/mouselessbrowsing/issues/list" +
+                      "\nError: " + e.toString() +
+                      "\nStackstrace: " +
+                      "\n" + e.stack 
+            alert(msg)
+            Components.utils.reportError(msg)
+         }
       
 		}
 	}
