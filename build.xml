@@ -25,7 +25,7 @@
 		<ftp server="wp1067403.wp026.webpack.hosteurope.de"
 	       remotedir="www/joomla/resources"
 	       userid="ftp1067403-rudolfnoe"
-	       password="bikefahrn"
+	       password="${passwordFtp}"
 	       depends="yes">
 			<fileset dir="${dist_dir}">
 				<include name="*.xpi"/>
@@ -33,7 +33,7 @@
 		</ftp>
 	</target>
 	<target name="googleUpload">
-		<gcupload username="Rudolf.Noe" password="KQ3pG9uu6cS7" projectname="mouselessbrowsing" filename="${dist_dir}/${version_file_name}" 
+		<gcupload username="Rudolf.Noe" password="${passwordGoogle}" projectname="mouselessbrowsing" filename="${dist_dir}/${version_file_name}" 
 			targetfilename="${version_file_name}" 
 			summary="Version ${version}" 
 			labels="Type-Installer, OpSys-All" />
