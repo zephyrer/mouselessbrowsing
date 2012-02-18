@@ -13,7 +13,7 @@ with(mouselessbrowsing){
       */
       _initIds: function (){
          var doc = this.pageInitData.getCurrentDoc()
-         var xPathExp = "//input | //select | //textarea | //button | //iframe | //*[contains(@role,'button')] | //*[@role='menuitem']"
+         var xPathExp = "(//input | //select | //textarea | //button | //iframe | //*[contains(@role,'button')] | //*[@role='menuitem'])[not(ancestor-or-self::*[contains(@style,'display: none') or contains(@style,'display:none')])]"
          var snapshot = doc.evaluate(xPathExp, doc, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)
          for (var i = 0; i < snapshot.snapshotLength; i++) {
             var element = snapshot.snapshotItem(i)
@@ -25,7 +25,8 @@ with(mouselessbrowsing){
                   // for security reasons
                   MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.FILE) ||
                   (MlbUtils.isElementOfType(element, MlbUtils.ElementTypes.IFRAME) && element.contentDocument.designMode=="off") ||
-                  !DomUtils.isVisible(element)) {
+                  !DomUtils.isVisible(element) ||
+                  (MlbPrefs.showIdsOnDemand && !this.isElementInViewport(element))){
                continue;
             }
             

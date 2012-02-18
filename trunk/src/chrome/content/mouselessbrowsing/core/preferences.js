@@ -27,6 +27,7 @@
 		BLUR_ACTIVE_ELEMENT_KEY_PREF_ID: "mouselessbrowsing.keys.blurActiveElement",
 		BLOCK_KEYBOARD_INDPUT_PREF_ID: "mouselessbrowsing.keys.blockKeyboardInputForMlb",
 		disableMLB: null,
+      showIdsOnDemand: null,
 		disableAutomaticPageUpdateOnChange: null,
 		initOnDomContentLoaded: null,
 		executeAutomaticEnabled: null,
@@ -62,6 +63,7 @@
 		    try{
 				//Checking actual preference settings
 		      this.observedPropExclusiveUseOfNumpad = Prefs.getBoolPref("mouselessbrowsing.exclusiveNumpad");
+            this.showIdsOnDemand = Prefs.getBoolPref("mouselessbrowsing.showIdsOnDemand");
 		      this.disableMLB= Prefs.getBoolPref("mouselessbrowsing.disableMLB");
 		      this.disableAutomaticPageUpdateOnChange= Prefs.getBoolPref("mouselessbrowsing.disableAutomaticPageUpdateOnChange");
 		      this.initOnDomContentLoaded = Prefs.getBoolPref("mouselessbrowsing.initOnDomContentLoaded");

@@ -20,13 +20,14 @@ with(mouselessbrowsing){
             this.insertSpanForOtherElements(embeddedObject, this.pageInitData.getIdSpan(embeddedObject), 
                MlbCommon.IdSpanTypes.OTHER, SpanPosition.NORTH_EAST_OUTSIDE)
          }
-         var otherElements = XPathUtils.getElements("//*[@onclick] | //*[@onmousedown] | //*[@onmouseup]| //*[@onmouseover]", this.pageInitData.getCurrentDoc())
+         var otherElements = XPathUtils.getElements("(//*[@onclick] | //*[@onmousedown] | //*[@onmouseup]| //*[@onmouseover])[not(ancestor-or-self::*[contains(@style,'display: none') or contains(@style,'display:none')])]", this.pageInitData.getCurrentDoc())
          var currentInitCount = this.pageInitData.getInitCounter()
          for (var i = 0; i < otherElements.length; i++) {
             var otherElement = otherElements[i]
             if(DomUtils.getElementsByTagNameAndAttribute(otherElement, "span", MlbCommon.ATTR_ID_SPAN_FLAG, "true").length>0 ||
-               !this.isMarkableElement(otherElement)){
-               continue
+               !this.isMarkableElement(otherElement) ||
+               (MlbPrefs.showIdsOnDemand && !this.isElementInViewport(otherElement))){
+               continue;
             }
             var idSpan = this.pageInitData.getIdSpan(otherElement)
             if(idSpan && idSpan.mlb_initCounter==currentInitCount)

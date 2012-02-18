@@ -138,6 +138,17 @@ with(mouselessbrowsing){
          this.positionIdSpan(newSpan, element, spanPosition)
       },
  
+      isElementInViewport : function(element){
+         var rect = element.getBoundingClientRect()
+   
+         return (
+            rect.bottom >= 0 &&
+            rect.right >= 0 &&
+            rect.top <= window.innerHeight &&
+            rect.left <= window.innerWidth 
+         )
+      },
+
       getComputedStyle: function(element){
          return element.ownerDocument.defaultView.getComputedStyle(element, null)
       },

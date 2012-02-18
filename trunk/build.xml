@@ -6,10 +6,10 @@
 	<property name="build_dir" location="./build" />
 	<property name="dist_dir" location="./dist" />
 	<property name="backup_dir" location="../backup" />
-	<property name="version" value="0_5_3_1Build201101051500"/>
+	<property name="version" value="0_5_4Build201202181915"/>
 	<property name="version_file_name" value="${ant.project.name}_${version}.xpi"/>
 
-	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" name="gcupload"/>
+	<!--taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" name="gcupload"/-->
 	<target name="createDailyBuild"></target>
 	<target name="createDistributionXPI">
 		<delete>
