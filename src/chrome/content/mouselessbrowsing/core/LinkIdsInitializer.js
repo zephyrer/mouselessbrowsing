@@ -16,7 +16,7 @@ with(mouselessbrowsing){
       */
       _initIds: function() {
          //For performance reasons in case of keep existing ids only the not initialized a are taken
-         var xpathExp = "//A"
+         var xpathExp = "//A[not(ancestor-or-self::*[contains(@style,'display: none') or contains(@style,'display:none')])]"
          if (this.pageInitData.getKeepExistingIds()) {
             xpathExp += "[not(@" + MlbCommon.MLB_BINDING_KEY_ATTR +")]"          
          }
@@ -149,8 +149,14 @@ with(mouselessbrowsing){
          for (var i = 0; i < links.length; i++) {
             link = links[i]
             //Perf-Tuning
-            if(link.hasAttribute(MlbCommon.ATTR_IGNORE_ELEMENT))
-               continue
+            if(link.hasAttribute(MlbCommon.ATTR_IGNORE_ELEMENT)){
+               continue;
+            }
+            //if on demand then show only links within viewport
+            if(MlbPrefs.showIdsOnDemand && !this.isElementInViewport(link)){
+               continue;
+            }
+            
             // is there anything noteworth
             var markableLink = this.isMarkableLink(link)
             if (markableLink=="false") {
