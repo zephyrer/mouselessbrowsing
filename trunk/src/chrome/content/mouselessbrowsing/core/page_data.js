@@ -103,9 +103,9 @@ with(mouselessbrowsing){
 	      if(indexInId==-1) {
 	         return this.idChars.charAt(0)+ id;
 	      }
-	      charAtIndex = id.charAt(indexInId);
-	      indexOfCharInChars = this.idChars.indexOf(charAtIndex);
-	      newValue = "";
+	      var charAtIndex = id.charAt(indexInId);
+	      var indexOfCharInChars = this.idChars.indexOf(charAtIndex);
+	      var newValue = "";
 	      if(indexOfCharInChars==this.idChars.length-1) {
 	         newValue = this.replaceChar(id, indexInId, this.idChars.charAt(0));
 	         return this.getNextCharId(newValue, indexInId-1);
@@ -161,7 +161,7 @@ with(mouselessbrowsing){
       },
 
       replaceChar: function(value, index, newChar) {
-	      result = "";
+	      var result = "";
 	      if(index!=0) {
 	         result = value.substring(0, index);
 	      }

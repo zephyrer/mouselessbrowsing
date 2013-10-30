@@ -34,9 +34,10 @@ with(mlb_common){
             this.doMigrationToCurrentVersion()
          }
          Prefs.setCharPref(this.VERSION_PREF, MlbCommon.MLB_VERSION)
-         if(migrated){
+         //Commentet out as homepage is broken
+         /*if(migrated){
       		setTimeout(mouselessbrowsing.VersionManager.showVersionInfoPage, 1000)
-         }
+         }*/
    	},
       
       doMigrationToCurrentVersion: function(){

@@ -300,7 +300,11 @@ with(mouselessbrowsing){
 			 }
 			 
           //Watch for making it editable
-			 win.document.wrappedJSObject.watch("designMode", this.onChangeDesignMode)
+			 //win.document.wrappedJSObject.watch("designMode", )
+          //The following doesn't work
+          /*var observer = new MutationObserver(this.onChangeDesignMode);
+          var config = { attributes: true};
+          observer.observe(win.document, config);*/
           
 			 pageInitData.setCurrentWin(win);
 		
@@ -338,22 +342,21 @@ with(mouselessbrowsing){
           
 		},
 		
-		onChangeDesignMode: function(property, oldValue, newValue){
-		   if(newValue && newValue.toString().toLowerCase()=="on"){
-   			//Remove old id spans
-		   	//"this" is in this context HTMLDocument!
-		   	var spans = this.getElementsByTagName('span')
-		   	for (var i = 0; i < spans.length; i++) {
-		   		var span = spans[i]
-		   		if(span.hasAttribute("MLB_idSpanFlag")){
-		   			span.parentNode.removeChild(span)
-		   			//Correct index as spans array is updated on the fly
-		   			i--
-		   		}
-		   	}
-		   	setTimeout("mouselessbrowsing.PageInitializer.updatePage()")
-		   }
-		   return newValue
+		onChangeDesignMode: function(mutations){
+         mutations.forEach(function(mutation) {
+            if(mutation.type == 'attributes' 
+               && mutation.attributeName.toLowerCase()== 'designmode'
+               && mutation.target.designMode.toLowerCase == 'on'){
+            //Remove old id spans
+            //"this" is in this context HTMLDocument!
+            console.log('Document changed to designmode="on"');
+            var spans = document.querySelectorAll('span[MLB_idSpanFlag]')
+            for (var i = 0; i < spans.length; ++i) {
+              spans[i].parentNode.removeChild(span)
+            }
+            setTimeout(function(){mouselessbrowsing.PageInitializer.updatePage()})
+            }
+         });    
 		},
 		
       
