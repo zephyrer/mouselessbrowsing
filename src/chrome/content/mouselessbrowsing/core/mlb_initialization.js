@@ -17,6 +17,8 @@ with(mouselessbrowsing){
    //EventHandler
    var mainKeyPressHandler = {handleEvent: function(event){EventHandler.onkeypress(event)}};
    var mainKeyDownHandler = {handleEvent: function(event){EventHandler.onkeydown(event)}}
+   var mainScrollHandler = {handleEvent: function(event){EventHandler.onscroll(event)}}
+   
    //Used to solve bug #52
    //var mainKeyUpHandler = {handleEvent: function(event){EventHandler.onkeyup(event)}}
    var mainDomContentLoadedHandler = {handleEvent: function(event){PageInitializer.onDOMContentLoaded(event)}}
@@ -58,12 +60,12 @@ with(mouselessbrowsing){
 		enableMLB: function (){
 		    this.initShortCuts()
           TabIdHandler.init(true)
-		    if(!this.eventHandlersActive){
-		       this.initEventHandlers("addEventListener");
+		    var showIdsOnDemand = Prefs.getBoolPref("mouselessbrowsing.showIdsOnDemand");
+          if(!this.eventHandlersActive){
+		       this.initEventHandlers("addEventListener", showIdsOnDemand);
 		       this.eventHandlersActive = true
 		    }
 		    TabLocalPrefs.initPrefs()
-          var showIdsOnDemand = Prefs.getBoolPref("mouselessbrowsing.showIdsOnDemand");
           var disableAllIds = Prefs.getBoolPref("mouselessbrowsing.disableAllIds");
           //Init the current page the others are only initialized on demand
           PageInitializer.init()
@@ -107,7 +109,7 @@ with(mouselessbrowsing){
 	      Utils.observeObject(TabLocalPrefs, "observedPropExclusiveUseOfNumpad", this.initStatusbar, this)
 		},
 		
-		initEventHandlers : function(addOrRemoveListenerFunction) {
+		initEventHandlers : function(addOrRemoveListenerFunction, showIdsOnDemand) {
 			var tabbrowser = document.getElementById("content"); // tabbrowser
 			//key event listener
 			window[addOrRemoveListenerFunction]("keypress", mainKeyPressHandler, true);  
@@ -127,6 +129,16 @@ with(mouselessbrowsing){
 			//Tab select listener
 			getBrowser().tabContainer[addOrRemoveListenerFunction]("TabSelect", tabSelectHandlerTabPrefs,false);
 			getBrowser().tabContainer[addOrRemoveListenerFunction]("TabSelect", tabSelectHandlerEventHandler,false);
+         
+         //Scroll listener
+         //always remove it
+         getBrowser().removeEventListener("scroll", mainScrollHandler, true);
+         //Only add it when showIdsOnDemand
+         if (showIdsOnDemand) {
+            MlbUtils.logDebugMessage('mlb scroll listener activated');
+            getBrowser()[addOrRemoveListenerFunction]("scroll", mainScrollHandler, true);
+            
+         }
 		},
 		
 		initShortCuts: function (){

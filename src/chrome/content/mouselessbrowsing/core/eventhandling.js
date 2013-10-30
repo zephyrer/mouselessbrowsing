@@ -113,6 +113,15 @@ with (mlb_common) {
 									this.currentOnKeydownEvent))) {
 						return
 					}
+               
+               /*Workaround for Bug 23
+                *  As of FF 25 the keypress event is no longer triggered if the event.preventDefault was called 
+                *  within the keydown event.
+                *  see https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases/25
+                */
+               if (this.eventStopped){
+                  this.stopEvent(event);
+               }
 
 					// With new keystroke clear old timer
 					clearTimeout(this.timerId);
@@ -138,7 +147,7 @@ with (mlb_common) {
 							this.executeAutomatic()
 						else
 							this.timerId = setTimeout(
-									"mouselessbrowsing.EventHandler.executeAutomatic()",
+									function(){mouselessbrowsing.EventHandler.executeAutomatic()},
 									MlbPrefs.delayForAutoExecute);
 					} else {
 						this.setResetTimer()
@@ -167,7 +176,6 @@ with (mlb_common) {
 									.isAltCtrlInEditableField(event)) ||
 							// Case input is blocked for MLB
 							this.blockKeyboardInputForMLBActive) {
-						this.stopEvent(event)
 						this.eventStopped = true
 						// Fix for Bug Id 13 and Workaround for FF Bug 291082;
 						if (MlbUtils.isElementOfType(event.originalTarget,
@@ -227,6 +235,17 @@ with (mlb_common) {
 					}
 					return false
 				},
+            
+            onscroll: function(event){
+               if (!MlbPrefs.showIdsOnDemand) {
+                  return;
+               }
+               var currentVisibilityMode = TabLocalPrefs.getPrefs(content)
+                     .getVisibilityMode();
+               if ( currentVisibilityMode != MlbCommon.VisibilityModes.NONE) {
+                  this.hideIdsAfterExecuting(content);
+               }
+            },
 
 				isOneOfConfiguredModifierCombination : function(event) {
 					var encodedModifierCode = ShortcutManager
@@ -346,7 +365,7 @@ with (mlb_common) {
 				 * Execute action
 				 */
 				execute : function() {
-					// First check for focusing URL-Field
+					/* First check for focusing URL-Field
 					if (this.keybuffer == "0") {
 						document.getElementById('urlbar').select();
 						return;
@@ -355,7 +374,7 @@ with (mlb_common) {
 					if (this.keybuffer == "00") {
 						document.getElementById('searchbar').select();
 						return;
-					}
+					}*/
 
 					// Check for changing tab by number
 					if (this.changeTabByNumberRegExp.test(this.keybuffer)) {
@@ -794,7 +813,7 @@ with (mlb_common) {
 					if (this.toggleExclusiveUseOfNumpadSecondCall == false) {
 						this.toggleExclusiveUseOfNumpadSecondCall = true;
 						setTimeout(
-								"mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpadSecondCall=false",
+								function(){mouselessbrowsing.EventHandler.toggleExclusiveUseOfNumpadSecondCall=false;},
 								1000);
 					} else {
 						this.getCurrentTabLocalPrefs()
@@ -939,7 +958,7 @@ with (mlb_common) {
 				setTimerForBlockKeyboardInputReset : function() {
 					this.clearTimerForBlockKeyboardInput()
 					this.blockKeyboardInputTimerId = setTimeout(
-							mouselessbrowsing.EventHandler.resetBlockKeyboardInput,
+							function(){mouselessbrowsing.EventHandler.resetBlockKeyboardInput()},
 							MlbPrefs.delayForAutoExecute)
 				},
 
@@ -1023,7 +1042,7 @@ with (mlb_common) {
 
 				setResetTimer : function() {
 					this.timerId = setTimeout(
-							"mouselessbrowsing.EventHandler.resetVars()",
+							function(){mouselessbrowsing.EventHandler.resetVars()},
 							MlbPrefs.delayForAutoExecute);
 				},
 
