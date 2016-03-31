@@ -1,0 +1,1 @@
+The basic principle is to add small boxes with unique ids behind every link and/or form element. You just have to type in the id and press enter (there is also an automatice mode available) to trigger the appropriate action i.e. following a link, pressing a button or selecting a  textfield.
